@@ -68,12 +68,14 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val activity = LocalActivity.current
 
     LoginContent(
         state = state,
         onEmailChange = viewModel::onEmail,
         onPasswordChange = viewModel::onPassword,
         onSignIn = viewModel::signIn,
+        onGoogleSignIn = { activity?.let(viewModel::signInWithGoogle) },
         onRegister = onRegister,
     )
 }
@@ -84,6 +86,7 @@ fun LoginContent(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSignIn: () -> Unit,
+    onGoogleSignIn: () -> Unit,
     onRegister: () -> Unit,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
@@ -180,7 +183,13 @@ fun LoginContent(
                         },
                         enabled = !state.loading && state.backendAvailable,
                     )
-
+                    OrDivider()
+                    GoogleAuthButton(
+                        text = stringResource(R.string.sign_in_google),
+                        loading = state.loading,
+                        enabled = !state.loading && state.backendAvailable,
+                        onClick = onGoogleSignIn,
+                    )
                 }
             }
 
@@ -540,6 +549,7 @@ private fun LoginScreenPreview() {
         onEmailChange = {},
         onPasswordChange = {},
         onSignIn = {},
+        onGoogleSignIn = {},
         onRegister = {},
     )
 }

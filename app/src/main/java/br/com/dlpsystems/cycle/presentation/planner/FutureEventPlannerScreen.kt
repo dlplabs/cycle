@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -98,7 +100,6 @@ class PlannerViewModel @Inject constructor(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FutureEventPlannerScreen(
-    onBack: () -> Unit,
     onPaywall: () -> Unit,
     viewModel: PlannerViewModel = hiltViewModel(),
 ) {
@@ -106,7 +107,10 @@ fun FutureEventPlannerScreen(
     val picker = rememberDatePickerState()
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.weight(1f).padding(16.dp),
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(stringResource(R.string.planner_title), style = MaterialTheme.typography.headlineMedium)
@@ -126,7 +130,6 @@ fun FutureEventPlannerScreen(
                     Text(state.guidance)
                 }
             }
-            PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
         }
         AdBannerContainer(isPremium = state.premium)
     }

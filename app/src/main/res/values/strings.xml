@@ -44,7 +44,13 @@
     <string name="phase_unknown">Sem fase definida</string>
     <string name="cycle_day_label">Dia %1$d</string>
     <string name="days_until_period">Previsão da próxima menstruação em %1$d dias.</string>
-    <string name="no_cycle_hint">Registre o primeiro dia da menstruação para acompanhar a fase atual.</string>
+    <string name="no_cycle_hint">Para começar, marque o primeiro dia da menstruação.</string>
+    <string name="start_first_period">Marcar o 1º dia da menstruação</string>
+    <string name="see_phase_care">Ver cuidado desta fase</string>
+    <string name="nav_today">Hoje</string>
+    <string name="nav_relief">Alívio</string>
+    <string name="nav_plan">Planejar</string>
+    <string name="nav_account">Conta</string>
     <string name="your_cycle">Seu ciclo</string>
     <string name="average_cycle">Duração média</string>
     <string name="average_period">Dias de fluxo</string>

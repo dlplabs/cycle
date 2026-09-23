@@ -92,20 +92,6 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun setReminders(enabled: Boolean) {
-        viewModelScope.launch {
-            preferences.setRemindersEnabled(enabled)
-            reminderScheduler.setEnabled(enabled)
-        }
-    }
-
-    fun updateAverages(cycleDays: Int, periodDays: Int) {
-        viewModelScope.launch {
-            runCatching { userRepository.updateAverages(cycleDays, periodDays) }
-                .onFailure { error -> _state.update { it.copy(errorMessage = error.message) } }
-        }
-    }
-
     fun onOpenSource() {
         analyticsService.log(AnalyticsEvents.EVENT_EVIDENCE_CLICKED, screen = "dashboard")
     }

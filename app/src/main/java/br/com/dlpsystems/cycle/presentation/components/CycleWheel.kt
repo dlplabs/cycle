@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.accessibility.SemanticsUtils
@@ -50,6 +51,7 @@ fun CycleWheel(
     daysRemaining: Int,
     segments: List<PhaseSegment>,
     modifier: Modifier = Modifier,
+    wheelSize: Dp = 280.dp,
 ) {
     val description = SemanticsUtils.cycleWheelDescription(
         day = cycleDay.coerceAtLeast(0),
@@ -84,7 +86,7 @@ fun CycleWheel(
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .size(280.dp)
+                .size(wheelSize)
                 .graphicsLayer {
                     val shown = 0.92f + 0.08f * progress
                     scaleX = shown
@@ -95,7 +97,7 @@ fun CycleWheel(
         )
         Canvas(
             modifier = Modifier
-                .size(280.dp)
+                .size(wheelSize)
                 .clearAndSetSemantics { },
         ) {
             val inset = 18.dp.toPx()

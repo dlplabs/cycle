@@ -75,16 +75,9 @@ class AuthViewModel @Inject constructor(
             } catch (_: GoogleSignInCancelled) {
                 _state.update { it.copy(loading = false) }
             } catch (failure: AuthFailure) {
-                val shown = when (failure) {
-                    AuthFailure.GoogleNotConfigured,
-                    AuthFailure.Network,
-                    AuthFailure.NotConfigured,
-                    -> failure
-                    else -> AuthFailure.NoAccount
-                }
-                _state.update { it.copy(loading = false, error = shown) }
+                _state.update { it.copy(loading = false, error = failure) }
             } catch (_: Throwable) {
-                _state.update { it.copy(loading = false, error = AuthFailure.NoAccount) }
+                _state.update { it.copy(loading = false, error = AuthFailure.GoogleFailed) }
             }
         }
     }

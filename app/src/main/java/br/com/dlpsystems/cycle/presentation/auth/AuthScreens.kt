@@ -34,9 +34,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.activity.compose.LocalActivity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -68,14 +68,12 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     LoginContent(
         state = state,
         onEmailChange = viewModel::onEmail,
         onPasswordChange = viewModel::onPassword,
         onSignIn = viewModel::signIn,
-        onGoogleSignIn = { viewModel.signInWithGoogle(context) },
         onRegister = onRegister,
     )
 }
@@ -86,7 +84,6 @@ fun LoginContent(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSignIn: () -> Unit,
-    onGoogleSignIn: () -> Unit,
     onRegister: () -> Unit,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
@@ -184,13 +181,6 @@ fun LoginContent(
                         enabled = !state.loading && state.backendAvailable,
                     )
 
-                    OrDivider()
-                    GoogleAuthButton(
-                        text = stringResource(R.string.sign_in_google),
-                        loading = state.loading,
-                        enabled = !state.loading && state.backendAvailable,
-                        onClick = onGoogleSignIn,
-                    )
                 }
             }
 
@@ -213,12 +203,6 @@ fun LoginContent(
                     text = stringResource(R.string.go_to_register),
                     onClick = onRegister,
                 )
-                GoogleAuthButton(
-                    text = stringResource(R.string.create_account_google),
-                    loading = state.loading,
-                    enabled = !state.loading && state.backendAvailable,
-                    onClick = onGoogleSignIn,
-                )
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -231,7 +215,7 @@ fun RegisterScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val activity = LocalActivity.current
 
     RegisterContent(
         state = state,
@@ -240,7 +224,7 @@ fun RegisterScreen(
         onEmailChange = viewModel::onEmail,
         onPasswordChange = viewModel::onPassword,
         onRegister = viewModel::register,
-        onGoogleSignIn = { viewModel.signInWithGoogle(context) },
+        onGoogleSignIn = { activity?.let(viewModel::signInWithGoogle) },
         onBack = onBack,
     )
 }
@@ -524,6 +508,7 @@ private fun AuthErrorText(error: AuthFailure?, birthDateInvalid: Boolean) {
         error is AuthFailure.WeakPassword -> stringResource(R.string.error_weak_password)
         error is AuthFailure.NotConfigured -> stringResource(R.string.error_not_configured)
         error is AuthFailure.GoogleNotConfigured -> stringResource(R.string.error_google_not_configured)
+        error is AuthFailure.GoogleFailed -> stringResource(R.string.error_google_failed)
         error is AuthFailure.NoAccount -> stringResource(R.string.error_no_account)
         error is AuthFailure.ProviderDisabled -> stringResource(R.string.error_provider_disabled)
         error is AuthFailure.Network -> stringResource(R.string.error_network)
@@ -555,7 +540,6 @@ private fun LoginScreenPreview() {
         onEmailChange = {},
         onPasswordChange = {},
         onSignIn = {},
-        onGoogleSignIn = {},
         onRegister = {},
     )
 }

@@ -38,7 +38,7 @@ class AuthViewModel @Inject constructor(
     fun onEmail(value: String) = _state.update { it.copy(email = value, error = null) }
     fun onPassword(value: String) = _state.update { it.copy(password = value, error = null) }
     fun onBirthDate(value: String) = _state.update {
-        it.copy(birthDate = BirthDateInput.mask(value), birthDateInvalid = false)
+        it.copy(birthDate = BirthDateInput.digits(value), birthDateInvalid = false)
     }
 
     fun signIn() = launchAuth {
@@ -46,11 +46,11 @@ class AuthViewModel @Inject constructor(
     }
 
     fun register() {
-        val birthDate = state.value.birthDate.trim()
-        val parsed = if (birthDate.isEmpty()) {
+        val digits = state.value.birthDate
+        val parsed = if (digits.isEmpty()) {
             null
         } else {
-            BirthDateInput.parse(birthDate) ?: run {
+            BirthDateInput.parseDigits(digits) ?: run {
                 _state.update { it.copy(birthDateInvalid = true) }
                 return
             }
@@ -75,9 +75,16 @@ class AuthViewModel @Inject constructor(
             } catch (_: GoogleSignInCancelled) {
                 _state.update { it.copy(loading = false) }
             } catch (failure: AuthFailure) {
-                _state.update { it.copy(loading = false, error = failure) }
+                val shown = when (failure) {
+                    AuthFailure.GoogleNotConfigured,
+                    AuthFailure.Network,
+                    AuthFailure.NotConfigured,
+                    -> failure
+                    else -> AuthFailure.NoAccount
+                }
+                _state.update { it.copy(loading = false, error = shown) }
             } catch (_: Throwable) {
-                _state.update { it.copy(loading = false, error = AuthFailure.Unknown) }
+                _state.update { it.copy(loading = false, error = AuthFailure.NoAccount) }
             }
         }
     }
@@ -101,19 +108,41 @@ object BirthDateInput {
     private val formatter = DateTimeFormatter.ofPattern("dd/MM/uuuu")
         .withResolverStyle(ResolverStyle.STRICT)
 
-    fun mask(raw: String): String {
-        val digits = raw.filter(Char::isDigit).take(8)
-        return buildString {
-            digits.forEachIndexed { index, digit ->
-                if (index == 2 || index == 4) append('/')
-                append(digit)
-            }
+    fun digits(raw: String): String = sanitize(raw.filter(Char::isDigit).take(8))
+
+    fun format(digits: String): String = buildString {
+        digits.forEachIndexed { index, digit ->
+            if (index == 2 || index == 4) append('/')
+            append(digit)
         }
     }
+
+    fun mask(raw: String): String = format(digits(raw))
 
     fun parse(value: String): LocalDate? = try {
         LocalDate.parse(value, formatter)
     } catch (_: DateTimeParseException) {
         null
+    }
+
+    fun parseDigits(digits: String): LocalDate? {
+        if (digits.length != 8) return null
+        return parse(format(digits))
+    }
+
+    private fun sanitize(digits: String): String {
+        val out = StringBuilder()
+        digits.forEach { char ->
+            val digit = char.digitToInt()
+            val accepted = when (out.length) {
+                0 -> digit in 0..3
+                1 -> digit <= if (out[0] == '3') 1 else 9
+                2 -> digit in 0..1
+                3 -> digit <= if (out[2] == '1') 2 else 9
+                else -> true
+            }
+            if (accepted) out.append(char)
+        }
+        return out.toString()
     }
 }

@@ -2,7 +2,6 @@ package br.com.dlpsystems.cycle.presentation.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -38,10 +37,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -88,7 +90,30 @@ fun LoginContent(
     val focusManager = LocalFocusManager.current
 
     CycleTheme(phase = CyclePhase.LUTEAL) {
-        AuthColumn {
+        AuthColumn(
+            footer = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = stringResource(R.string.register_prompt),
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                    )
+                    Text(
+                        text = stringResource(R.string.register_prompt_detail),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                    )
+                    PrimaryButton(
+                        text = stringResource(R.string.go_to_register),
+                        onClick = onRegister,
+                    )
+                }
+            },
+        ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -210,27 +235,6 @@ fun LoginContent(
                     }
                 }
             }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = stringResource(R.string.register_prompt),
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = stringResource(R.string.register_prompt_detail),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                )
-            }
-            PrimaryButton(
-                text = stringResource(R.string.go_to_register),
-                onClick = onRegister,
-            )
         }
     }
 }
@@ -306,7 +310,7 @@ fun RegisterContent(
 
                     OutlinedTextField(
                         value = state.birthDate,
-                        onValueChange = onBirthDateChange,
+                        onValueChange = { onBirthDateChange(it.filter(Char::isDigit)) },
                         label = { Text(stringResource(R.string.birth_date)) },
                         placeholder = { Text(stringResource(R.string.birth_date_hint)) },
                         modifier = Modifier.fillMaxWidth(),
@@ -322,8 +326,9 @@ fun RegisterContent(
                                 },
                             )
                         },
+                        visualTransformation = DateMaskTransformation,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
+                            keyboardType = KeyboardType.NumberPassword,
                             imeAction = ImeAction.Next,
                         ),
                     )
@@ -388,15 +393,19 @@ fun RegisterContent(
 }
 
 @Composable
-private fun AuthColumn(content: @Composable ColumnScope.() -> Unit) {
-    Box(
+private fun AuthColumn(
+    footer: (@Composable ColumnScope.() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .imePadding(),
-        contentAlignment = Alignment.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
                 .widthIn(max = 480.dp)
                 .verticalScroll(rememberScrollState())
@@ -405,7 +414,43 @@ private fun AuthColumn(content: @Composable ColumnScope.() -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             content = { content() },
         )
+        if (footer != null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp)
+                    .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                content = { footer() },
+            )
+        }
     }
+}
+
+private val DateMaskTransformation = VisualTransformation { text ->
+    val formatted = BirthDateInput.format(text.text)
+    TransformedText(
+        AnnotatedString(formatted),
+        object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                val extra = when {
+                    offset <= 2 -> 0
+                    offset <= 4 -> 1
+                    else -> 2
+                }
+                return (offset + extra).coerceAtMost(formatted.length)
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                val minus = when {
+                    offset <= 2 -> 0
+                    offset <= 5 -> 1
+                    else -> 2
+                }
+                return (offset - minus).coerceIn(0, text.text.length)
+            }
+        },
+    )
 }
 
 @Composable
@@ -468,6 +513,7 @@ private fun AuthErrorText(error: AuthFailure?, birthDateInvalid: Boolean) {
         error is AuthFailure.WeakPassword -> stringResource(R.string.error_weak_password)
         error is AuthFailure.NotConfigured -> stringResource(R.string.error_not_configured)
         error is AuthFailure.GoogleNotConfigured -> stringResource(R.string.error_google_not_configured)
+        error is AuthFailure.NoAccount -> stringResource(R.string.error_no_account)
         error is AuthFailure.ProviderDisabled -> stringResource(R.string.error_provider_disabled)
         error is AuthFailure.Network -> stringResource(R.string.error_network)
         error is AuthFailure.Unknown -> stringResource(R.string.error_unknown)

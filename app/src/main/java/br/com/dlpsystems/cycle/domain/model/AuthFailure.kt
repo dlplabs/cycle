@@ -6,6 +6,7 @@ sealed class AuthFailure : Exception() {
     data object WeakPassword : AuthFailure()
     data object NotConfigured : AuthFailure()
     data object GoogleNotConfigured : AuthFailure()
+    data object NoAccount : AuthFailure()
     data object ProviderDisabled : AuthFailure()
     data object Network : AuthFailure()
     data object Unknown : AuthFailure()

@@ -12,6 +12,9 @@ class BirthDateInputTest {
         assertEquals("14/04/1982", BirthDateInput.mask("14/04/1982"))
         assertEquals("14/04", BirthDateInput.mask("14a04"))
         assertEquals("14/04/1982", BirthDateInput.mask("1404198299"))
+        assertEquals("14/1", BirthDateInput.mask("1441"))
+        assertEquals("14/04", BirthDateInput.mask("1404"))
+        assertEquals("14041982", BirthDateInput.digits("14/04/1982"))
     }
 
     @Test

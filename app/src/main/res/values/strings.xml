@@ -26,6 +26,7 @@
     <string name="error_weak_password">A senha precisa ter pelo menos 6 caracteres.</string>
     <string name="error_not_configured">O serviço de conta ainda não está configurado neste aparelho.</string>
     <string name="error_google_not_configured">O Google Sign-In precisa ser ativado no Firebase Console (Web Client ID ausente no google-services.json).</string>
+    <string name="error_no_account">Ainda não há uma conta Cycle para este acesso. Toque em Criar uma conta para se cadastrar.</string>
     <string name="error_unknown">Não foi possível concluir. Tente de novo.</string>
     <string name="error_birth_date">Use a data no formato dd/mm/aaaa, por exemplo 14/04/1982.</string>
     <string name="error_provider_disabled">O login por e-mail ainda não está ativo no Firebase. Ative E-mail/senha em Authentication.</string>

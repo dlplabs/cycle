@@ -35,6 +35,7 @@ import javax.inject.Inject
 data class DashboardUiState(
     val loading: Boolean = true,
     val userName: String = "",
+    val photoUrl: String? = null,
     val result: PhaseCalculationResult? = null,
     val insight: PhaseEvidence? = null,
     val remindersEnabled: Boolean = true,
@@ -64,13 +65,15 @@ class DashboardViewModel @Inject constructor(
                 userRepository.observeProfile(),
                 cycleRepository.observeCycles(),
                 preferences.remindersEnabled,
-            ) { profile, cycles, reminders ->
+                userRepository.observeAuth(),
+            ) { profile, cycles, reminders, user ->
                 val result = calculateCurrentPhase(
                     PhaseCalculationInput(LocalDate.now(), profile, cycles),
                 )
                 DashboardUiState(
                     loading = false,
                     userName = profile?.name.orEmpty(),
+                    photoUrl = user?.photoUrl,
                     result = result,
                     insight = result.phase?.let(getPhaseInsights::invoke),
                     remindersEnabled = reminders,

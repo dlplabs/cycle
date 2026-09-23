@@ -35,6 +35,7 @@
     <string name="error_network">Sem conexão. Verifique a internet e tente de novo.</string>
 
     <string name="greeting">Olá, %1$s</string>
+    <string name="cd_profile_photo">Foto de %1$s</string>
     <string name="greeting_anonymous">Olá</string>
     <string name="register_today">Registrar hoje</string>
     <string name="phase_menstrual">Menstrual</string>

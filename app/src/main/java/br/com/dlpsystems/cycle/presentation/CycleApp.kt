@@ -108,7 +108,7 @@ private fun MainGraph(
         NavHost(
             navController = navController,
             startDestination = "dashboard",
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
         ) {
             composable("dashboard") {
                 DashboardScreen(

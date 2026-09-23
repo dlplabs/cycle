@@ -4,6 +4,7 @@ import br.com.dlpsystems.cycle.domain.model.ServiceUnavailableException
 import br.com.dlpsystems.cycle.domain.model.SignedInUser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -21,9 +22,7 @@ class FirebaseAuthService @Inject constructor(
         if (!services.available) return flowOf(null)
         return callbackFlow {
             val listener = FirebaseAuth.AuthStateListener { auth ->
-                trySend(auth.currentUser?.let { user ->
-                    SignedInUser(user.uid, user.email, user.displayName)
-                })
+                trySend(auth.currentUser?.toSignedInUser())
             }
             services.auth.addAuthStateListener(listener)
             awaitClose { services.auth.removeAuthStateListener(listener) }
@@ -34,14 +33,14 @@ class FirebaseAuthService @Inject constructor(
         val auth = authOrThrow()
         val result = auth.signInWithEmailAndPassword(email.trim(), password).await()
         val user = result.user ?: throw ServiceUnavailableException()
-        return SignedInUser(user.uid, user.email, user.displayName)
+        return user.toSignedInUser()
     }
 
     suspend fun register(email: String, password: String): SignedInUser {
         val auth = authOrThrow()
         val result = auth.createUserWithEmailAndPassword(email.trim(), password).await()
         val user = result.user ?: throw ServiceUnavailableException()
-        return SignedInUser(user.uid, user.email, user.displayName)
+        return user.toSignedInUser()
     }
 
     suspend fun signInWithGoogle(idToken: String): SignedInUser {
@@ -49,7 +48,7 @@ class FirebaseAuthService @Inject constructor(
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         val result = auth.signInWithCredential(credential).await()
         val user = result.user ?: throw ServiceUnavailableException()
-        return SignedInUser(user.uid, user.email, user.displayName)
+        return user.toSignedInUser()
     }
 
     fun signOut() {
@@ -59,8 +58,15 @@ class FirebaseAuthService @Inject constructor(
     fun currentUser(): SignedInUser? {
         if (!services.available) return null
         val user = services.auth.currentUser ?: return null
-        return SignedInUser(user.uid, user.email, user.displayName)
+        return user.toSignedInUser()
     }
+
+    private fun FirebaseUser.toSignedInUser() = SignedInUser(
+        id = uid,
+        email = email,
+        displayName = displayName,
+        photoUrl = photoUrl?.toString(),
+    )
 
     private fun authOrThrow(): FirebaseAuth {
         if (!services.available) throw ServiceUnavailableException()

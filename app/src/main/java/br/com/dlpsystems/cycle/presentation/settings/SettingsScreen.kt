@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +41,10 @@ import br.com.dlpsystems.cycle.domain.repository.BillingRepository
 import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import br.com.dlpsystems.cycle.domain.usecase.ExportDoctorReportUseCase
 import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
+import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
+import br.com.dlpsystems.cycle.presentation.components.coachRoot
+import br.com.dlpsystems.cycle.presentation.components.coachTarget
+import br.com.dlpsystems.cycle.presentation.components.rememberCoachMark
 import kotlinx.coroutines.flow.combine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -135,6 +140,12 @@ fun SettingsScreen(
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
+    val coach = rememberCoachMark("account")
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .coachRoot(coach),
+    ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -149,6 +160,7 @@ fun SettingsScreen(
                 periodDays = prefs.periodDays,
                 onCycle = { viewModel.updateAverages(it, prefs.periodDays) },
                 onPeriod = { viewModel.updateAverages(prefs.cycleDays, it) },
+                modifier = Modifier.coachTarget(coach),
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -184,6 +196,11 @@ fun SettingsScreen(
         }
         AdBannerContainer(isPremium = premium)
     }
+    CoachMarkOverlay(
+        state = coach,
+        message = stringResource(R.string.coach_account),
+    )
+    }
 }
 
 @Composable
@@ -192,8 +209,9 @@ private fun AveragesCard(
     periodDays: Int,
     onCycle: (Int) -> Unit,
     onPeriod: (Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    AppCard {
+    AppCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.your_cycle), style = MaterialTheme.typography.titleMedium)
             Stepper(

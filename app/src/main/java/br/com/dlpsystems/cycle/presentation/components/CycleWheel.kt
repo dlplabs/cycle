@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import br.com.dlpsystems.cycle.R
@@ -121,25 +122,36 @@ fun CycleWheel(
             }
         }
 
-        // Centro do Círculo com Tipografia Serifada (Playfair Display) e Cor DeepPlum
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.clearAndSetSemantics { },
+        Box(
+            modifier = Modifier
+                .size(wheelSize * 0.46f)
+                .clearAndSetSemantics { },
+            contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = cycleDay.coerceAtLeast(0).toString(),
-                style = MaterialTheme.typography.displayMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                ),
-                color = DeepPlum,
+            Image(
+                painter = painterResource(R.drawable.ic_moldura_dias),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(wheelSize * 0.46f),
             )
-            Text(
-                text = phaseName,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Medium,
-                ),
-                color = DeepPlum,
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = cycleDay.coerceAtLeast(0).toString(),
+                    style = MaterialTheme.typography.displayMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    color = DeepPlum,
+                )
+                Text(
+                    text = phaseName,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Medium,
+                    ),
+                    color = DeepPlum,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package br.com.dlpsystems.cycle.presentation.dashboard
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,8 +34,12 @@ import br.com.dlpsystems.cycle.core.notification.labelRes
 import br.com.dlpsystems.cycle.domain.model.CyclePhase
 import br.com.dlpsystems.cycle.domain.model.PhaseStatus
 import br.com.dlpsystems.cycle.domain.model.WellnessPillar
+import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
 import br.com.dlpsystems.cycle.presentation.components.CycleWheel
 import br.com.dlpsystems.cycle.presentation.components.PhaseRecommendationCard
+import br.com.dlpsystems.cycle.presentation.components.coachRoot
+import br.com.dlpsystems.cycle.presentation.components.coachTarget
+import br.com.dlpsystems.cycle.presentation.components.rememberCoachMark
 import br.com.dlpsystems.cycle.presentation.tracking.LogSymptomBottomSheet
 
 @Composable
@@ -55,6 +60,7 @@ fun DashboardScreen(
     val phase = state.result?.phase ?: CyclePhase.LUTEAL
     val result = state.result
     val needsFirstPeriod = result == null || result.status == PhaseStatus.NO_CYCLE
+    val coach = rememberCoachMark("today")
     CycleTheme(phase = phase) {
         if (showCare && result?.phase != null) {
             PhaseCareScreen(
@@ -63,6 +69,11 @@ fun DashboardScreen(
                 onOpenSource = viewModel::onOpenSource,
             )
         } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .coachRoot(coach),
+            ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -128,6 +139,7 @@ fun DashboardScreen(
                     onClick = {
                         if (needsFirstPeriod) viewModel.startPeriodToday() else showLog = true
                     },
+                    modifier = Modifier.coachTarget(coach),
                 )
                 if (!needsFirstPeriod && result?.phase != null) {
                     TextButton(onClick = { showCare = true }) {
@@ -137,6 +149,13 @@ fun DashboardScreen(
                 state.errorMessage?.let {
                     Text(it, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                 }
+            }
+            CoachMarkOverlay(
+                state = coach,
+                message = stringResource(
+                    if (needsFirstPeriod) R.string.coach_today_start else R.string.coach_today_log,
+                ),
+            )
             }
         }
         if (showLog) {

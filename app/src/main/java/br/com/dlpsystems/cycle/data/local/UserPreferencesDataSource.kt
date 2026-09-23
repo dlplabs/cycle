@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +36,10 @@ class UserPreferencesDataSource @Inject constructor(
     val widgetDay: Flow<Int> = dataStore.data.map { prefs -> prefs[Keys.WIDGET_DAY] ?: 0 }
     val widgetPhase: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.WIDGET_PHASE] ?: "" }
 
+    val seenCoachMarks: Flow<Set<String>> = dataStore.data.map { prefs ->
+        prefs[Keys.COACH_MARKS] ?: emptySet()
+    }
+
     suspend fun setDisclaimerAccepted(accepted: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.DISCLAIMER] = accepted }
     }
@@ -45,6 +50,12 @@ class UserPreferencesDataSource @Inject constructor(
 
     suspend fun setPremiumCached(premium: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.PREMIUM] = premium }
+    }
+
+    suspend fun markCoachSeen(key: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.COACH_MARKS] = (prefs[Keys.COACH_MARKS] ?: emptySet()) + key
+        }
     }
 
     suspend fun setWidgetSnapshot(day: Int, phase: String) {
@@ -60,5 +71,6 @@ class UserPreferencesDataSource @Inject constructor(
         val PREMIUM = booleanPreferencesKey("premium_cached")
         val WIDGET_DAY = intPreferencesKey("widget_day")
         val WIDGET_PHASE = stringPreferencesKey("widget_phase")
+        val COACH_MARKS = stringSetPreferencesKey("coach_marks_seen")
     }
 }

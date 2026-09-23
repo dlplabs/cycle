@@ -51,6 +51,12 @@
     <string name="nav_relief">Alívio</string>
     <string name="nav_plan">Planejar</string>
     <string name="nav_account">Conta</string>
+    <string name="coach_dismiss">Entendi</string>
+    <string name="coach_today_start">Comece por aqui. Marque o primeiro dia da menstruação para o ciclo aparecer nesta roda.</string>
+    <string name="coach_today_log">Toque aqui para registrar como você está hoje.</string>
+    <string name="coach_relief">O alívio começa neste card: ajuste o tempo e inicie o calor. A respiração guiada fica logo abaixo.</string>
+    <string name="coach_planner">Escolha uma data e toque em ver a fase prevista para saber como será esse dia do ciclo.</string>
+    <string name="coach_account">A duração do ciclo e o lembrete diário ficam neste card.</string>
     <string name="your_cycle">Seu ciclo</string>
     <string name="average_cycle">Duração média</string>
     <string name="average_period">Dias de fluxo</string>

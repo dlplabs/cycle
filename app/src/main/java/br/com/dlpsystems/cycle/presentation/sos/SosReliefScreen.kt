@@ -6,6 +6,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +36,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.designsystem.AppCard
+import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
+import br.com.dlpsystems.cycle.presentation.components.coachRoot
+import br.com.dlpsystems.cycle.presentation.components.coachTarget
+import br.com.dlpsystems.cycle.presentation.components.rememberCoachMark
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
 import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
 import br.com.dlpsystems.cycle.data.remote.AnalyticsEvents
@@ -77,6 +82,12 @@ fun SosReliefScreen(onBack: () -> Unit) {
         }
     }
 
+    val coach = rememberCoachMark("relief")
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .coachRoot(coach),
+    ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -130,6 +141,7 @@ fun SosReliefScreen(onBack: () -> Unit) {
                 PrimaryButton(
                     text = if (remaining > 0) stringResource(R.string.sos_remaining, remaining / 1000) else stringResource(R.string.sos_start_timer),
                     onClick = { remaining = minutes * 60_000L },
+                    modifier = Modifier.coachTarget(coach),
                 )
             }
         }
@@ -166,6 +178,11 @@ fun SosReliefScreen(onBack: () -> Unit) {
         }
 
         PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
+    }
+    CoachMarkOverlay(
+        state = coach,
+        message = stringResource(R.string.coach_relief),
+    )
     }
 }
 

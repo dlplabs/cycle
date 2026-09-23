@@ -1,6 +1,7 @@
 package br.com.dlpsystems.cycle.presentation.planner
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,10 @@ import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import br.com.dlpsystems.cycle.domain.usecase.GetPhaseInsightsUseCase
 import br.com.dlpsystems.cycle.domain.usecase.ProjectFuturePhaseUseCase
 import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
+import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
+import br.com.dlpsystems.cycle.presentation.components.coachRoot
+import br.com.dlpsystems.cycle.presentation.components.coachTarget
+import br.com.dlpsystems.cycle.presentation.components.rememberCoachMark
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -105,6 +110,12 @@ fun FutureEventPlannerScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val picker = rememberDatePickerState()
+    val coach = rememberCoachMark("planner")
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .coachRoot(coach),
+    ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -113,7 +124,11 @@ fun FutureEventPlannerScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(stringResource(R.string.planner_title), style = MaterialTheme.typography.headlineMedium)
+            Text(
+                text = stringResource(R.string.planner_title),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.coachTarget(coach),
+            )
             DatePicker(state = picker)
             PrimaryButton(
                 text = stringResource(R.string.planner_calculate),
@@ -132,5 +147,10 @@ fun FutureEventPlannerScreen(
             }
         }
         AdBannerContainer(isPremium = state.premium)
+    }
+    CoachMarkOverlay(
+        state = coach,
+        message = stringResource(R.string.coach_planner),
+    )
     }
 }

@@ -1,5 +1,6 @@
 package br.com.dlpsystems.cycle.presentation.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -17,7 +18,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -31,8 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +49,6 @@ import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.accessibility.accessibleTouchTarget
 import br.com.dlpsystems.cycle.core.config.AppConfig
 import br.com.dlpsystems.cycle.core.designsystem.AppCard
-import br.com.dlpsystems.cycle.core.designsystem.CycleIcons
 import br.com.dlpsystems.cycle.core.designsystem.CycleTheme
 import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
 import br.com.dlpsystems.cycle.domain.model.AuthFailure
@@ -92,11 +91,10 @@ fun LoginContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
             ) {
-                Icon(
-                    imageVector = CycleIcons.AppMark,
+                Image(
+                    painter = painterResource(R.drawable.ic_moldura_botanica),
                     contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = Color.Unspecified,
+                    modifier = Modifier.size(120.dp),
                 )
                 Text(
                     text = AppConfig.displayName,
@@ -267,11 +265,10 @@ fun RegisterContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
             ) {
-                Icon(
-                    imageVector = CycleIcons.AppMark,
+                Image(
+                    painter = painterResource(R.drawable.ic_moldura_botanica),
                     contentDescription = null,
-                    modifier = Modifier.size(56.dp),
-                    tint = Color.Unspecified,
+                    modifier = Modifier.size(96.dp),
                 )
                 Text(
                     text = stringResource(R.string.create_account),

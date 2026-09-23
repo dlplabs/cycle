@@ -8,6 +8,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,14 +24,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.accessibility.SemanticsUtils
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
 import br.com.dlpsystems.cycle.core.designsystem.PhaseColors
@@ -70,7 +72,6 @@ fun CycleWheel(
         label = "pulseScale",
     )
     val dark = isSystemInDarkTheme()
-    val trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
 
     Box(
         modifier = modifier.semantics(mergeDescendants = true) {
@@ -78,54 +79,31 @@ fun CycleWheel(
         },
         contentAlignment = Alignment.Center,
     ) {
+        Image(
+            painter = painterResource(R.drawable.ic_grafico_circular),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .size(280.dp)
+                .graphicsLayer {
+                    val shown = 0.92f + 0.08f * progress
+                    scaleX = shown
+                    scaleY = shown
+                    alpha = progress
+                }
+                .clearAndSetSemantics { },
+        )
         Canvas(
             modifier = Modifier
                 .size(280.dp)
                 .clearAndSetSemantics { },
         ) {
-            val strokeWidth = 24.dp.toPx()
-            val stroke = Stroke(width = strokeWidth, cap = StrokeCap.Round)
             val inset = 18.dp.toPx()
-            val arcSize = Size(size.width - inset * 2, size.height - inset * 2)
-            val topLeft = Offset(inset, inset)
-
-            // Fundo orgânico suave (Trilha)
-            drawArc(
-                color = trackColor,
-                startAngle = -90f,
-                sweepAngle = 360f,
-                useCenter = false,
-                topLeft = topLeft,
-                size = arcSize,
-                style = stroke,
-            )
-
-            // Desenhar os arcos orgânicos de cada fase com pontas arredondadas (StrokeCap.Round)
-            if (cycleLength > 0) {
-                segments.forEach { segment ->
-                    val rawStart = -90f + (segment.startDay - 1f) / cycleLength * 360f * progress
-                    val rawSweep = (segment.endDay - segment.startDay + 1f) / cycleLength * 360f * progress
-                    // Pequeno ajuste para sobrepor e suavizar cantos arredondados
-                    val gapAdjustment = 2f
-                    val sweep = (rawSweep - gapAdjustment).coerceAtLeast(1f)
-
-                    drawArc(
-                        color = PhaseColors.forPhase(segment.phase, dark).primary,
-                        startAngle = rawStart + (gapAdjustment / 2f),
-                        sweepAngle = sweep,
-                        useCenter = false,
-                        topLeft = topLeft,
-                        size = arcSize,
-                        style = stroke,
-                    )
-                }
-            }
-
-            // Indicador / Marcador do Dia Atual
+            val arcSize = size.width - inset * 2
             if (cycleDay > 0 && cycleLength > 0) {
                 val markerDay = cycleDay.coerceAtMost(cycleLength)
                 val angle = Math.toRadians((-90.0 + (markerDay - 0.5) / cycleLength * 360.0 * progress))
-                val radius = arcSize.minDimension / 2f
+                val radius = arcSize / 2f
                 val centerPoint = Offset(
                     x = center.x + radius * cos(angle).toFloat(),
                     y = center.y + radius * sin(angle).toFloat(),

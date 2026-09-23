@@ -98,6 +98,13 @@ fun SosReliefScreen(onBack: () -> Unit) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
+                        painter = painterResource(R.drawable.ic_toalha_flor),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = Color.Unspecified,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
                         painter = painterResource(R.drawable.ic_cha),
                         contentDescription = null,
                         modifier = Modifier.size(40.dp),

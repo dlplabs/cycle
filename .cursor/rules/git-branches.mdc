@@ -1,0 +1,11 @@
+---
+description: Branches só em feat/ ou fix/, sem coautoria nos commits
+alwaysApply: true
+---
+
+# Git — branches e commits
+
+- Crie branches somente com o prefixo `feat/` ou `fix/`. Exemplos: `feat/play-listing`, `fix/paywall-lint`.
+- Nunca crie branch com prefixo `cursor/`, nem nome que comece com `cursor`.
+- Nunca inclua `Co-authored-by` (nem coautoria de Cursor ou de outra pessoa) na mensagem de commit.
+- Não altere `git config`. Não faça commit nem push sem pedido explícito.

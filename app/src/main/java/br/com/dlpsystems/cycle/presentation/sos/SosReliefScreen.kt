@@ -1,0 +1,181 @@
+package br.com.dlpsystems.cycle.presentation.sos
+
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import br.com.dlpsystems.cycle.R
+import br.com.dlpsystems.cycle.core.designsystem.AppCard
+import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
+import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
+import br.com.dlpsystems.cycle.data.remote.AnalyticsEvents
+import br.com.dlpsystems.cycle.data.remote.AnalyticsService
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.delay
+
+@Composable
+fun SosReliefScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    var minutes by remember { mutableIntStateOf(25) }
+    var remaining by remember { mutableLongStateOf(0L) }
+    var breathing by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        val analytics = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            SosEntryPoint::class.java,
+        ).analytics()
+        analytics.log(AnalyticsEvents.EVENT_SOS_OPENED, screen = "sos")
+    }
+
+    LaunchedEffect(remaining) {
+        if (remaining <= 0L) return@LaunchedEffect
+        delay(1000)
+        remaining -= 1000
+    }
+
+    LaunchedEffect(breathing) {
+        if (breathing == 0) return@LaunchedEffect
+        val pattern = listOf(4 to 40, 7 to 80, 8 to 160)
+        while (breathing > 0) {
+            pattern.forEach { (seconds, amplitude) ->
+                pulse(context, amplitude)
+                delay(seconds * 1000L)
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.sos_title),
+            style = MaterialTheme.typography.headlineMedium,
+            color = DeepPlum,
+        )
+
+        // Card 1: Heat Therapy
+        AppCard {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_cha),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = Color.Unspecified,
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Bolsa de Calor & Chá Morno",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = DeepPlum,
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.sos_heat, minutes),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Slider(
+                    value = minutes.toFloat(),
+                    onValueChange = { minutes = it.toInt() },
+                    valueRange = 20f..30f,
+                    steps = 9,
+                )
+                PrimaryButton(
+                    text = if (remaining > 0) stringResource(R.string.sos_remaining, remaining / 1000) else stringResource(R.string.sos_start_timer),
+                    onClick = { remaining = minutes * 60_000L },
+                )
+            }
+        }
+
+        // Card 2: Guided Breathing 4-7-8
+        AppCard {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_lua_lavanda),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = Color.Unspecified,
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Respiração Guiada 4-7-8",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = DeepPlum,
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.sos_breath),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                PrimaryButton(
+                    text = stringResource(if (breathing == 0) R.string.sos_start_breath else R.string.sos_stop_breath),
+                    onClick = { breathing = if (breathing == 0) 1 else 0 },
+                )
+            }
+        }
+
+        PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
+    }
+}
+
+private fun pulse(context: Context, amplitude: Int) {
+    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        context.getSystemService(VibratorManager::class.java)?.defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    } ?: return
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(VibrationEffect.createOneShot(180, amplitude.coerceIn(1, 255)))
+    }
+}
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface SosEntryPoint {
+    fun analytics(): AnalyticsService
+}

@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -90,30 +93,7 @@ fun LoginContent(
     val focusManager = LocalFocusManager.current
 
     CycleTheme(phase = CyclePhase.LUTEAL) {
-        AuthColumn(
-            footer = {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        text = stringResource(R.string.register_prompt),
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center,
-                    )
-                    Text(
-                        text = stringResource(R.string.register_prompt_detail),
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                    )
-                    PrimaryButton(
-                        text = stringResource(R.string.go_to_register),
-                        onClick = onRegister,
-                    )
-                }
-            },
-        ) {
+        AuthColumn {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -205,36 +185,42 @@ fun LoginContent(
                     )
 
                     OrDivider()
-
-                    OutlinedButton(
-                        onClick = onGoogleSignIn,
+                    GoogleAuthButton(
+                        text = stringResource(R.string.sign_in_google),
+                        loading = state.loading,
                         enabled = !state.loading && state.backendAvailable,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .accessibleTouchTarget()
-                            .heightIn(min = 48.dp),
-                        shape = MaterialTheme.shapes.large,
-                    ) {
-                        if (state.loading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                            )
-                        } else {
-                            Image(
-                                painter = painterResource(R.drawable.ic_google),
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                            )
-                            Spacer(modifier = Modifier.size(12.dp))
-                            Text(
-                                text = stringResource(R.string.sign_in_google),
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                        }
-                    }
+                        onClick = onGoogleSignIn,
+                    )
                 }
             }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.register_prompt),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = stringResource(R.string.register_prompt_detail),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                )
+                PrimaryButton(
+                    text = stringResource(R.string.go_to_register),
+                    onClick = onRegister,
+                )
+                GoogleAuthButton(
+                    text = stringResource(R.string.create_account_google),
+                    loading = state.loading,
+                    enabled = !state.loading && state.backendAvailable,
+                    onClick = onGoogleSignIn,
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -245,6 +231,7 @@ fun RegisterScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     RegisterContent(
         state = state,
@@ -253,6 +240,7 @@ fun RegisterScreen(
         onEmailChange = viewModel::onEmail,
         onPasswordChange = viewModel::onPassword,
         onRegister = viewModel::register,
+        onGoogleSignIn = { viewModel.signInWithGoogle(context) },
         onBack = onBack,
     )
 }
@@ -265,6 +253,7 @@ fun RegisterContent(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onRegister: () -> Unit,
+    onGoogleSignIn: () -> Unit,
     onBack: () -> Unit,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
@@ -370,6 +359,13 @@ fun RegisterContent(
                         },
                         enabled = !state.loading && state.name.isNotBlank() && state.backendAvailable,
                     )
+                    OrDivider()
+                    GoogleAuthButton(
+                        text = stringResource(R.string.create_account_google),
+                        loading = state.loading,
+                        enabled = !state.loading && state.backendAvailable,
+                        onClick = onGoogleSignIn,
+                    )
                 }
             }
 
@@ -393,36 +389,51 @@ fun RegisterContent(
 }
 
 @Composable
-private fun AuthColumn(
-    footer: (@Composable ColumnScope.() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit,
-) {
+private fun AuthColumn(content: @Composable ColumnScope.() -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .imePadding(),
+            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 24.dp)
+            .widthIn(max = 480.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        content = { content() },
+    )
+}
+
+@Composable
+private fun GoogleAuthButton(
+    text: String,
+    loading: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .accessibleTouchTarget()
+            .heightIn(min = 48.dp),
+        shape = MaterialTheme.shapes.large,
     ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .widthIn(max = 480.dp)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            content = { content() },
-        )
-        if (footer != null) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = 480.dp)
-                    .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                content = { footer() },
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
             )
+        } else {
+            Image(
+                painter = painterResource(R.drawable.ic_google),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.size(12.dp))
+            Text(text = text, style = MaterialTheme.typography.labelLarge)
         }
     }
 }

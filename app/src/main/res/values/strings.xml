@@ -18,6 +18,7 @@
     <string name="register_prompt">Ainda não tem conta?</string>
     <string name="register_prompt_detail">Cadastre-se com e-mail e senha para acessar o app neste aparelho.</string>
     <string name="go_to_register">Criar uma conta</string>
+    <string name="create_account_google">Criar conta com Google</string>
     <string name="go_to_login">Já tem conta? Entrar</string>
     <string name="sign_out">Sair</string>
     <string name="backend_missing">Adicione google-services.json para ativar login e sincronização.</string>

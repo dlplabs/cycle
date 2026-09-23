@@ -2,6 +2,7 @@ package br.com.dlpsystems.cycle.presentation.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -10,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -89,7 +92,9 @@ fun LoginContent(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 8.dp),
             ) {
                 Image(
                     painter = painterResource(R.drawable.ic_moldura_botanica),
@@ -151,24 +156,16 @@ fun LoginContent(
                         ),
                     )
 
-                    OutlinedTextField(
+                    PasswordField(
                         value = state.password,
+                        visible = passwordVisible,
+                        onVisibleChange = { passwordVisible = it },
                         onValueChange = onPasswordChange,
-                        label = { Text(stringResource(R.string.password)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done,
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus()
-                                if (!state.loading && state.backendAvailable) onSignIn()
-                            },
-                        ),
+                        isError = state.error is AuthFailure.WeakPassword,
+                        onDone = {
+                            focusManager.clearFocus()
+                            if (!state.loading && state.backendAvailable) onSignIn()
+                        },
                     )
 
                     AuthErrorText(state.error, state.birthDateInvalid)
@@ -199,6 +196,12 @@ fun LoginContent(
                                 strokeWidth = 2.dp,
                             )
                         } else {
+                            Image(
+                                painter = painterResource(R.drawable.ic_google),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                            )
+                            Spacer(modifier = Modifier.size(12.dp))
                             Text(
                                 text = stringResource(R.string.sign_in_google),
                                 style = MaterialTheme.typography.labelLarge,
@@ -208,21 +211,26 @@ fun LoginContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            TextButton(
-                onClick = onRegister,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .accessibleTouchTarget(),
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
-                    text = stringResource(R.string.go_to_register),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium,
+                    text = stringResource(R.string.register_prompt),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = stringResource(R.string.register_prompt_detail),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
                 )
             }
+            PrimaryButton(
+                text = stringResource(R.string.go_to_register),
+                onClick = onRegister,
+            )
         }
     }
 }
@@ -263,7 +271,9 @@ fun RegisterContent(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 8.dp),
             ) {
                 Image(
                     painter = painterResource(R.drawable.ic_moldura_botanica),
@@ -275,6 +285,7 @@ fun RegisterContent(
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
                 )
             }
 
@@ -297,10 +308,20 @@ fun RegisterContent(
                         value = state.birthDate,
                         onValueChange = onBirthDateChange,
                         label = { Text(stringResource(R.string.birth_date)) },
+                        placeholder = { Text(stringResource(R.string.birth_date_hint)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         shape = MaterialTheme.shapes.medium,
                         isError = state.birthDateInvalid,
+                        supportingText = {
+                            Text(
+                                text = if (state.birthDateInvalid) {
+                                    stringResource(R.string.error_birth_date)
+                                } else {
+                                    stringResource(R.string.birth_date_hint)
+                                },
+                            )
+                        },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Next,
@@ -320,26 +341,18 @@ fun RegisterContent(
                         ),
                     )
 
-                    OutlinedTextField(
+                    PasswordField(
                         value = state.password,
+                        visible = passwordVisible,
+                        onVisibleChange = { passwordVisible = it },
                         onValueChange = onPasswordChange,
-                        label = { Text(stringResource(R.string.password)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done,
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus()
-                                if (!state.loading && state.name.isNotBlank() && state.backendAvailable) {
-                                    onRegister()
-                                }
-                            },
-                        ),
+                        isError = state.error is AuthFailure.WeakPassword,
+                        onDone = {
+                            focusManager.clearFocus()
+                            if (!state.loading && state.name.isNotBlank() && state.backendAvailable) {
+                                onRegister()
+                            }
+                        },
                     )
 
                     AuthErrorText(state.error, state.birthDateInvalid)
@@ -376,13 +389,54 @@ fun RegisterContent(
 
 @Composable
 private fun AuthColumn(content: @Composable ColumnScope.() -> Unit) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        content = { content() },
+            .imePadding(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 480.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            content = { content() },
+        )
+    }
+}
+
+@Composable
+private fun PasswordField(
+    value: String,
+    visible: Boolean,
+    onVisibleChange: (Boolean) -> Unit,
+    onValueChange: (String) -> Unit,
+    isError: Boolean,
+    onDone: () -> Unit,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(stringResource(R.string.password)) },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = MaterialTheme.shapes.medium,
+        isError = isError,
+        supportingText = { Text(stringResource(R.string.password_hint)) },
+        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            TextButton(onClick = { onVisibleChange(!visible) }) {
+                Text(if (visible) "Ocultar" else "Mostrar")
+            }
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Done,
+        ),
+        keyboardActions = KeyboardActions(onDone = { onDone() }),
     )
 }
 
@@ -414,6 +468,8 @@ private fun AuthErrorText(error: AuthFailure?, birthDateInvalid: Boolean) {
         error is AuthFailure.WeakPassword -> stringResource(R.string.error_weak_password)
         error is AuthFailure.NotConfigured -> stringResource(R.string.error_not_configured)
         error is AuthFailure.GoogleNotConfigured -> stringResource(R.string.error_google_not_configured)
+        error is AuthFailure.ProviderDisabled -> stringResource(R.string.error_provider_disabled)
+        error is AuthFailure.Network -> stringResource(R.string.error_network)
         error is AuthFailure.Unknown -> stringResource(R.string.error_unknown)
         else -> null
     }

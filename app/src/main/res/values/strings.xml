@@ -9,11 +9,15 @@
     <string name="email">E-mail</string>
     <string name="password">Senha</string>
     <string name="name">Nome</string>
-    <string name="birth_date">Data de nascimento (AAAA-MM-DD)</string>
+    <string name="birth_date">Data de nascimento</string>
+    <string name="birth_date_hint">dd/mm/aaaa</string>
+    <string name="password_hint">Use no mínimo 6 caracteres.</string>
     <string name="sign_in">Entrar</string>
     <string name="create_account">Criar conta</string>
     <string name="sign_in_google">Continuar com Google</string>
-    <string name="go_to_register">Não tem conta? Cadastre-se</string>
+    <string name="register_prompt">Ainda não tem conta?</string>
+    <string name="register_prompt_detail">Cadastre-se com e-mail e senha para acessar o app neste aparelho.</string>
+    <string name="go_to_register">Criar uma conta</string>
     <string name="go_to_login">Já tem conta? Entrar</string>
     <string name="sign_out">Sair</string>
     <string name="backend_missing">Adicione google-services.json para ativar login e sincronização.</string>
@@ -23,7 +27,9 @@
     <string name="error_not_configured">O serviço de conta ainda não está configurado neste aparelho.</string>
     <string name="error_google_not_configured">O Google Sign-In precisa ser ativado no Firebase Console (Web Client ID ausente no google-services.json).</string>
     <string name="error_unknown">Não foi possível concluir. Tente de novo.</string>
-    <string name="error_birth_date">Use a data no formato AAAA-MM-DD.</string>
+    <string name="error_birth_date">Use a data no formato dd/mm/aaaa, por exemplo 14/04/1982.</string>
+    <string name="error_provider_disabled">O login por e-mail ainda não está ativo no Firebase. Ative E-mail/senha em Authentication.</string>
+    <string name="error_network">Sem conexão. Verifique a internet e tente de novo.</string>
 
     <string name="greeting">Olá, %1$s</string>
     <string name="greeting_anonymous">Olá</string>

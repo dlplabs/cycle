@@ -68,4 +68,12 @@ class FirebaseAuthService @Inject constructor(
     }
 }
 
-fun Throwable.firebaseAuthCode(): String? = (this as? FirebaseAuthException)?.errorCode
+fun Throwable.firebaseAuthCode(): String? {
+    var current: Throwable? = this
+    while (current != null) {
+        val code = (current as? FirebaseAuthException)?.errorCode
+        if (!code.isNullOrBlank()) return code
+        current = current.cause
+    }
+    return null
+}

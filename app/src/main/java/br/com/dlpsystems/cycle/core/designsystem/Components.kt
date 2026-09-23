@@ -32,11 +32,17 @@ fun PrimaryButton(
             .heightIn(min = 48.dp),
         shape = RoundedCornerShape(24.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = DeepPlum,
+            containerColor = DeepPlumLight,
             contentColor = Color.White,
+            disabledContainerColor = DeepPlumLight.copy(alpha = 0.45f),
+            disabledContentColor = Color.White,
         ),
     ) {
-        Text(text = text, style = MaterialTheme.typography.titleSmall)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall,
+            color = Color.White,
+        )
     }
 }
 

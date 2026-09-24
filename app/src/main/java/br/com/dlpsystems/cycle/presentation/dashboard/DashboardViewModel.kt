@@ -164,7 +164,17 @@ class DashboardViewModel @Inject constructor(
     fun startPeriodToday() {
         viewModelScope.launch {
             runCatching { cycleRepository.startPeriod(java.time.LocalDate.now()) }
-                .onFailure { error -> _state.update { it.copy(errorMessage = error.message) } }
+                .onFailure { error ->
+                    val userFriendly = when {
+                        error.message?.contains("offline", ignoreCase = true) == true ->
+                            context.getString(R.string.error_firestore_offline)
+                        error.message?.contains("permission", ignoreCase = true) == true ||
+                        error.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true ->
+                            context.getString(R.string.error_firestore_permission)
+                        else -> error.localizedMessage ?: context.getString(R.string.error_generic)
+                    }
+                    _state.update { it.copy(errorMessage = userFriendly) }
+                }
         }
     }
 

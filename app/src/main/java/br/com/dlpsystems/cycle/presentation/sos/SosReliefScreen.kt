@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -37,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.designsystem.AppCard
+import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
 import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
 import br.com.dlpsystems.cycle.presentation.components.coachRoot
 import br.com.dlpsystems.cycle.presentation.components.coachTarget
@@ -87,21 +87,17 @@ fun SosReliefScreen(onBack: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .coachRoot(coach),
     ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.sos_title),
-            style = MaterialTheme.typography.headlineMedium,
-            color = DeepPlum,
-        )
+    Column(modifier = Modifier.fillMaxSize()) {
+        ScreenHeader(title = stringResource(R.string.sos_title))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
 
         // Card 1: Heat Therapy
         AppCard {
@@ -179,7 +175,7 @@ fun SosReliefScreen(onBack: () -> Unit) {
             }
         }
 
-        PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
+    }
     }
     CoachMarkOverlay(
         state = coach,

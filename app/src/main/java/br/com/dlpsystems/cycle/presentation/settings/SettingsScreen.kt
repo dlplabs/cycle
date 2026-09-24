@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.IconButton
@@ -42,6 +41,7 @@ import br.com.dlpsystems.cycle.domain.repository.BillingRepository
 import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import br.com.dlpsystems.cycle.domain.usecase.ExportDoctorReportUseCase
 import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
+import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
 import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
 import br.com.dlpsystems.cycle.presentation.components.coachRoot
 import br.com.dlpsystems.cycle.presentation.components.coachTarget
@@ -145,18 +145,17 @@ fun SettingsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .coachRoot(coach),
     ) {
     Column(modifier = Modifier.fillMaxSize()) {
+        ScreenHeader(title = stringResource(R.string.settings_title))
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
+                .padding(horizontal = 24.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium)
             AveragesCard(
                 cycleDays = prefs.cycleDays,
                 periodDays = prefs.periodDays,

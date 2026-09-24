@@ -9,6 +9,8 @@ data class UserProfile(
     val averageCycleDays: Int,
     val averagePeriodDays: Int,
     val createdAt: Instant,
+    val photoUrl: String? = null,
+    val photoDriveId: String? = null,
 )
 
 data class MenstrualCycle(

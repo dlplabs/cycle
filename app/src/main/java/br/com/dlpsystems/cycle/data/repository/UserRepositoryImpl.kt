@@ -1,6 +1,8 @@
 package br.com.dlpsystems.cycle.data.repository
 
 import br.com.dlpsystems.cycle.core.config.CycleConstants
+import br.com.dlpsystems.cycle.data.local.AvatarCipher
+import br.com.dlpsystems.cycle.data.remote.DriveAvatarStore
 import br.com.dlpsystems.cycle.data.remote.FirebaseAuthService
 import br.com.dlpsystems.cycle.data.remote.FirebaseServices
 import br.com.dlpsystems.cycle.data.remote.FirestoreService
@@ -24,6 +26,7 @@ class UserRepositoryImpl @Inject constructor(
     private val services: FirebaseServices,
     private val authService: FirebaseAuthService,
     private val firestore: FirestoreService,
+    private val driveAvatars: DriveAvatarStore,
 ) : UserRepository {
     override val isBackendAvailable: Boolean
         get() = services.available
@@ -64,6 +67,19 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getProfile(): UserProfile? {
         val uid = currentUid()
         return firestore.getProfile(uid)
+    }
+
+    override suspend fun saveAvatar(accessToken: String, jpeg: ByteArray) {
+        if (!services.available) throw ServiceUnavailableException()
+        val uid = currentUid()
+        val existing = firestore.getProfile(uid)?.photoDriveId
+        val fileId = driveAvatars.save(accessToken, existing, AvatarCipher.encrypt(jpeg))
+        firestore.updatePhotoDrive(uid, fileId)
+    }
+
+    override suspend fun readAvatar(accessToken: String, fileId: String): ByteArray {
+        if (!services.available) throw ServiceUnavailableException()
+        return AvatarCipher.decrypt(driveAvatars.download(accessToken, fileId))
     }
 
     override suspend fun updateAverages(averageCycleDays: Int, averagePeriodDays: Int) {

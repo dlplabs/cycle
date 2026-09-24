@@ -11,6 +11,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -121,7 +122,9 @@ fun CycleWheel(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.clearAndSetSemantics { },
+            modifier = Modifier
+                .offset(y = wheelSize * 0.045f)
+                .clearAndSetSemantics { },
         ) {
             Text(
                 text = cycleDay.coerceAtLeast(0).toString(),

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
@@ -32,6 +31,7 @@ import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import br.com.dlpsystems.cycle.domain.usecase.GetPhaseInsightsUseCase
 import br.com.dlpsystems.cycle.domain.usecase.ProjectFuturePhaseUseCase
 import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
+import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
 import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
 import br.com.dlpsystems.cycle.presentation.components.coachRoot
 import br.com.dlpsystems.cycle.presentation.components.coachTarget
@@ -115,22 +115,20 @@ fun FutureEventPlannerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .coachRoot(coach),
     ) {
     Column(modifier = Modifier.fillMaxSize()) {
+        ScreenHeader(
+            title = stringResource(R.string.planner_title),
+            titleModifier = Modifier.coachTarget(coach),
+        )
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = stringResource(R.string.planner_title),
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.coachTarget(coach),
-            )
             DatePicker(state = picker)
             PrimaryButton(
                 text = stringResource(R.string.planner_calculate),

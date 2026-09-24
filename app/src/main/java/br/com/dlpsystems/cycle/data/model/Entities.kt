@@ -8,6 +8,8 @@ data class UserProfileEntity(
     val averageCycleDays: Int = 28,
     val averagePeriodDays: Int = 5,
     val createdAt: Timestamp? = null,
+    val photoUrl: String? = null,
+    val photoDriveId: String? = null,
 )
 
 data class CycleEntity(

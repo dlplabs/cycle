@@ -8,6 +8,8 @@
         android:name="wheel"
         android:pivotX="400"
         android:pivotY="400"
+        android:scaleX="0.62"
+        android:scaleY="0.62"
         android:translateX="16"
         android:translateY="8.5">
         <path

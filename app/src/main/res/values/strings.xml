@@ -36,6 +36,13 @@
 
     <string name="greeting">Olá, %1$s</string>
     <string name="cd_profile_photo">Foto de %1$s</string>
+    <string name="photo_title">Foto do perfil</string>
+    <string name="photo_google">Usar foto do Google</string>
+    <string name="photo_gallery">Escolher na galeria</string>
+    <string name="photo_camera">Tirar foto</string>
+    <string name="photo_close">Fechar</string>
+    <string name="photo_drive_note">A foto é criptografada neste aparelho e gravada no seu Google Drive.</string>
+    <string name="photo_save_failed">Não foi possível guardar a foto no Drive.</string>
     <string name="greeting_anonymous">Olá</string>
     <string name="register_today">Registrar hoje</string>
     <string name="phase_menstrual">Menstrual</string>
@@ -73,7 +80,7 @@
     <string name="pillar_skin">Pele</string>
     <string name="pillar_mind">Mente</string>
 
-    <string name="log_title">Como você está</string>
+    <string name="log_title">Como você se sente</string>
     <string name="log_save">Salvar registro</string>
     <string name="period_started">A menstruação começou</string>
     <string name="flow">Fluxo</string>

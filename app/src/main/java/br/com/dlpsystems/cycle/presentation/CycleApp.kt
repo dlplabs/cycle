@@ -1,18 +1,26 @@
 package br.com.dlpsystems.cycle.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -23,6 +31,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.designsystem.CycleIcons
+import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
+import br.com.dlpsystems.cycle.core.designsystem.HeaderSage
+import br.com.dlpsystems.cycle.core.designsystem.OffWhiteBackground
 import br.com.dlpsystems.cycle.presentation.auth.LoginScreen
 import br.com.dlpsystems.cycle.presentation.auth.RegisterScreen
 import br.com.dlpsystems.cycle.presentation.auth.SessionViewModel
@@ -92,13 +103,36 @@ private fun MainGraph(
     Scaffold(
         bottomBar = {
             if (showBar) {
-                NavigationBar {
+                NavigationBar(containerColor = OffWhiteBackground) {
                     mainTabs.forEach { tab ->
+                        val selected = current == tab.route
                         NavigationBarItem(
-                            selected = current == tab.route,
+                            selected = selected,
                             onClick = { navController.openTab(tab.route) },
-                            icon = { Icon(tab.icon, contentDescription = null) },
+                            icon = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .background(if (selected) HeaderSage else Color.Transparent),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        imageVector = tab.icon,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(26.dp),
+                                        tint = DeepPlum,
+                                    )
+                                }
+                            },
                             label = { Text(stringResource(tab.labelRes)) },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = Color.Transparent,
+                                selectedIconColor = DeepPlum,
+                                selectedTextColor = DeepPlum,
+                                unselectedIconColor = DeepPlum,
+                                unselectedTextColor = DeepPlum.copy(alpha = 0.7f),
+                            ),
                         )
                     }
                 }

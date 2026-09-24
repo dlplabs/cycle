@@ -15,4 +15,6 @@ interface UserRepository {
     fun observeProfile(): Flow<UserProfile?>
     suspend fun getProfile(): UserProfile?
     suspend fun updateAverages(averageCycleDays: Int, averagePeriodDays: Int)
+    suspend fun saveAvatar(accessToken: String, jpeg: ByteArray)
+    suspend fun readAvatar(accessToken: String, fileId: String): ByteArray
 }

@@ -1,6 +1,14 @@
 package br.com.dlpsystems.cycle.presentation.dashboard
 
+import android.Manifest
+import android.app.Activity
 import android.graphics.BitmapFactory
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +45,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.FileProvider
+import java.io.File
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,11 +71,19 @@ import br.com.dlpsystems.cycle.domain.model.WellnessPillar
 import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
 import br.com.dlpsystems.cycle.presentation.components.CycleWheel
 import br.com.dlpsystems.cycle.presentation.components.PhaseRecommendationCard
+import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
 import br.com.dlpsystems.cycle.presentation.components.coachRoot
 import br.com.dlpsystems.cycle.presentation.components.coachTarget
 import br.com.dlpsystems.cycle.presentation.components.rememberCoachMark
 import br.com.dlpsystems.cycle.presentation.tracking.LogSymptomBottomSheet
+import com.google.android.gms.auth.api.identity.AuthorizationRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.Scope
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
@@ -86,6 +107,48 @@ fun DashboardScreen(
     val result = state.result
     val needsFirstPeriod = result == null || result.status == PhaseStatus.NO_CYCLE
     val coach = rememberCoachMark("today")
+    val context = LocalContext.current
+    val activity = LocalActivity.current
+    val scope = rememberCoroutineScope()
+    val driveConsent = remember { DriveConsent() }
+    val driveConsentLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult(),
+    ) { result ->
+        driveConsent.waiting?.complete(result.resultCode == Activity.RESULT_OK)
+    }
+    var showPhotoOptions by remember { mutableStateOf(false) }
+    fun saveWithDrive(block: (String) -> Unit) {
+        val host = activity ?: return
+        scope.launch {
+            val token = runCatching {
+                requestDriveToken(host, driveConsent) { driveConsentLauncher.launch(it) }
+            }.getOrNull() ?: return@launch
+            block(token)
+        }
+    }
+    LaunchedEffect(state.photoDriveId) {
+        val host = activity
+        val fileId = state.photoDriveId
+        if (host != null && !fileId.isNullOrBlank() && state.avatarBytes == null) {
+            val token = runCatching {
+                requestDriveToken(host, driveConsent) { driveConsentLauncher.launch(it) }
+            }.getOrNull()
+            if (token != null) viewModel.loadStoredAvatar(token)
+        }
+    }
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) saveWithDrive { token -> viewModel.uploadAvatar(uri, token) }
+    }
+    val captureUri = remember {
+        val file = File(context.cacheDir, "avatar-capture.jpg")
+        FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+    }
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
+        if (saved) saveWithDrive { token -> viewModel.uploadAvatar(captureUri, token) }
+    }
+    val cameraPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) cameraLauncher.launch(captureUri)
+    }
     CycleTheme(phase = phase) {
         if (showCare && result?.phase != null) {
             PhaseCareScreen(
@@ -101,7 +164,12 @@ fun DashboardScreen(
                     .coachRoot(coach),
             ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                HomeHeader(name = state.userName, photoUrl = state.photoUrl)
+                HomeHeader(
+                    name = state.userName,
+                    photoUrl = state.photoUrl,
+                    photoBytes = state.avatarBytes,
+                    onPhotoClick = { showPhotoOptions = true },
+                )
                 Surface(
                     modifier = Modifier
                         .weight(1f)
@@ -122,7 +190,7 @@ fun DashboardScreen(
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    val wheel = minOf(maxWidth, maxHeight, 280.dp)
+                    val wheel = minOf(maxWidth, maxHeight * 0.96f, 340.dp)
                     AnimatedContent(targetState = result?.phase, label = "phaseCrossfade") { current ->
                         val phaseName = current?.let { stringResource(it.labelRes()) }
                             ?: stringResource(R.string.phase_unknown)
@@ -189,11 +257,36 @@ fun DashboardScreen(
         if (showLog) {
             LogSymptomBottomSheet(onDismiss = { showLog = false })
         }
+        if (showPhotoOptions) {
+            PhotoSourceDialog(
+                googleAvailable = !state.googlePhotoUrl.isNullOrBlank(),
+                onGoogle = {
+                    showPhotoOptions = false
+                    saveWithDrive { token -> viewModel.useGooglePhoto(token) }
+                },
+                onGallery = {
+                    showPhotoOptions = false
+                    galleryLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                    )
+                },
+                onCamera = {
+                    showPhotoOptions = false
+                    cameraPermission.launch(Manifest.permission.CAMERA)
+                },
+                onDismiss = { showPhotoOptions = false },
+            )
+        }
     }
 }
 
 @Composable
-private fun HomeHeader(name: String, photoUrl: String?) {
+private fun HomeHeader(
+    name: String,
+    photoUrl: String?,
+    photoBytes: ByteArray?,
+    onPhotoClick: () -> Unit,
+) {
     val firstName = name.trim().substringBefore(' ').ifBlank { name.trim() }
     Row(
         modifier = Modifier
@@ -219,22 +312,39 @@ private fun HomeHeader(name: String, photoUrl: String?) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        ProfileAvatar(name = firstName.ifBlank { name }, photoUrl = photoUrl)
+        ProfileAvatar(
+            name = firstName.ifBlank { name },
+            photoUrl = photoUrl,
+            photoBytes = photoBytes,
+            onClick = onPhotoClick,
+        )
     }
 }
 
 @Composable
-private fun ProfileAvatar(name: String, photoUrl: String?) {
-    var photo by remember(photoUrl) { mutableStateOf<ImageBitmap?>(null) }
-    LaunchedEffect(photoUrl) {
-        photo = photoUrl?.let { loadProfilePhoto(it) }
+private fun ProfileAvatar(
+    name: String,
+    photoUrl: String?,
+    photoBytes: ByteArray?,
+    onClick: () -> Unit,
+) {
+    var photo by remember(photoUrl, photoBytes) { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(photoUrl, photoBytes) {
+        photo = when {
+            photoBytes != null -> withContext(Dispatchers.IO) {
+                BitmapFactory.decodeByteArray(photoBytes, 0, photoBytes.size)?.asImageBitmap()
+            }
+            photoUrl != null -> loadProfilePhoto(photoUrl)
+            else -> null
+        }
     }
     Box(
         modifier = Modifier
             .size(52.dp)
             .clip(CircleShape)
             .background(SurfaceCard)
-            .border(2.dp, SurfaceCard, CircleShape),
+            .border(2.dp, SurfaceCard, CircleShape)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         val bitmap = photo
@@ -255,6 +365,41 @@ private fun ProfileAvatar(name: String, photoUrl: String?) {
     }
 }
 
+@Composable
+private fun PhotoSourceDialog(
+    googleAvailable: Boolean,
+    onGoogle: () -> Unit,
+    onGallery: () -> Unit,
+    onCamera: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.photo_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(stringResource(R.string.photo_drive_note))
+                if (googleAvailable) {
+                    TextButton(onClick = onGoogle) {
+                        Text(stringResource(R.string.photo_google))
+                    }
+                }
+                TextButton(onClick = onGallery) {
+                    Text(stringResource(R.string.photo_gallery))
+                }
+                TextButton(onClick = onCamera) {
+                    Text(stringResource(R.string.photo_camera))
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.photo_close))
+            }
+        },
+    )
+}
+
 private suspend fun loadProfilePhoto(url: String): ImageBitmap? = withContext(Dispatchers.IO) {
     runCatching {
         val connection = URL(url).openConnection() as HttpURLConnection
@@ -272,20 +417,18 @@ private fun PhaseCareScreen(
     onBack: () -> Unit,
     onOpenSource: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        TextButton(onClick = onBack) {
-            Text(stringResource(R.string.back))
-        }
-        Text(
-            text = stringResource(R.string.pillars_title),
-            style = MaterialTheme.typography.headlineMedium,
+    Column(modifier = Modifier.fillMaxSize()) {
+        ScreenHeader(
+            title = stringResource(R.string.pillars_title),
+            onBack = onBack,
         )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
         state.insight?.pillars?.forEach { pillar ->
             PhaseRecommendationCard(
                 title = stringResource(pillar.pillar.labelRes()),
@@ -293,6 +436,7 @@ private fun PhaseCareScreen(
                 guidance = pillar,
                 onOpenSource = { onOpenSource() },
             )
+        }
         }
     }
 }
@@ -309,4 +453,29 @@ private fun WellnessPillar.labelRes(): Int = when (this) {
     WellnessPillar.EXERCISE -> R.string.pillar_exercise
     WellnessPillar.SKIN -> R.string.pillar_skin
     WellnessPillar.MIND -> R.string.pillar_mind
+}
+
+private class DriveConsent {
+    var waiting: CompletableDeferred<Boolean>? = null
+}
+
+private suspend fun requestDriveToken(
+    activity: Activity,
+    consent: DriveConsent,
+    launchConsent: (IntentSenderRequest) -> Unit,
+): String {
+    val client = Identity.getAuthorizationClient(activity)
+    val request = AuthorizationRequest.builder()
+        .setRequestedScopes(listOf(Scope(Scopes.DRIVE_APPFOLDER)))
+        .build()
+    var result = client.authorize(request).await()
+    if (result.hasResolution()) {
+        val pending = result.pendingIntent ?: error("drive")
+        val deferred = CompletableDeferred<Boolean>()
+        consent.waiting = deferred
+        launchConsent(IntentSenderRequest.Builder(pending).build())
+        if (!deferred.await()) error("drive")
+        result = client.authorize(request).await()
+    }
+    return result.accessToken ?: error("drive")
 }

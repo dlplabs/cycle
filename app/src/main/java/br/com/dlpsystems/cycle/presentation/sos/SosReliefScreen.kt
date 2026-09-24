@@ -11,11 +11,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -67,6 +71,8 @@ fun SosReliefScreen(
     val context = LocalContext.current
     var minutes by remember { mutableIntStateOf(25) }
     var remaining by remember { mutableLongStateOf(0L) }
+    var totalDuration by remember { mutableLongStateOf(25 * 60_000L) }
+    var timerCompleted by remember { mutableStateOf(false) }
     var breathing by remember { mutableIntStateOf(0) }
     var breatheText by remember { mutableStateOf("") }
 
@@ -81,7 +87,14 @@ fun SosReliefScreen(
     LaunchedEffect(remaining) {
         if (remaining <= 0L) return@LaunchedEffect
         delay(1000)
-        remaining -= 1000
+        val next = remaining - 1000
+        if (next <= 0L) {
+            remaining = 0L
+            timerCompleted = true
+            pulse(context, 120)
+        } else {
+            remaining = next
+        }
     }
 
     LaunchedEffect(breathing) {
@@ -126,7 +139,7 @@ fun SosReliefScreen(
                 AppCard {
                     Column(
                         modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -153,17 +166,76 @@ fun SosReliefScreen(
                             text = stringResource(R.string.sos_heat, minutes),
                             style = MaterialTheme.typography.bodyMedium,
                         )
-                        Slider(
-                            value = minutes.toFloat(),
-                            onValueChange = { minutes = it.toInt() },
-                            valueRange = 20f..30f,
-                            steps = 9,
-                        )
-                        PrimaryButton(
-                            text = if (remaining > 0) stringResource(R.string.sos_remaining, remaining / 1000) else stringResource(R.string.sos_start_timer),
-                            onClick = { remaining = minutes * 60_000L },
-                            modifier = Modifier.coachTarget(coach),
-                        )
+
+                        if (remaining > 0L) {
+                            val mins = remaining / 60_000L
+                            val secs = (remaining % 60_000L) / 1000L
+                            val formattedTime = String.format("%02d:%02d", mins, secs)
+                            val progress = if (totalDuration > 0) {
+                                ((totalDuration - remaining).toFloat() / totalDuration.toFloat()).coerceIn(0f, 1f)
+                            } else 0f
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text(
+                                    text = formattedTime,
+                                    style = MaterialTheme.typography.displaySmall,
+                                    color = DeepPlum,
+                                )
+                                Text(
+                                    text = stringResource(R.string.sos_remaining, formattedTime),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = DeepPlum.copy(alpha = 0.7f),
+                                )
+                                androidx.compose.material3.LinearProgressIndicator(
+                                    progress = { progress },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(4.dp)),
+                                    color = br.com.dlpsystems.cycle.core.designsystem.MenstrualTerracotta,
+                                    trackColor = br.com.dlpsystems.cycle.core.designsystem.OffWhiteBackground,
+                                )
+                            }
+
+                            PrimaryButton(
+                                text = stringResource(R.string.sos_stop_timer),
+                                onClick = {
+                                    remaining = 0L
+                                    timerCompleted = false
+                                },
+                                modifier = Modifier.coachTarget(coach),
+                            )
+                        } else {
+                            if (timerCompleted) {
+                                Text(
+                                    text = stringResource(R.string.sos_timer_finished),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = br.com.dlpsystems.cycle.core.designsystem.MenstrualTerracotta,
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                )
+                            }
+                            Slider(
+                                value = minutes.toFloat(),
+                                onValueChange = { minutes = it.toInt() },
+                                valueRange = 20f..30f,
+                                steps = 9,
+                            )
+                            PrimaryButton(
+                                text = stringResource(R.string.sos_start_timer, minutes),
+                                onClick = {
+                                    totalDuration = minutes * 60_000L
+                                    remaining = totalDuration
+                                    timerCompleted = false
+                                },
+                                modifier = Modifier.coachTarget(coach),
+                            )
+                        }
                     }
                 }
 

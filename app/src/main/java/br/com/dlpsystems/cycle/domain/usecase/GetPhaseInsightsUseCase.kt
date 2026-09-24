@@ -31,6 +31,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     finding = "Em 124.648 mulheres, a duração do ciclo varia o bastante para a previsão ser probabilística, não uma data fixa.",
                     url = "https://www.nature.com/articles/s41746-019-0152-7",
                 ),
+                suggestions = listOf(
+                    "Chás mornos de gengibre ou camomila para relaxamento uterino",
+                    "Alimentos ricos em ferro e vitamina C (espinafre, feijão com gotas de limão)",
+                    "Manter garrafinha de água por perto para evitar retenção por desidratação",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.EXERCISE,
@@ -41,12 +46,22 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     finding = "Exercício pode reduzir a intensidade da dismenorreia.",
                     url = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6337810/",
                 ),
+                suggestions = listOf(
+                    "Alongamentos suaves de coluna e quadris",
+                    "Postura da criança (Balasana) para alívio lombar",
+                    "Caminhadas leves de 15 a 20 minutos se tiver disposição",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.SKIN,
                 guidance = "A barreira cutânea fica mais sensível e perde água. Foque em hidratação oclusiva, " +
                     "ceramidas e pantenol.",
                 citation = null,
+                suggestions = listOf(
+                    "Limpeza com produtos cremosos e sem sabão agressivo",
+                    "Hidratação rica com ceramidas e pantenol",
+                    "Evitar esfoliantes fortes ou ácidos irritantes nestes dias",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.MIND,
@@ -56,6 +71,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     source = "Revisão de termoterapia",
                     finding = "Calor local superficial contínuo é uma medida de alívio estudada para cólica.",
                     url = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12876241/",
+                ),
+                suggestions = listOf(
+                    "Bolsa de água morna na região pélvica e lombar",
+                    "Priorizar dormir 30 a 60 minutos mais cedo",
+                    "Dizer não a tarefas não urgentes e respeitar seu tempo",
                 ),
             ),
         ),
@@ -71,6 +91,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                 pillar = WellnessPillar.NUTRITION,
                 guidance = "Refeições regulares, com proteína e vegetais, acompanham o aumento de energia desta fase.",
                 citation = null,
+                suggestions = listOf(
+                    "Refeições coloridas com bastante proteína magra e vegetais",
+                    "Fermentados naturais (iogurte, kefir) para flora intestinal",
+                    "Carboidratos integrais para energia sustentada",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.EXERCISE,
@@ -80,6 +105,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     source = "Sports Medicine (2020)",
                     finding = "Metanálise com mais de 1.200 mulheres sobre desempenho e a fase do ciclo.",
                     url = "https://pubmed.ncbi.nlm.nih.gov/32661839/",
+                ),
+                suggestions = listOf(
+                    "Treinos de força e musculação com progressão de carga",
+                    "Aulas de ritmo acelerado ou treinos funcionais",
+                    "Corridas ou treinos intervalados (HIIT)",
                 ),
             ),
             PillarGuidance(
@@ -92,11 +122,21 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     finding = "A função de barreira da pele muda ao longo do ciclo.",
                     url = "https://doi.org/10.1111/ced.12588",
                 ),
+                suggestions = listOf(
+                    "Vitamina C tópica para potencializar a luminosidade natural",
+                    "Esfoliação química suave (ácido lático ou mandélico)",
+                    "Protetor solar diário com toque seco",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.MIND,
                 guidance = "Muitas pessoas percebem mais clareza e criatividade. Pode ser um bom momento para iniciar projetos e resolver problemas analíticos.",
                 citation = null,
+                suggestions = listOf(
+                    "Planejar metas, projetos e novos hábitos do mês",
+                    "Agendar reuniões estratégicas ou sessões criativas",
+                    "Aproveitar o ânimo para aprender algo novo",
+                ),
             ),
         ),
     )
@@ -110,11 +150,21 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                 pillar = WellnessPillar.NUTRITION,
                 guidance = "Mantenha hidratação constante e refeições leves, que acompanham o metabolismo mais ativo destes dias.",
                 citation = null,
+                suggestions = listOf(
+                    "Refeições leves com gorduras boas (abacate, azeite de oliva, nozes)",
+                    "Alimentos ricos em zinco e antioxidantes (sementes, frutas vermelhas)",
+                    "Água de coco e sucos naturais refrescantes",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.EXERCISE,
                 guidance = "Atividades aeróbicas contínuas, treinos funcionais e esportes em grupo combinam com a energia desta fase.",
                 citation = null,
+                suggestions = listOf(
+                    "Treinos em grupo ou esportes ao ar livre",
+                    "Dança, natação ou circuitos aeróbicos dinâmicos",
+                    "Aproveite o pico de coordenação motora e disposição",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.SKIN,
@@ -125,6 +175,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     finding = "A barreira cutânea não é constante entre as fases.",
                     url = "https://doi.org/10.1111/ced.12588",
                 ),
+                suggestions = listOf(
+                    "Protetor solar FPS 50+ reaplicado com frequência",
+                    "Hidratantes leves em textura aquosa ou gel",
+                    "Limpeza suave para controlar a oleosidade sutil",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.MIND,
@@ -134,6 +189,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     source = "Nature npj Digital Medicine (2019)",
                     finding = "A janela ovulatória estimada é uma probabilidade, não um dia exato.",
                     url = "https://www.nature.com/articles/s41746-019-0152-7",
+                ),
+                suggestions = listOf(
+                    "Apresentações em público e conversas decisivas",
+                    "Encontros sociais, eventos e conexão com pessoas queridas",
+                    "Expressar ideias e liderar projetos em equipe",
                 ),
             ),
         ),
@@ -153,6 +213,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     finding = "Magnésio com piridoxina (B6) reduziu sintomas afetivos e somáticos da síndrome pré-menstrual.",
                     url = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3208934/",
                 ),
+                suggestions = listOf(
+                    "Alimentos ricos em magnésio (sementes de abóbora, chocolate 70%, banana)",
+                    "Fontes de ômega-3 (chia, linhaça, peixes) para modulação inflamatória",
+                    "Reduzir cafeína e refrigerantes para amenizar irritabilidade e inchaço",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.EXERCISE,
@@ -162,6 +227,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     source = "Sleep Medicine (2007)",
                     finding = "A fase lútea se associa a mudança de temperatura basal e do sono.",
                     url = "https://doi.org/10.1016/j.sleep.2006.09.011",
+                ),
+                suggestions = listOf(
+                    "Pilates e ioga focados em respiração e estabilidade",
+                    "Caminhadas restaurativas ao ar livre",
+                    "Treinos de intensidade moderada, ouvindo o ritmo do corpo",
                 ),
             ),
             PillarGuidance(
@@ -173,6 +243,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     finding = "Mudanças de barreira cutânea ajudam a explicar a pele mais reativa no fim do ciclo.",
                     url = "https://doi.org/10.1111/ced.12588",
                 ),
+                suggestions = listOf(
+                    "Niacinamida para equilíbrio da oleosidade e poros",
+                    "Cuidado redobrado com a higienização facial noturna",
+                    "Evitar mexer em eventuais espinhas pré-menstruais",
+                ),
             ),
             PillarGuidance(
                 pillar = WellnessPillar.MIND,
@@ -182,6 +257,11 @@ class GetPhaseInsightsUseCase @Inject constructor() {
                     source = "Sleep Medicine (2007)",
                     finding = "Higiene do sono importa mais quando a temperatura basal está elevada.",
                     url = "https://doi.org/10.1016/j.sleep.2006.09.011",
+                ),
+                suggestions = listOf(
+                    "Higiene do sono rigorosa: quarto fresco e longe de telas",
+                    "Chás relaxantes de erva-cidreira ou melissa no fim da tarde",
+                    "Exercícios de respiração guiada (como a técnica 4-7-8)",
                 ),
             ),
         ),

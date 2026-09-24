@@ -23,6 +23,7 @@ data class PillarGuidance(
     val pillar: WellnessPillar,
     val guidance: String,
     val citation: Citation?,
+    val suggestions: List<String> = emptyList(),
 )
 
 data class PhaseEvidence(

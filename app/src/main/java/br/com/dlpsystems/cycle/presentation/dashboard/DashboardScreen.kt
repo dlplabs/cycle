@@ -447,12 +447,13 @@ private fun PhaseCareScreen(
                 .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-        state.insight?.pillars?.forEach { pillar ->
+        state.insight?.pillars?.forEachIndexed { index, pillar ->
             PhaseRecommendationCard(
                 title = stringResource(pillar.pillar.labelRes()),
                 iconRes = pillar.pillar.iconRes(),
                 guidance = pillar,
                 onOpenSource = { onOpenSource() },
+                imageOnRight = index % 2 == 1,
             )
         }
         AdBannerContainer(isPremium = state.premium)

@@ -74,10 +74,15 @@ class DashboardViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            val anyReminders = combine(
+                preferences.remindersEnabled,
+                preferences.cycleRemindersEnabled,
+            ) { daily, cycle -> daily || cycle }
+
             combine(
                 userRepository.observeProfile(),
                 cycleRepository.observeCycles(),
-                preferences.remindersEnabled,
+                anyReminders,
                 userRepository.observeAuth(),
                 billingRepository.isPremiumUser,
             ) { profile, cycles, reminders, user, premium ->

@@ -6,7 +6,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,11 +47,6 @@ import br.com.dlpsystems.cycle.domain.repository.BillingRepository
 import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import br.com.dlpsystems.cycle.domain.usecase.ExportDoctorReportUseCase
 import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
-import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
-import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
-import br.com.dlpsystems.cycle.presentation.components.coachRoot
-import br.com.dlpsystems.cycle.presentation.components.coachTarget
-import br.com.dlpsystems.cycle.presentation.components.rememberCoachMark
 import kotlinx.coroutines.flow.combine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,6 +58,7 @@ data class AccountPrefs(
     val cycleDays: Int = CycleConstants.DEFAULT_CYCLE_DAYS,
     val periodDays: Int = CycleConstants.DEFAULT_PERIOD_DAYS,
     val remindersEnabled: Boolean = true,
+    val cycleRemindersEnabled: Boolean = true,
 )
 
 @HiltViewModel
@@ -74,7 +69,7 @@ class SettingsViewModel @Inject constructor(
     private val preferences: UserPreferencesDataSource,
     private val reminderScheduler: ReminderScheduler,
 ) : ViewModel() {
-    val isPremium = billingRepository.isPremiumUser
+    val isPremium: kotlinx.coroutines.flow.StateFlow<Boolean> = billingRepository.isPremiumUser
     private val _message = MutableStateFlow<String?>(null)
     val message = _message.asStateFlow()
     private val _prefs = MutableStateFlow(AccountPrefs())
@@ -86,25 +81,39 @@ class SettingsViewModel @Inject constructor(
             combine(
                 userRepository.observeProfile(),
                 preferences.remindersEnabled,
-            ) { profile, reminders ->
+                preferences.cycleRemindersEnabled,
+            ) { profile, dailyReminders, cycleReminders ->
                 AccountPrefs(
                     cycleDays = profile?.averageCycleDays ?: CycleConstants.DEFAULT_CYCLE_DAYS,
                     periodDays = profile?.averagePeriodDays ?: CycleConstants.DEFAULT_PERIOD_DAYS,
-                    remindersEnabled = reminders,
+                    remindersEnabled = dailyReminders,
+                    cycleRemindersEnabled = cycleReminders,
                 )
             }.collect { snapshot ->
-                val changed = _prefs.value.remindersEnabled != snapshot.remindersEnabled
+                val changed = _prefs.value.remindersEnabled != snapshot.remindersEnabled ||
+                    _prefs.value.cycleRemindersEnabled != snapshot.cycleRemindersEnabled
                 _prefs.value = snapshot
-                if (changed) reminderScheduler.setEnabled(snapshot.remindersEnabled)
+                if (changed) reminderScheduler.setEnabled(snapshot.remindersEnabled || snapshot.cycleRemindersEnabled)
             }
         }
     }
 
-    fun setReminders(enabled: Boolean) {
+    fun setDailyReminders(enabled: Boolean) {
         viewModelScope.launch {
             preferences.setRemindersEnabled(enabled)
-            reminderScheduler.setEnabled(enabled)
+            reminderScheduler.setEnabled(enabled || _prefs.value.cycleRemindersEnabled)
         }
+    }
+
+    fun setCycleReminders(enabled: Boolean) {
+        viewModelScope.launch {
+            preferences.setCycleRemindersEnabled(enabled)
+            reminderScheduler.setEnabled(_prefs.value.remindersEnabled || enabled)
+        }
+    }
+
+    fun setReminders(enabled: Boolean) {
+        setDailyReminders(enabled)
     }
 
     fun updateAverages(cycleDays: Int, periodDays: Int) {
@@ -155,7 +164,7 @@ class SettingsViewModel @Inject constructor(
 
 @Composable
 fun SettingsScreen(
-    onBack: () -> Unit,
+    onBack: () -> Unit = {},
     onPaywall: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -173,7 +182,6 @@ fun SettingsScreen(
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
-    val coach = rememberCoachMark("account")
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -201,29 +209,20 @@ fun SettingsScreen(
         )
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .coachRoot(coach),
-    ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        ScreenHeader(
-            title = stringResource(R.string.settings_title),
-            onBack = onBack,
-        )
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 8.dp),
+                .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium)
             AveragesCard(
                 cycleDays = prefs.cycleDays,
                 periodDays = prefs.periodDays,
                 onCycle = { viewModel.updateAverages(it, prefs.periodDays) },
                 onPeriod = { viewModel.updateAverages(prefs.cycleDays, it) },
-                modifier = Modifier.coachTarget(coach),
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -262,8 +261,6 @@ fun SettingsScreen(
             }
             PrimaryButton(text = stringResource(R.string.sign_out), onClick = viewModel::signOut)
 
-            AdBannerContainer(isPremium = premium)
-
             OutlinedButton(
                 onClick = { showDeleteDialog = true },
                 enabled = !isDeleting,
@@ -278,11 +275,7 @@ fun SettingsScreen(
                 )
             }
         }
-    }
-    CoachMarkOverlay(
-        state = coach,
-        message = stringResource(R.string.coach_account),
-    )
+        AdBannerContainer(isPremium = premium)
     }
 }
 
@@ -292,9 +285,8 @@ private fun AveragesCard(
     periodDays: Int,
     onCycle: (Int) -> Unit,
     onPeriod: (Int) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    AppCard(modifier = modifier) {
+    AppCard {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.your_cycle), style = MaterialTheme.typography.titleMedium)
             Stepper(

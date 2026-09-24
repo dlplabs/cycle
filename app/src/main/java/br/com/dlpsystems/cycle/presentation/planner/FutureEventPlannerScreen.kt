@@ -17,16 +17,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.focusable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import br.com.dlpsystems.cycle.R
+import kotlinx.coroutines.delay
 import br.com.dlpsystems.cycle.core.designsystem.AppCard
 import br.com.dlpsystems.cycle.core.designsystem.CycleCard
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
@@ -132,6 +141,17 @@ fun FutureEventPlannerScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val picker = rememberDatePickerState()
     val coach = rememberCoachMark("planner")
+    val scrollState = rememberScrollState()
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(state.phase, state.blocked, state.cycleDay) {
+        if (state.phase != null || state.blocked) {
+            delay(100)
+            scrollState.animateScrollTo(scrollState.maxValue)
+            runCatching { focusRequester.requestFocus() }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -146,7 +166,7 @@ fun FutureEventPlannerScreen(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(horizontal = 20.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
@@ -168,7 +188,12 @@ fun FutureEventPlannerScreen(
 
                 when {
                     state.blocked && !state.premium -> {
-                        br.com.dlpsystems.cycle.core.designsystem.AppCard {
+                        br.com.dlpsystems.cycle.core.designsystem.AppCard(
+                            modifier = Modifier
+                                .focusRequester(focusRequester)
+                                .focusable()
+                                .semantics { liveRegion = LiveRegionMode.Polite },
+                        ) {
                             Column(
                                 modifier = Modifier.padding(20.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -190,7 +215,12 @@ fun FutureEventPlannerScreen(
                         }
                     }
                     state.blocked -> {
-                        br.com.dlpsystems.cycle.core.designsystem.AppCard {
+                        br.com.dlpsystems.cycle.core.designsystem.AppCard(
+                            modifier = Modifier
+                                .focusRequester(focusRequester)
+                                .focusable()
+                                .semantics { liveRegion = LiveRegionMode.Polite },
+                        ) {
                             Column(modifier = Modifier.padding(18.dp)) {
                                 Text(
                                     text = stringResource(R.string.planner_past),
@@ -201,7 +231,10 @@ fun FutureEventPlannerScreen(
                         }
                     }
                     state.phase != null -> {
-                        ProjectedPhaseCard(state = state)
+                        ProjectedPhaseCard(
+                            state = state,
+                            focusRequester = focusRequester,
+                        )
                         AdBannerContainer(isPremium = state.premium)
                     }
                 }
@@ -218,10 +251,11 @@ fun FutureEventPlannerScreen(
 private fun ProjectedPhaseCard(
     state: PlannerUiState,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null,
 ) {
     val phase = state.phase ?: return
     val formattedDate = state.targetDate?.let { date ->
-        val formatter = java.time.format.DateTimeFormatter.ofPattern("d 'de' MMMM", java.util.Locale("pt", "BR"))
+        val formatter = java.time.format.DateTimeFormatter.ofPattern("d 'de' MMMM", java.util.Locale.forLanguageTag("pt-BR"))
         date.format(formatter)
     }.orEmpty()
 
@@ -232,7 +266,16 @@ private fun ProjectedPhaseCard(
         CyclePhase.LUTEAL -> LutealLavender
     }
 
-    CycleCard(modifier = modifier) {
+    val cardModifier = if (focusRequester != null) {
+        modifier
+            .focusRequester(focusRequester)
+            .focusable()
+            .semantics { liveRegion = LiveRegionMode.Polite }
+    } else {
+        modifier.semantics { liveRegion = LiveRegionMode.Polite }
+    }
+
+    CycleCard(modifier = cardModifier) {
         Column(
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

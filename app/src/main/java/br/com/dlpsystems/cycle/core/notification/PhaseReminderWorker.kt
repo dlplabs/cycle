@@ -38,7 +38,9 @@ class PhaseReminderWorker @AssistedInject constructor(
     private val calculateCurrentPhase: CalculateCurrentPhaseUseCase,
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        if (!preferences.remindersEnabled.first()) return Result.success()
+        val dailyEnabled = preferences.remindersEnabled.first()
+        val cycleEnabled = preferences.cycleRemindersEnabled.first()
+        if (!dailyEnabled && !cycleEnabled) return Result.success()
         if (!userRepository.isBackendAvailable) return Result.success()
         if (userRepository.observeAuth().first() == null) return Result.success()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -50,43 +52,67 @@ class PhaseReminderWorker @AssistedInject constructor(
             return Result.success()
         }
 
-        val profile = userRepository.getProfile()
-        val cycles = cycleRepository.getCycles()
         val today = LocalDate.now()
-        val todayResult = calculateCurrentPhase(
-            PhaseCalculationInput(today, profile, cycles),
-        )
-        val todayPhase = todayResult.phase
-        if (todayResult.status != PhaseStatus.IN_PHASE || todayPhase == null) {
-            return Result.success()
-        }
-        val lastPhase = preferences.lastNotifiedPhase.first()
-        val storedDate = preferences.lastNotifiedDate.first()?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-        if (lastPhase == null || storedDate == null) {
-            preferences.setLastNotifiedPhase(today.toString(), todayPhase.name)
-            return Result.success()
-        }
-        var cursor: LocalDate = storedDate
-        var previous: String = lastPhase
-        val entered = mutableListOf<Pair<CyclePhase, Int>>()
-        while (cursor.isBefore(today)) {
-            cursor = cursor.plusDays(1)
-            val day = calculateCurrentPhase(PhaseCalculationInput(cursor, profile, cycles))
-            val phase = day.phase ?: continue
-            if (day.status == PhaseStatus.IN_PHASE && phase.name != previous) {
-                entered.add(phase to day.cycleDay)
-                previous = phase.name
+
+        // 1. Lembrete de início de novo ciclo e transição de fases
+        if (cycleEnabled) {
+            val profile = userRepository.getProfile()
+            val cycles = cycleRepository.getCycles()
+            val todayResult = calculateCurrentPhase(
+                PhaseCalculationInput(today, profile, cycles),
+            )
+            val todayPhase = todayResult.phase
+            if (todayResult.status == PhaseStatus.IN_PHASE && todayPhase != null) {
+                val lastPhase = preferences.lastNotifiedPhase.first()
+                val storedDate = preferences.lastNotifiedDate.first()?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                if (lastPhase == null || storedDate == null) {
+                    preferences.setLastNotifiedPhase(today.toString(), todayPhase.name)
+                } else {
+                    var cursor: LocalDate = storedDate
+                    var previous: String = lastPhase
+                    val entered = mutableListOf<Pair<CyclePhase, Int>>()
+                    while (cursor.isBefore(today)) {
+                        cursor = cursor.plusDays(1)
+                        val day = calculateCurrentPhase(PhaseCalculationInput(cursor, profile, cycles))
+                        val phase = day.phase ?: continue
+                        if (day.status == PhaseStatus.IN_PHASE && phase.name != previous) {
+                            entered.add(phase to day.cycleDay)
+                            previous = phase.name
+                        }
+                    }
+                    entered.takeLast(4).forEach { (phase, cycleDay) ->
+                        val phaseName = applicationContext.getString(phase.labelRes())
+                        val (title, body) = if (phase == CyclePhase.MENSTRUAL && cycleDay <= 1) {
+                            applicationContext.getString(R.string.reminder_new_cycle_title) to
+                                applicationContext.getString(R.string.reminder_new_cycle_body)
+                        } else {
+                            applicationContext.getString(R.string.reminder_title) to
+                                applicationContext.getString(R.string.reminder_body, phaseName, cycleDay)
+                        }
+                        showNotification(
+                            phase.ordinal,
+                            title,
+                            body,
+                        )
+                    }
+                    preferences.setLastNotifiedPhase(today.toString(), todayPhase.name)
+                }
             }
         }
-        entered.takeLast(4).forEach { (phase, cycleDay) ->
-            val phaseName = applicationContext.getString(phase.labelRes())
-            showNotification(
-                phase.ordinal,
-                applicationContext.getString(R.string.reminder_title),
-                applicationContext.getString(R.string.reminder_body, phaseName, cycleDay),
-            )
+
+        // 2. Lembrete diário de autocuidado e check-in
+        if (dailyEnabled) {
+            val lastDaily = preferences.lastDailyReminderDate.first()
+            if (lastDaily != today.toString()) {
+                showNotification(
+                    idOffset = 100,
+                    title = applicationContext.getString(R.string.reminder_daily_notif_title),
+                    body = applicationContext.getString(R.string.reminder_daily_notif_body),
+                )
+                preferences.setLastDailyReminderDate(today.toString())
+            }
         }
-        preferences.setLastNotifiedPhase(today.toString(), todayPhase.name)
+
         return Result.success()
     }
 

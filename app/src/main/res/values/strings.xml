@@ -113,7 +113,15 @@
     <string name="symptom_nausea">Náusea</string>
     <string name="symptom_cravings">Desejos</string>
 
-    <string name="reminder_channel_name">Mudança de fase</string>
+    <string name="reminder_daily_title">Lembrete diário</string>
+    <string name="reminder_daily_desc">Notificação diária para check-in e registro de sintomas</string>
+    <string name="reminder_cycle_title">Início de ciclo e fases</string>
+    <string name="reminder_cycle_desc">Aviso a cada novo ciclo menstrual e transições de fase</string>
+    <string name="reminder_channel_name">Lembretes do Ciclo</string>
+    <string name="reminder_daily_notif_title">Momento de autocuidado</string>
+    <string name="reminder_daily_notif_body">Como você está se sentindo hoje? Faça seu check-in diário no Cycle.</string>
+    <string name="reminder_new_cycle_title">Início de um novo ciclo</string>
+    <string name="reminder_new_cycle_body">Seu ciclo começou hoje. Cuide-se com carinho nesta fase menstrual.</string>
     <string name="reminder_title">Nova fase</string>
     <string name="reminder_body">Você entrou na fase %1$s. Dia %2$d do ciclo.</string>
     <string name="cd_phase_icon">Ícone da fase %1$s</string>

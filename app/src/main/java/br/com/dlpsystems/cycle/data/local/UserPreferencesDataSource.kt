@@ -29,6 +29,10 @@ class UserPreferencesDataSource @Inject constructor(
         prefs[Keys.REMINDERS] ?: true
     }
 
+    val cycleRemindersEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.CYCLE_REMINDERS] ?: true
+    }
+
     val premiumCached: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.PREMIUM] ?: false
     }
@@ -48,12 +52,24 @@ class UserPreferencesDataSource @Inject constructor(
         prefs[Keys.LAST_PHASE_DATE]
     }
 
+    val lastDailyReminderDate: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.LAST_DAILY_REMINDER_DATE]
+    }
+
     suspend fun setDisclaimerAccepted(accepted: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.DISCLAIMER] = accepted }
     }
 
     suspend fun setRemindersEnabled(enabled: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.REMINDERS] = enabled }
+    }
+
+    suspend fun setCycleRemindersEnabled(enabled: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.CYCLE_REMINDERS] = enabled }
+    }
+
+    suspend fun setLastDailyReminderDate(date: String) {
+        dataStore.edit { prefs -> prefs[Keys.LAST_DAILY_REMINDER_DATE] = date }
     }
 
     suspend fun setPremiumCached(premium: Boolean) {
@@ -87,11 +103,13 @@ class UserPreferencesDataSource @Inject constructor(
     private object Keys {
         val DISCLAIMER = booleanPreferencesKey("disclaimer_accepted")
         val REMINDERS = booleanPreferencesKey("reminders_enabled")
+        val CYCLE_REMINDERS = booleanPreferencesKey("cycle_reminders_enabled")
         val PREMIUM = booleanPreferencesKey("premium_cached")
         val WIDGET_DAY = intPreferencesKey("widget_day")
         val WIDGET_PHASE = stringPreferencesKey("widget_phase")
         val COACH_MARKS = stringSetPreferencesKey("coach_marks_seen")
         val LAST_PHASE = stringPreferencesKey("last_notified_phase")
         val LAST_PHASE_DATE = stringPreferencesKey("last_notified_phase_date")
+        val LAST_DAILY_REMINDER_DATE = stringPreferencesKey("last_daily_reminder_date")
     }
 }

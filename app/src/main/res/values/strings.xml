@@ -26,9 +26,9 @@
     <string name="error_email_in_use">Este e-mail já tem conta. Entre com a senha ou com o mesmo Google usado no cadastro.</string>
     <string name="error_weak_password">A senha precisa ter pelo menos 6 caracteres.</string>
     <string name="error_not_configured">O serviço de conta ainda não está configurado neste aparelho.</string>
-    <string name="error_google_not_configured">O Google não concluiu o login. No Firebase, ative o provedor Google e confira o SHA-1 deste app.</string>
+    <string name="error_google_not_configured">O Google fechou sem entrar. No Firebase, cadastre o SHA-1 deste app e baixe de novo o google-services.json.</string>
     <string name="error_no_account">Ainda não há uma conta Cycle para este acesso. Toque em Criar uma conta para se cadastrar.</string>
-    <string name="error_google_failed">Não foi possível entrar com o Google. Confira se há uma conta Google no aparelho e tente de novo.</string>
+    <string name="error_google_failed">O Google não devolveu a entrada. Tente de novo. Se repetir, cadastre o SHA-1 no Firebase.</string>
     <string name="error_unknown">Não foi possível concluir. Tente de novo.</string>
     <string name="error_birth_date">Use a data no formato dd/mm/aaaa, por exemplo 14/04/1982.</string>
     <string name="error_provider_disabled">O login por e-mail ainda não está ativo no Firebase. Ative E-mail/senha em Authentication.</string>

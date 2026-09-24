@@ -408,11 +408,7 @@ private fun rememberGoogleSignIn(viewModel: AuthViewModel): () -> Unit {
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult(),
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            viewModel.completeGoogleSignIn(result.data)
-        } else {
-            viewModel.completeGoogleSignIn(null)
-        }
+        viewModel.completeGoogleSignIn(result.data)
     }
     return {
         val host = activity

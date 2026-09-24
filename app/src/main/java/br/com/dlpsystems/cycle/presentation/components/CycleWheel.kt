@@ -124,7 +124,7 @@ fun CycleWheel(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .offset(x = wheelSize * 0.027f, y = wheelSize * -0.018f)
+                .offset(x = wheelSize * 0.003f, y = wheelSize * -0.002f)
                 .clearAndSetSemantics { },
         ) {
             Text(

@@ -22,16 +22,18 @@ suspend fun googleSignInIntent(activity: Activity): PendingIntent {
 }
 
 fun googleIdTokenFromIntent(context: Context, data: Intent?): String {
-    if (data == null) throw GoogleSignInCancelled()
+    if (data == null) throw AuthFailure.GoogleFailed
     return try {
         val credential = Identity.getSignInClient(context).getSignInCredentialFromIntent(data)
-        credential.googleIdToken ?: throw AuthFailure.GoogleFailed
+        credential.googleIdToken ?: throw AuthFailure.GoogleNotConfigured
     } catch (error: ApiException) {
         when (error.statusCode) {
             CommonStatusCodes.CANCELED,
             SIGN_IN_CANCELLED,
-            -> throw GoogleSignInCancelled()
-            CommonStatusCodes.DEVELOPER_ERROR -> throw AuthFailure.GoogleNotConfigured
+            -> throw AuthFailure.GoogleFailed
+            CommonStatusCodes.DEVELOPER_ERROR,
+            SIGN_IN_FAILED,
+            -> throw AuthFailure.GoogleNotConfigured
             CommonStatusCodes.NETWORK_ERROR -> throw AuthFailure.Network
             else -> throw AuthFailure.GoogleFailed
         }
@@ -45,3 +47,4 @@ private fun webClientId(context: Context): String? {
 }
 
 private const val SIGN_IN_CANCELLED = 12501
+private const val SIGN_IN_FAILED = 12500

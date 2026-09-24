@@ -27,6 +27,7 @@ class SaveDailyLogUseCaseTest {
 private class RecordingCycleRepository : CycleRepository {
     val saved = mutableListOf<DailyLog>()
     override fun observeCycles(): Flow<List<MenstrualCycle>> = flowOf(emptyList())
+    override fun observeDailyLogs(): Flow<List<DailyLog>> = flowOf(saved)
     override suspend fun getCycles(): List<MenstrualCycle> = emptyList()
     override suspend fun startPeriod(date: LocalDate): MenstrualCycle = error("unused")
     override suspend fun saveDailyLog(log: DailyLog) {

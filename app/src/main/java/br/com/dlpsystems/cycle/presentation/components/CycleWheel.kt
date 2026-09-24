@@ -43,6 +43,19 @@ import br.com.dlpsystems.cycle.domain.model.CyclePhase
 import br.com.dlpsystems.cycle.domain.usecase.PhaseSegment
 import kotlin.math.cos
 import kotlin.math.sin
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import br.com.dlpsystems.cycle.core.designsystem.HeaderSage
 
 @Composable
 fun CycleWheel(
@@ -54,6 +67,7 @@ fun CycleWheel(
     segments: List<PhaseSegment>,
     modifier: Modifier = Modifier,
     wheelSize: Dp = 280.dp,
+    onClick: (() -> Unit)? = null,
 ) {
     val description = SemanticsUtils.cycleWheelDescription(
         day = cycleDay.coerceAtLeast(0),
@@ -76,9 +90,20 @@ fun CycleWheel(
         label = "pulseScale",
     )
     Box(
-        modifier = modifier.semantics(mergeDescendants = true) {
-            contentDescription = description
-        },
+        modifier = modifier
+            .semantics(mergeDescendants = true) {
+                contentDescription = description
+                if (onClick != null) {
+                    role = Role.Button
+                }
+            }
+            .then(
+                if (onClick != null) {
+                    Modifier
+                        .clip(CircleShape)
+                        .clickable(onClick = onClick)
+                } else Modifier
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Image(
@@ -147,6 +172,29 @@ fun CycleWheel(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (onClick != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = HeaderSage.copy(alpha = 0.35f),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                    ) {
+                        Text(text = "📅", fontSize = 10.sp)
+                        Text(
+                            text = "Calendário",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DeepPlum,
+                            ),
+                        )
+                    }
+                }
+            }
         }
     }
 }

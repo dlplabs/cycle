@@ -16,12 +16,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import br.com.dlpsystems.cycle.core.accessibility.accessibleTouchTarget
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+
 @Composable
 fun PrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    leadingIcon: (@Composable () -> Unit)? = null,
 ) {
     Button(
         onClick = onClick,
@@ -38,11 +44,20 @@ fun PrimaryButton(
             disabledContentColor = Color.White,
         ),
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleSmall,
-            color = Color.White,
-        )
+        Row(
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            if (leadingIcon != null) {
+                leadingIcon()
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleSmall,
+                color = Color.White,
+            )
+        }
     }
 }
 

@@ -29,6 +29,13 @@ class CycleRepositoryImpl @Inject constructor(
             else firestore.observeCycles(user.id)
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeDailyLogs(): Flow<List<DailyLog>> =
+        authService.observeUser().flatMapLatest { user ->
+            if (user == null || !services.available) flowOf(emptyList())
+            else firestore.observeDailyLogs(user.id)
+        }
+
     override suspend fun getCycles(): List<MenstrualCycle> = firestore.getCycles(uid())
 
     override suspend fun startPeriod(date: LocalDate): MenstrualCycle {

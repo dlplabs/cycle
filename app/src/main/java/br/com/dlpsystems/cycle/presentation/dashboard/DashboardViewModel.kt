@@ -39,6 +39,10 @@ import java.net.URL
 import java.time.LocalDate
 import javax.inject.Inject
 
+import br.com.dlpsystems.cycle.domain.model.MenstrualCycle
+import br.com.dlpsystems.cycle.domain.model.SignedInUser
+import br.com.dlpsystems.cycle.domain.model.UserProfile
+
 data class DashboardUiState(
     val loading: Boolean = true,
     val userName: String = "",
@@ -52,7 +56,10 @@ data class DashboardUiState(
     val averageCycleDays: Int = CycleConstants.DEFAULT_CYCLE_DAYS,
     val averagePeriodDays: Int = CycleConstants.DEFAULT_PERIOD_DAYS,
     val errorMessage: String? = null,
+    val userMessage: String? = null,
     val premium: Boolean = false,
+    val cycles: List<MenstrualCycle> = emptyList(),
+    val dailyLogs: List<DailyLog> = emptyList(),
 )
 
 @HiltViewModel
@@ -82,10 +89,20 @@ class DashboardViewModel @Inject constructor(
             combine(
                 userRepository.observeProfile(),
                 cycleRepository.observeCycles(),
+                cycleRepository.observeDailyLogs(),
                 anyReminders,
                 userRepository.observeAuth(),
                 billingRepository.isPremiumUser,
-            ) { profile, cycles, reminders, user, premium ->
+            ) { args: Array<Any?> ->
+                val profile = args[0] as UserProfile?
+                @Suppress("UNCHECKED_CAST")
+                val cycles = args[1] as List<MenstrualCycle>
+                @Suppress("UNCHECKED_CAST")
+                val dailyLogs = args[2] as List<DailyLog>
+                val reminders = args[3] as Boolean
+                val user = args[4] as SignedInUser?
+                val premium = args[5] as Boolean
+
                 val result = calculateCurrentPhase(
                     PhaseCalculationInput(LocalDate.now(), profile, cycles),
                 )
@@ -105,6 +122,8 @@ class DashboardViewModel @Inject constructor(
                     averageCycleDays = profile?.averageCycleDays ?: CycleConstants.DEFAULT_CYCLE_DAYS,
                     averagePeriodDays = profile?.averagePeriodDays ?: CycleConstants.DEFAULT_PERIOD_DAYS,
                     premium = premium,
+                    cycles = cycles,
+                    dailyLogs = dailyLogs,
                 )
             }.collect { snapshot ->
                 val previous = _state.value
@@ -167,9 +186,19 @@ class DashboardViewModel @Inject constructor(
         _state.update { it.copy(errorMessage = context.getString(br.com.dlpsystems.cycle.R.string.photo_save_failed)) }
     }
 
-    fun startPeriodToday() {
+    fun startPeriodToday() = startPeriodOnDate(LocalDate.now())
+
+    fun startPeriodOnDate(date: LocalDate) {
         viewModelScope.launch {
-            runCatching { cycleRepository.startPeriod(java.time.LocalDate.now()) }
+            runCatching { cycleRepository.startPeriod(date) }
+                .onSuccess {
+                    _state.update {
+                        it.copy(
+                            errorMessage = null,
+                            userMessage = context.getString(R.string.calendar_period_marked_success),
+                        )
+                    }
+                }
                 .onFailure { error ->
                     val userFriendly = when {
                         error.message?.contains("offline", ignoreCase = true) == true ->
@@ -182,6 +211,10 @@ class DashboardViewModel @Inject constructor(
                     _state.update { it.copy(errorMessage = userFriendly) }
                 }
         }
+    }
+
+    fun clearUserMessage() {
+        _state.update { it.copy(userMessage = null) }
     }
 
     fun saveQuickCheckIn(flow: FlowIntensity?, symptoms: Set<Symptom>, pain: Int) {

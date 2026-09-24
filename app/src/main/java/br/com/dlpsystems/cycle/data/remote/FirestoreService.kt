@@ -85,6 +85,12 @@ class FirestoreService @Inject constructor(
         val open = existing.lastOrNull { it.endDate == null }
         if (open != null && !date.isAfter(open.startDate)) {
             if (date == open.startDate) return open
+            val previous = existing.filter { it.id != open.id }.maxByOrNull { it.startDate }
+            if (previous == null || date.isAfter(previous.endDate ?: previous.startDate)) {
+                val adjusted = open.copy(startDate = date)
+                cycles(uid).document(open.id).set(adjusted.toEntity()).await()
+                return adjusted
+            }
             throw IllegalArgumentException("period-before-open-cycle")
         }
         val batch = services.firestore.batch()
@@ -107,6 +113,21 @@ class FirestoreService @Inject constructor(
         batch.set(document, created.toEntity())
         batch.commit().await()
         return created
+    }
+
+    fun observeDailyLogs(uid: String): Flow<List<DailyLog>> = callbackFlow {
+        val registration = logs(uid).addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+            val items = snapshot?.documents?.mapNotNull { document ->
+                val date = runCatching { LocalDate.parse(document.id) }.getOrNull() ?: return@mapNotNull null
+                document.toObject(DailyLogEntity::class.java)?.toDomain(date)
+            }.orEmpty().sortedBy { it.date }
+            trySend(items)
+        }
+        awaitClose { registration.remove() }
     }
 
     suspend fun saveDailyLog(uid: String, log: DailyLog) {

@@ -73,11 +73,16 @@ import java.util.Locale
 @Composable
 fun LogSymptomBottomSheet(
     onDismiss: () -> Unit,
+    initialDate: LocalDate = LocalDate.now(),
     viewModel: TrackingViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(initialDate) {
+        viewModel.selectDate(initialDate)
+    }
 
     LaunchedEffect(state.saved) {
         if (state.saved) onDismiss()

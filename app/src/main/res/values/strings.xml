@@ -44,7 +44,7 @@
     <string name="photo_drive_note">A foto é criptografada neste aparelho e gravada no seu Google Drive.</string>
     <string name="photo_save_failed">Não foi possível guardar a foto no Drive.</string>
     <string name="greeting_anonymous">Olá</string>
-    <string name="register_today">Registrar hoje</string>
+    <string name="register_today">Registrar sintomas e humor</string>
     <string name="phase_menstrual">Menstrual</string>
     <string name="phase_follicular">Folicular</string>
     <string name="phase_ovulatory">Ovulatória</string>
@@ -181,4 +181,19 @@
     <string name="error_firestore_offline">Não foi possível conectar ao servidor. Verifique sua conexão com a internet ou se o banco de dados está ativo.</string>
     <string name="error_firestore_permission">Acesso negado ao banco de dados. Verifique a configuração do Cloud Firestore no Firebase Console.</string>
     <string name="error_generic">Ocorreu um erro ao salvar o início da menstruação. Tente novamente.</string>
+    <string name="calendar_title">Calendário do Ciclo</string>
+    <string name="calendar_tap_to_view">Toque para ver o calendário</string>
+    <string name="calendar_legend_menstrual">Menstruação</string>
+    <string name="calendar_legend_follicular">Folicular</string>
+    <string name="calendar_legend_ovulatory">Fértil / Ovulação</string>
+    <string name="calendar_legend_luteal">Lútea</string>
+    <string name="calendar_cycle_day">Dia %1$d do ciclo</string>
+    <string name="calendar_predicted_period">Previsão da menstruação</string>
+    <string name="calendar_fertile_window">Janela fértil prevista</string>
+    <string name="calendar_ovulation_peak">Provável pico de ovulação</string>
+    <string name="calendar_no_log">Nenhum sintoma registrado neste dia.</string>
+    <string name="calendar_log_day">Registrar sintomas deste dia</string>
+    <string name="calendar_mark_period">Marcar início da menstruação nesta data</string>
+    <string name="calendar_period_marked_success">Início do ciclo atualizado com sucesso!</string>
+    <string name="calendar_confirm_mark_period">Deseja marcar o início do ciclo nesta data?</string>
 </resources>

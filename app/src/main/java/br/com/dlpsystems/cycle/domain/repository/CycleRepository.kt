@@ -7,6 +7,7 @@ import java.time.LocalDate
 
 interface CycleRepository {
     fun observeCycles(): Flow<List<MenstrualCycle>>
+    fun observeDailyLogs(): Flow<List<DailyLog>>
     suspend fun getCycles(): List<MenstrualCycle>
     suspend fun startPeriod(date: LocalDate): MenstrualCycle
     suspend fun saveDailyLog(log: DailyLog)

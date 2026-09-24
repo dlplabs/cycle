@@ -29,6 +29,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.EditNote
+import androidx.compose.material.icons.rounded.WaterDrop
+import androidx.compose.ui.graphics.Color
+import br.com.dlpsystems.cycle.presentation.calendar.CycleCalendarBottomSheet
+import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
+import java.time.LocalDate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -123,6 +129,16 @@ fun DashboardScreen(
         driveConsent.waiting?.complete(result.resultCode == Activity.RESULT_OK)
     }
     var showPhotoOptions by remember { mutableStateOf(false) }
+    var showCalendar by remember { mutableStateOf(false) }
+    var logSelectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    LaunchedEffect(state.userMessage) {
+        if (state.userMessage != null) {
+            kotlinx.coroutines.delay(3500)
+            viewModel.clearUserMessage()
+        }
+    }
+
     fun saveWithDrive(block: (String) -> Unit) {
         val host = activity ?: return
         scope.launch {
@@ -210,6 +226,7 @@ fun DashboardScreen(
                             daysRemaining = result?.daysUntilNextPeriod ?: 0,
                             segments = result?.segments.orEmpty(),
                             wheelSize = wheel,
+                            onClick = { showCalendar = true },
                         )
                     }
                 }
@@ -238,8 +255,21 @@ fun DashboardScreen(
                     text = stringResource(
                         if (needsFirstPeriod) R.string.start_first_period else R.string.register_today,
                     ),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = if (needsFirstPeriod) Icons.Rounded.WaterDrop else Icons.Rounded.EditNote,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    },
                     onClick = {
-                        if (needsFirstPeriod) viewModel.startPeriodToday() else showLog = true
+                        if (needsFirstPeriod) {
+                            viewModel.startPeriodToday()
+                        } else {
+                            logSelectedDate = LocalDate.now()
+                            showLog = true
+                        }
                     },
                     modifier = Modifier.coachTarget(coach),
                 )
@@ -250,6 +280,21 @@ fun DashboardScreen(
                 }
                 state.errorMessage?.let {
                     Text(it, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                }
+                state.userMessage?.let { msg ->
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = HeaderSage,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = msg,
+                            color = DeepPlum,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
                 }
@@ -262,8 +307,27 @@ fun DashboardScreen(
             )
             }
         }
+        if (showCalendar) {
+            CycleCalendarBottomSheet(
+                onDismiss = { showCalendar = false },
+                cycles = state.cycles,
+                dailyLogs = state.dailyLogs,
+                averageCycleDays = state.averageCycleDays,
+                averagePeriodDays = state.averagePeriodDays,
+                onLogSymptomOnDate = { date ->
+                    logSelectedDate = date
+                    showLog = true
+                },
+                onStartPeriodOnDate = { date ->
+                    viewModel.startPeriodOnDate(date)
+                },
+            )
+        }
         if (showLog) {
-            LogSymptomBottomSheet(onDismiss = { showLog = false })
+            LogSymptomBottomSheet(
+                onDismiss = { showLog = false },
+                initialDate = logSelectedDate,
+            )
         }
         if (showPhotoOptions) {
             PhotoSourceDialog(

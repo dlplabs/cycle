@@ -6,6 +6,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,20 +35,35 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.designsystem.AppCard
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
 import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
 import br.com.dlpsystems.cycle.data.remote.AnalyticsEvents
 import br.com.dlpsystems.cycle.data.remote.AnalyticsService
+import br.com.dlpsystems.cycle.domain.repository.BillingRepository
+import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
+import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
+import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
+import br.com.dlpsystems.cycle.presentation.components.coachRoot
+import br.com.dlpsystems.cycle.presentation.components.coachTarget
+import br.com.dlpsystems.cycle.presentation.components.rememberCoachMark
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.delay
+import javax.inject.Inject
 
 @Composable
-fun SosReliefScreen(onBack: (() -> Unit)? = null) {
+fun SosReliefScreen(
+    onAccount: () -> Unit = {},
+    onBack: (() -> Unit)? = null,
+) {
     val context = LocalContext.current
     var minutes by remember { mutableIntStateOf(25) }
     var remaining by remember { mutableLongStateOf(0L) }
@@ -87,104 +103,122 @@ fun SosReliefScreen(onBack: (() -> Unit)? = null) {
         }
     }
 
-    Column(
+    val coach = rememberCoachMark("relief")
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            .coachRoot(coach),
     ) {
-        Text(
-            text = stringResource(R.string.sos_title),
-            style = MaterialTheme.typography.headlineMedium,
-            color = DeepPlum,
+        Column(modifier = Modifier.fillMaxSize()) {
+            ScreenHeader(
+                title = stringResource(R.string.sos_title),
+                onAccount = onAccount,
+                onBack = onBack,
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                // Card 1: Heat Therapy
+                AppCard {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_toalha_flor),
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp),
+                                tint = Color.Unspecified,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                painter = painterResource(R.drawable.ic_cha),
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp),
+                                tint = Color.Unspecified,
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Bolsa de Calor & Chá Morno",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = DeepPlum,
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.sos_heat, minutes),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Slider(
+                            value = minutes.toFloat(),
+                            onValueChange = { minutes = it.toInt() },
+                            valueRange = 20f..30f,
+                            steps = 9,
+                        )
+                        PrimaryButton(
+                            text = if (remaining > 0) stringResource(R.string.sos_remaining, remaining / 1000) else stringResource(R.string.sos_start_timer),
+                            onClick = { remaining = minutes * 60_000L },
+                            modifier = Modifier.coachTarget(coach),
+                        )
+                    }
+                }
+
+                // Card 2: Guided Breathing 4-7-8
+                AppCard {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_lua_lavanda),
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp),
+                                tint = Color.Unspecified,
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Respiração Guiada 4-7-8",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = DeepPlum,
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.sos_breath),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        if (breatheText.isNotBlank()) {
+                            Text(
+                                text = breatheText,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = DeepPlum,
+                            )
+                        }
+                        PrimaryButton(
+                            text = stringResource(if (breathing == 0) R.string.sos_start_breath else R.string.sos_stop_breath),
+                            onClick = { breathing = if (breathing == 0) 1 else 0 },
+                        )
+                    }
+                }
+
+                if (remaining == 0L && breathing == 0) {
+                    val premium by hiltViewModel<SosPremiumViewModel>().isPremium.collectAsStateWithLifecycle()
+                    AdBannerContainer(isPremium = premium)
+                }
+
+                if (onBack != null) {
+                    PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
+                }
+            }
+        }
+        CoachMarkOverlay(
+            state = coach,
+            message = stringResource(R.string.coach_relief),
         )
-
-        // Card 1: Heat Therapy
-        AppCard {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_toalha_flor),
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp),
-                        tint = Color.Unspecified,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        painter = painterResource(R.drawable.ic_cha),
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp),
-                        tint = Color.Unspecified,
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Bolsa de Calor & Chá Morno",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = DeepPlum,
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.sos_heat, minutes),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Slider(
-                    value = minutes.toFloat(),
-                    onValueChange = { minutes = it.toInt() },
-                    valueRange = 20f..30f,
-                    steps = 9,
-                )
-                PrimaryButton(
-                    text = if (remaining > 0) stringResource(R.string.sos_remaining, remaining / 1000) else stringResource(R.string.sos_start_timer),
-                    onClick = { remaining = minutes * 60_000L },
-                )
-            }
-        }
-
-        // Card 2: Guided Breathing 4-7-8
-        AppCard {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_lua_lavanda),
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp),
-                        tint = Color.Unspecified,
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Respiração Guiada 4-7-8",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = DeepPlum,
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.sos_breath),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (breatheText.isNotBlank()) {
-                    Text(
-                        text = breatheText,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = DeepPlum,
-                    )
-                }
-                PrimaryButton(
-                    text = stringResource(if (breathing == 0) R.string.sos_start_breath else R.string.sos_stop_breath),
-                    onClick = { breathing = if (breathing == 0) 1 else 0 },
-                )
-            }
-        }
-
-        if (onBack != null) {
-            PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
-        }
     }
 }
 
@@ -209,4 +243,11 @@ private fun pulse(context: Context, amplitude: Int) {
 @InstallIn(SingletonComponent::class)
 interface SosEntryPoint {
     fun analytics(): AnalyticsService
+}
+
+@HiltViewModel
+class SosPremiumViewModel @Inject constructor(
+    billingRepository: BillingRepository,
+) : ViewModel() {
+    val isPremium = billingRepository.isPremiumUser
 }

@@ -32,6 +32,8 @@ fun UserProfile.toFirestoreMap(): Map<String, Any?> = mapOf(
     "averageCycleDays" to averageCycleDays,
     "averagePeriodDays" to averagePeriodDays,
     "createdAt" to Timestamp(createdAt.epochSecond, createdAt.nano),
+    "photoUrl" to photoUrl,
+    "photoDriveId" to photoDriveId,
 )
 
 fun UserProfile.toEntity(): UserProfileEntity = UserProfileEntity(
@@ -40,6 +42,8 @@ fun UserProfile.toEntity(): UserProfileEntity = UserProfileEntity(
     averageCycleDays = averageCycleDays,
     averagePeriodDays = averagePeriodDays,
     createdAt = Timestamp(createdAt.epochSecond, createdAt.nano),
+    photoUrl = photoUrl,
+    photoDriveId = photoDriveId,
 )
 
 fun UserProfileEntity.toDomain(): UserProfile = UserProfile(
@@ -48,6 +52,8 @@ fun UserProfileEntity.toDomain(): UserProfile = UserProfile(
     averageCycleDays = averageCycleDays,
     averagePeriodDays = averagePeriodDays,
     createdAt = createdAt?.toDate()?.toInstant() ?: Instant.EPOCH,
+    photoUrl = photoUrl,
+    photoDriveId = photoDriveId,
 )
 
 fun CycleEntity.toDomain(id: String): MenstrualCycle? {

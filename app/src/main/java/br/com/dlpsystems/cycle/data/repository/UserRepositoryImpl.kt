@@ -1,6 +1,8 @@
 package br.com.dlpsystems.cycle.data.repository
 
 import br.com.dlpsystems.cycle.core.config.CycleConstants
+import br.com.dlpsystems.cycle.data.local.AvatarCipher
+import br.com.dlpsystems.cycle.data.remote.DriveAvatarStore
 import br.com.dlpsystems.cycle.data.remote.FirebaseAuthService
 import br.com.dlpsystems.cycle.data.remote.FirebaseServices
 import br.com.dlpsystems.cycle.data.remote.FirestoreService
@@ -24,6 +26,7 @@ class UserRepositoryImpl @Inject constructor(
     private val services: FirebaseServices,
     private val authService: FirebaseAuthService,
     private val firestore: FirestoreService,
+    private val driveAvatars: DriveAvatarStore,
 ) : UserRepository {
     override val isBackendAvailable: Boolean
         get() = services.available
@@ -72,6 +75,19 @@ class UserRepositoryImpl @Inject constructor(
         return firestore.getProfile(uid)
     }
 
+    override suspend fun saveAvatar(accessToken: String, jpeg: ByteArray) {
+        if (!services.available) throw ServiceUnavailableException()
+        val uid = currentUid()
+        val existing = firestore.getProfile(uid)?.photoDriveId
+        val fileId = driveAvatars.save(accessToken, existing, AvatarCipher.encrypt(jpeg))
+        firestore.updatePhotoDrive(uid, fileId)
+    }
+
+    override suspend fun readAvatar(accessToken: String, fileId: String): ByteArray {
+        if (!services.available) throw ServiceUnavailableException()
+        return AvatarCipher.decrypt(driveAvatars.download(accessToken, fileId))
+    }
+
     override suspend fun updateAverages(averageCycleDays: Int, averagePeriodDays: Int) {
         firestore.updateAverages(
             currentUid(),
@@ -112,7 +128,10 @@ class UserRepositoryImpl @Inject constructor(
             throw AuthFailure.NotConfigured
         } catch (error: Throwable) {
             throw when (error.firebaseAuthCode()) {
-                "ERROR_EMAIL_ALREADY_IN_USE" -> AuthFailure.EmailInUse
+                "ERROR_EMAIL_ALREADY_IN_USE",
+                "ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL",
+                "ERROR_CREDENTIAL_ALREADY_IN_USE",
+                -> AuthFailure.EmailInUse
                 "ERROR_WEAK_PASSWORD" -> AuthFailure.WeakPassword
                 "ERROR_OPERATION_NOT_ALLOWED" -> AuthFailure.ProviderDisabled
                 "ERROR_REQUIRES_RECENT_LOGIN" -> AuthFailure.RequiresRecentLogin

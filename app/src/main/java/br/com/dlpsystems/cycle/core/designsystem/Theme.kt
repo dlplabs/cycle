@@ -1,7 +1,6 @@
 package br.com.dlpsystems.cycle.core.designsystem
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
@@ -54,7 +53,7 @@ private val CycleDarkColorScheme = darkColorScheme(
 @Composable
 fun CycleTheme(
     phase: CyclePhase = CyclePhase.LUTEAL,
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {

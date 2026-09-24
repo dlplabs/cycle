@@ -7,6 +7,7 @@ import br.com.dlpsystems.cycle.domain.model.CyclePhase
 val DeepPlum = Color(0xFF4A2B4D)
 val DeepPlumLight = Color(0xFF6E4572)
 val OffWhiteBackground = Color(0xFFF9F7F6)
+val HeaderSage = Color(0xFFC5D1C2)
 val SurfaceCard = Color(0xFFFFFFFF)
 
 // Cores das Fases do Ciclo (Orgânicas e Suaves)

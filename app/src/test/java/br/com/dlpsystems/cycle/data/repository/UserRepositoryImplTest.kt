@@ -19,7 +19,8 @@ class UserRepositoryImplTest {
     private val services = mockk<FirebaseServices>()
     private val authService = mockk<FirebaseAuthService>(relaxed = true)
     private val firestore = mockk<FirestoreService>(relaxed = true)
-    private val repository = UserRepositoryImpl(services, authService, firestore)
+    private val driveAvatars = mockk<br.com.dlpsystems.cycle.data.remote.DriveAvatarStore>(relaxed = true)
+    private val repository = UserRepositoryImpl(services, authService, firestore, driveAvatars)
 
     @Test
     fun deleteAccountDeletesFirestoreDataAndAuthUser() = runTest {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -59,82 +60,88 @@ fun LogSymptomBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .fillMaxHeight(0.92f)
+                .navigationBarsPadding(),
         ) {
-            Text(stringResource(R.string.log_title), style = MaterialTheme.typography.titleLarge)
-            DateStrip(
-                selected = state.date,
-                onSelect = { date ->
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    viewModel.selectDate(date)
-                },
-            )
-            Text(stringResource(R.string.flow), style = MaterialTheme.typography.titleMedium)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FlowIntensity.entries.forEach { flow ->
-                    FilterChip(
-                        selected = state.flow == flow,
-                        onClick = { viewModel.selectFlow(flow) },
-                        label = { Text(stringResource(flow.labelRes())) },
-                        modifier = Modifier.accessibleTouchTarget(),
-                    )
-                }
-            }
-            Text(stringResource(R.string.mood), style = MaterialTheme.typography.titleMedium)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Mood.entries.forEach { mood ->
-                    FilterChip(
-                        selected = state.mood == mood,
-                        onClick = { viewModel.selectMood(mood) },
-                        label = { Text(stringResource(mood.labelRes())) },
-                        modifier = Modifier.accessibleTouchTarget(),
-                    )
-                }
-            }
-            Text(stringResource(R.string.skin), style = MaterialTheme.typography.titleMedium)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SkinCondition.entries.forEach { skin ->
-                    FilterChip(
-                        selected = state.skin == skin,
-                        onClick = { viewModel.selectSkin(skin) },
-                        label = { Text(stringResource(skin.labelRes())) },
-                        modifier = Modifier.accessibleTouchTarget(),
-                    )
-                }
-            }
-            Text(stringResource(R.string.symptoms), style = MaterialTheme.typography.titleMedium)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Symptom.entries.forEach { symptom ->
-                    SymptomChip(
-                        label = stringResource(symptom.labelRes()),
-                        selected = symptom in state.symptoms,
-                        icon = CycleIcons.Mind,
-                        onClick = { viewModel.toggleSymptom(symptom) },
-                    )
-                }
-            }
-            OutlinedTextField(
-                value = state.notes,
-                onValueChange = viewModel::onNotes,
-                label = { Text(stringResource(R.string.notes)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-            )
-            androidx.compose.foundation.layout.Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(stringResource(R.string.period_started), style = MaterialTheme.typography.bodyLarge)
-                Switch(checked = state.periodStarted, onCheckedChange = viewModel::setPeriodStarted)
+                Text(stringResource(R.string.log_title), style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.mood), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Mood.entries.forEach { mood ->
+                        FilterChip(
+                            selected = state.mood == mood,
+                            onClick = { viewModel.selectMood(mood) },
+                            label = { Text(stringResource(mood.labelRes())) },
+                            modifier = Modifier.accessibleTouchTarget(),
+                        )
+                    }
+                }
+                DateStrip(
+                    selected = state.date,
+                    onSelect = { date ->
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        viewModel.selectDate(date)
+                    },
+                )
+                Text(stringResource(R.string.symptoms), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Symptom.entries.forEach { symptom ->
+                        SymptomChip(
+                            label = stringResource(symptom.labelRes()),
+                            selected = symptom in state.symptoms,
+                            icon = CycleIcons.Mind,
+                            onClick = { viewModel.toggleSymptom(symptom) },
+                        )
+                    }
+                }
+                Text(stringResource(R.string.skin), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SkinCondition.entries.forEach { skin ->
+                        FilterChip(
+                            selected = state.skin == skin,
+                            onClick = { viewModel.selectSkin(skin) },
+                            label = { Text(stringResource(skin.labelRes())) },
+                            modifier = Modifier.accessibleTouchTarget(),
+                        )
+                    }
+                }
+                Text(stringResource(R.string.flow), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowIntensity.entries.forEach { flow ->
+                        FilterChip(
+                            selected = state.flow == flow,
+                            onClick = { viewModel.selectFlow(flow) },
+                            label = { Text(stringResource(flow.labelRes())) },
+                            modifier = Modifier.accessibleTouchTarget(),
+                        )
+                    }
+                }
+                OutlinedTextField(
+                    value = state.notes,
+                    onValueChange = viewModel::onNotes,
+                    label = { Text(stringResource(R.string.notes)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2,
+                )
+                androidx.compose.foundation.layout.Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.period_started), style = MaterialTheme.typography.bodyLarge)
+                    Switch(checked = state.periodStarted, onCheckedChange = viewModel::setPeriodStarted)
+                }
+                if (state.needsPeriod) {
+                    Text(stringResource(R.string.need_period), color = MaterialTheme.colorScheme.error)
+                }
+                state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
-            if (state.needsPeriod) {
-                Text(stringResource(R.string.need_period), color = MaterialTheme.colorScheme.error)
-            }
-            state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             PrimaryButton(
                 text = stringResource(R.string.log_save),
                 enabled = !state.saving,
@@ -142,6 +149,7 @@ fun LogSymptomBottomSheet(
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     viewModel.save()
                 },
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
             )
         }
     }

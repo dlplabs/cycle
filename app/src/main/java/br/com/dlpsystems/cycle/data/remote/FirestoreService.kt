@@ -44,6 +44,13 @@ class FirestoreService @Inject constructor(
         userDocument(uid).set(mapOf("profile" to profile.toFirestoreMap()), SetOptions.merge()).await()
     }
 
+    suspend fun updatePhotoDrive(uid: String, fileId: String) {
+        userDocument(uid).update("profile.photoDriveId", fileId).await()
+        runCatching {
+            userDocument(uid).update("profile.photoUrl", com.google.firebase.firestore.FieldValue.delete()).await()
+        }
+    }
+
     suspend fun updateAverages(uid: String, averageCycleDays: Int, averagePeriodDays: Int) {
         userDocument(uid).update(
             mapOf(

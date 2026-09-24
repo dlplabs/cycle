@@ -9,9 +9,9 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,8 +31,10 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.accessibility.SemanticsUtils
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
@@ -73,8 +75,6 @@ fun CycleWheel(
         animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
         label = "pulseScale",
     )
-    val dark = isSystemInDarkTheme()
-
     Box(
         modifier = modifier.semantics(mergeDescendants = true) {
             contentDescription = description
@@ -82,7 +82,7 @@ fun CycleWheel(
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            painter = painterResource(R.drawable.ic_grafico_circular),
+            painter = painterResource(R.drawable.ic_moldura_dias),
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
@@ -111,7 +111,7 @@ fun CycleWheel(
                     y = center.y + radius * sin(angle).toFloat(),
                 )
                 val currentPhase = phase ?: CyclePhase.LUTEAL
-                val markerColor = PhaseColors.forPhase(currentPhase, dark).primary
+                val markerColor = PhaseColors.forPhase(currentPhase, false).primary
                 drawCircle(color = DeepPlum, radius = 12.dp.toPx() * scale, center = centerPoint)
                 drawCircle(
                     color = markerColor,
@@ -121,15 +121,18 @@ fun CycleWheel(
             }
         }
 
-        // Centro do Círculo com Tipografia Serifada (Playfair Display) e Cor DeepPlum
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.clearAndSetSemantics { },
+            modifier = Modifier
+                .offset(x = wheelSize * 0.003f, y = wheelSize * -0.002f)
+                .clearAndSetSemantics { },
         ) {
             Text(
                 text = cycleDay.coerceAtLeast(0).toString(),
                 style = MaterialTheme.typography.displayMedium.copy(
                     fontWeight = FontWeight.Bold,
+                    fontSize = (wheelSize.value * 0.24f).sp,
+                    lineHeight = (wheelSize.value * 0.26f).sp,
                 ),
                 color = DeepPlum,
             )
@@ -137,8 +140,12 @@ fun CycleWheel(
                 text = phaseName,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Medium,
+                    fontSize = (wheelSize.value * 0.078f).sp,
+                    lineHeight = (wheelSize.value * 0.09f).sp,
                 ),
                 color = DeepPlum,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

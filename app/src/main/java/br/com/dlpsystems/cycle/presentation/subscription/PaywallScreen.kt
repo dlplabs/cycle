@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,14 +63,17 @@ fun PaywallScreen(
 ) {
     val premium by viewModel.isPremium.collectAsStateWithLifecycle()
     val activity = LocalActivity.current
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(
-            stringResource(R.string.paywall_title, AppConfig.displayName),
-            style = MaterialTheme.typography.headlineMedium,
+    Column(modifier = Modifier.fillMaxSize()) {
+        ScreenHeader(
+            title = stringResource(R.string.paywall_title, AppConfig.displayName),
+            onBack = onBack,
         )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
         Text(stringResource(R.string.paywall_body), style = MaterialTheme.typography.bodyLarge)
         if (premium) {
             Text(stringResource(R.string.paywall_active))
@@ -84,6 +88,6 @@ fun PaywallScreen(
             onClick = { activity?.let { viewModel.buy(it, BillingProducts.YEARLY) } },
             enabled = !premium,
         )
-        PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
+        }
     }
 }

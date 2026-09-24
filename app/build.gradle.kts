@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.analytics)
+    implementation(libs.play.services.auth)
     implementation(libs.billing.ktx)
     implementation(libs.play.services.ads)
     implementation(libs.glance.appwidget)

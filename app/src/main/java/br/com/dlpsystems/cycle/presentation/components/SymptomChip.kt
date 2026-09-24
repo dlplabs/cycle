@@ -26,7 +26,7 @@ fun SymptomChip(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(28.dp),
             )
         },
         modifier = modifier.accessibleTouchTarget(),

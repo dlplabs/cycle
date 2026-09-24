@@ -132,8 +132,8 @@ fun CycleWheel(
                 val angle = Math.toRadians((-90.0 + (markerDay - 0.5) / cycleLength * 360.0 * progress))
                 val radius = arcSize / 2f
                 val centerPoint = Offset(
-                    x = center.x + radius * cos(angle).toFloat(),
-                    y = center.y + radius * sin(angle).toFloat(),
+                    x = center.x + radius * kotlin.math.cos(angle).toFloat(),
+                    y = center.y + radius * kotlin.math.sin(angle).toFloat(),
                 )
                 val currentPhase = phase ?: CyclePhase.LUTEAL
                 val markerColor = PhaseColors.forPhase(currentPhase, false).primary

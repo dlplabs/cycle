@@ -289,7 +289,7 @@ fun DashboardScreen(
                     ) {
                         Text(
                             text = msg,
-                            color = DeepPlum,
+                            color = br.com.dlpsystems.cycle.core.designsystem.DeepPlum,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                             textAlign = TextAlign.Center,

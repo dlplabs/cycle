@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.config.CycleConstants
 import br.com.dlpsystems.cycle.data.local.AvatarCompressor
 import br.com.dlpsystems.cycle.data.local.UserPreferencesDataSource

@@ -23,18 +23,26 @@
     <string name="sign_out">Sair</string>
     <string name="backend_missing">Adicione google-services.json para ativar login e sincronização.</string>
     <string name="error_invalid_credentials">E-mail ou senha incorretos.</string>
-    <string name="error_email_in_use">Este e-mail já está em uso.</string>
+    <string name="error_email_in_use">Este e-mail já tem conta. Entre com a senha ou com o mesmo Google usado no cadastro.</string>
     <string name="error_weak_password">A senha precisa ter pelo menos 6 caracteres.</string>
     <string name="error_not_configured">O serviço de conta ainda não está configurado neste aparelho.</string>
-    <string name="error_google_not_configured">O Google Sign-In precisa ser ativado no Firebase Console (Web Client ID ausente no google-services.json).</string>
+    <string name="error_google_not_configured">O Google fechou sem entrar. No Firebase, cadastre o SHA-1 deste app e baixe de novo o google-services.json.</string>
     <string name="error_no_account">Ainda não há uma conta Cycle para este acesso. Toque em Criar uma conta para se cadastrar.</string>
-    <string name="error_google_failed">Não foi possível entrar com o Google. Confira se há uma conta Google no aparelho e tente de novo.</string>
+    <string name="error_google_failed">O Google não devolveu a entrada. Tente de novo. Se repetir, cadastre o SHA-1 no Firebase.</string>
     <string name="error_unknown">Não foi possível concluir. Tente de novo.</string>
     <string name="error_birth_date">Use a data no formato dd/mm/aaaa, por exemplo 14/04/1982.</string>
     <string name="error_provider_disabled">O login por e-mail ainda não está ativo no Firebase. Ative E-mail/senha em Authentication.</string>
     <string name="error_network">Sem conexão. Verifique a internet e tente de novo.</string>
 
     <string name="greeting">Olá, %1$s</string>
+    <string name="cd_profile_photo">Foto de %1$s</string>
+    <string name="photo_title">Foto do perfil</string>
+    <string name="photo_google">Usar foto do Google</string>
+    <string name="photo_gallery">Escolher na galeria</string>
+    <string name="photo_camera">Tirar foto</string>
+    <string name="photo_close">Fechar</string>
+    <string name="photo_drive_note">A foto é criptografada neste aparelho e gravada no seu Google Drive.</string>
+    <string name="photo_save_failed">Não foi possível guardar a foto no Drive.</string>
     <string name="greeting_anonymous">Olá</string>
     <string name="register_today">Registrar hoje</string>
     <string name="phase_menstrual">Menstrual</string>
@@ -51,6 +59,12 @@
     <string name="nav_relief">Alívio</string>
     <string name="nav_plan">Planejar</string>
     <string name="nav_account">Conta</string>
+    <string name="coach_dismiss">Entendi</string>
+    <string name="coach_today_start">Comece por aqui. Marque o primeiro dia da menstruação para o ciclo aparecer nesta roda.</string>
+    <string name="coach_today_log">Toque aqui para registrar como você está hoje.</string>
+    <string name="coach_relief">O alívio começa neste card: ajuste o tempo e inicie o calor. A respiração guiada fica logo abaixo.</string>
+    <string name="coach_planner">Escolha uma data e toque em ver a fase prevista para saber como será esse dia do ciclo.</string>
+    <string name="coach_account">A duração do ciclo e o lembrete diário ficam neste card.</string>
     <string name="your_cycle">Seu ciclo</string>
     <string name="average_cycle">Duração média</string>
     <string name="average_period">Dias de fluxo</string>
@@ -66,7 +80,7 @@
     <string name="pillar_skin">Pele</string>
     <string name="pillar_mind">Mente</string>
 
-    <string name="log_title">Como você está</string>
+    <string name="log_title">Como você se sente</string>
     <string name="log_save">Salvar registro</string>
     <string name="period_started">A menstruação começou</string>
     <string name="flow">Fluxo</string>
@@ -99,13 +113,14 @@
     <string name="symptom_nausea">Náusea</string>
     <string name="symptom_cravings">Desejos</string>
 
-    <string name="reminder_channel_name">Lembretes do ciclo</string>
-    <string name="reminder_title">Fase de hoje</string>
-    <string name="reminder_body">Dia %1$d, fase %2$s. %3$s</string>
+    <string name="reminder_channel_name">Mudança de fase</string>
+    <string name="reminder_title">Nova fase</string>
+    <string name="reminder_body">Você entrou na fase %1$s. Dia %2$d do ciclo.</string>
     <string name="cd_phase_icon">Ícone da fase %1$s</string>
     <string name="cd_pillar_icon">Ícone de %1$s</string>
     <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
     <string name="admob_banner_id" translatable="false">ca-app-pub-3940256099942544/9214589741</string>
+    <string name="ad_label">Anúncio</string>
     <string name="quick_checkin">Check-in de agora</string>
     <string name="quick_save">Salvar check-in</string>
     <string name="pain_level">Dor %1$d de 10</string>
@@ -148,4 +163,7 @@
     <string name="sos_breathe_inhale">Inspire...</string>
     <string name="sos_breathe_hold">Segure...</string>
     <string name="sos_breathe_exhale">Expire...</string>
+    <string name="error_firestore_offline">Não foi possível conectar ao servidor. Verifique sua conexão com a internet ou se o banco de dados está ativo.</string>
+    <string name="error_firestore_permission">Acesso negado ao banco de dados. Verifique a configuração do Cloud Firestore no Firebase Console.</string>
+    <string name="error_generic">Ocorreu um erro ao salvar o início da menstruação. Tente novamente.</string>
 </resources>

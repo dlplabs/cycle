@@ -35,13 +35,20 @@ class FirestoreService @Inject constructor(
         awaitClose { registration.remove() }
     }
 
-    suspend fun getProfile(uid: String): UserProfile? {
+    suspend fun getProfile(uid: String): UserProfile? = runCatching {
         val snapshot = userDocument(uid).get().await()
-        return snapshot.get("profile", br.com.dlpsystems.cycle.data.model.UserProfileEntity::class.java)?.toDomain()
-    }
+        snapshot.get("profile", br.com.dlpsystems.cycle.data.model.UserProfileEntity::class.java)?.toDomain()
+    }.getOrNull()
 
     suspend fun saveProfile(uid: String, profile: UserProfile) {
         userDocument(uid).set(mapOf("profile" to profile.toFirestoreMap()), SetOptions.merge()).await()
+    }
+
+    suspend fun updatePhotoDrive(uid: String, fileId: String) {
+        userDocument(uid).update("profile.photoDriveId", fileId).await()
+        runCatching {
+            userDocument(uid).update("profile.photoUrl", com.google.firebase.firestore.FieldValue.delete()).await()
+        }
     }
 
     suspend fun updateAverages(uid: String, averageCycleDays: Int, averagePeriodDays: Int) {
@@ -67,10 +74,11 @@ class FirestoreService @Inject constructor(
         awaitClose { registration.remove() }
     }
 
-    suspend fun getCycles(uid: String): List<MenstrualCycle> =
+    suspend fun getCycles(uid: String): List<MenstrualCycle> = runCatching {
         cycles(uid).get().await().documents.mapNotNull { document ->
             document.toObject(CycleEntity::class.java)?.toDomain(document.id)
         }.sortedBy { it.startDate }
+    }.getOrDefault(emptyList())
 
     suspend fun startPeriod(uid: String, date: LocalDate, periodLength: Int): MenstrualCycle {
         val existing = getCycles(uid)
@@ -105,11 +113,12 @@ class FirestoreService @Inject constructor(
         logs(uid).document(log.date.toLogId()).set(log.toEntity()).await()
     }
 
-    suspend fun getDailyLogs(uid: String): List<DailyLog> =
+    suspend fun getDailyLogs(uid: String): List<DailyLog> = runCatching {
         logs(uid).get().await().documents.mapNotNull { document ->
             val date = runCatching { LocalDate.parse(document.id) }.getOrNull() ?: return@mapNotNull null
             document.toObject(DailyLogEntity::class.java)?.toDomain(date)
         }.sortedBy { it.date }
+    }.getOrDefault(emptyList())
 
     suspend fun deleteUserData(uid: String) {
         val cyclesSnapshot = cycles(uid).get().await()

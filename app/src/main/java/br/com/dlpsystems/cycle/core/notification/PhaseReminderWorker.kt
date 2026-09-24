@@ -65,10 +65,18 @@ class PhaseReminderWorker @AssistedInject constructor(
                 result.daysUntilNextPeriod,
             )
         }
-        showNotification(
-            applicationContext.getString(R.string.reminder_title),
-            applicationContext.getString(R.string.reminder_body, result.cycleDay, phaseName, detail),
-        )
+        val (title, body) = if (result.status == PhaseStatus.NO_CYCLE) {
+            Pair(
+                applicationContext.getString(R.string.app_name),
+                applicationContext.getString(R.string.no_cycle_hint),
+            )
+        } else {
+            Pair(
+                applicationContext.getString(R.string.reminder_title),
+                applicationContext.getString(R.string.reminder_body, result.cycleDay, phaseName, detail),
+            )
+        }
+        showNotification(title, body)
         return Result.success()
     }
 

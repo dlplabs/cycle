@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,11 +47,12 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.delay
 
 @Composable
-fun SosReliefScreen(onBack: () -> Unit) {
+fun SosReliefScreen(onBack: (() -> Unit)? = null) {
     val context = LocalContext.current
     var minutes by remember { mutableIntStateOf(25) }
     var remaining by remember { mutableLongStateOf(0L) }
     var breathing by remember { mutableIntStateOf(0) }
+    var breatheText by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         val analytics = EntryPointAccessors.fromApplication(
@@ -67,10 +69,18 @@ fun SosReliefScreen(onBack: () -> Unit) {
     }
 
     LaunchedEffect(breathing) {
-        if (breathing == 0) return@LaunchedEffect
-        val pattern = listOf(4 to 40, 7 to 80, 8 to 160)
+        if (breathing == 0) {
+            breatheText = ""
+            return@LaunchedEffect
+        }
+        val pattern = listOf(
+            Triple(4, 40, context.getString(R.string.sos_breathe_inhale)),
+            Triple(7, 80, context.getString(R.string.sos_breathe_hold)),
+            Triple(8, 160, context.getString(R.string.sos_breathe_exhale)),
+        )
         while (breathing > 0) {
-            pattern.forEach { (seconds, amplitude) ->
+            pattern.forEach { (seconds, amplitude, instruction) ->
+                breatheText = "$instruction ($seconds s)"
                 pulse(context, amplitude)
                 delay(seconds * 1000L)
             }
@@ -158,6 +168,13 @@ fun SosReliefScreen(onBack: () -> Unit) {
                     text = stringResource(R.string.sos_breath),
                     style = MaterialTheme.typography.bodyMedium,
                 )
+                if (breatheText.isNotBlank()) {
+                    Text(
+                        text = breatheText,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = DeepPlum,
+                    )
+                }
                 PrimaryButton(
                     text = stringResource(if (breathing == 0) R.string.sos_start_breath else R.string.sos_stop_breath),
                     onClick = { breathing = if (breathing == 0) 1 else 0 },
@@ -165,7 +182,9 @@ fun SosReliefScreen(onBack: () -> Unit) {
             }
         }
 
-        PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
+        if (onBack != null) {
+            PrimaryButton(text = stringResource(R.string.back), onClick = onBack)
+        }
     }
 }
 
@@ -177,7 +196,12 @@ private fun pulse(context: Context, amplitude: Int) {
         context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     } ?: return
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        vibrator.vibrate(VibrationEffect.createOneShot(180, amplitude.coerceIn(1, 255)))
+        val effect = if (vibrator.hasAmplitudeControl()) {
+            VibrationEffect.createOneShot(180, amplitude.coerceIn(1, 255))
+        } else {
+            VibrationEffect.createOneShot(180, VibrationEffect.DEFAULT_AMPLITUDE)
+        }
+        vibrator.vibrate(effect)
     }
 }
 

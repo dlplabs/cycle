@@ -138,4 +138,14 @@
     <string name="widget_empty">Sem ciclo ativo</string>
     <string name="widget_day">Dia %1$d</string>
     <string name="widget_period_started">Menstruação desceu hoje</string>
+    <string name="delete_account">Excluir conta</string>
+    <string name="delete_account_confirm_title">Excluir conta e dados?</string>
+    <string name="delete_account_confirm_message">Todos os seus registros de ciclo, sintomas, anotações e perfil serão permanentemente excluídos. Esta ação não poderá ser desfeita.</string>
+    <string name="delete_account_confirm_button">Sim, excluir definitivamente</string>
+    <string name="cancel">Cancelar</string>
+    <string name="error_requires_recent_login">Por segurança, saia e entre novamente no app antes de excluir sua conta.</string>
+    <string name="deleting_account">Excluindo conta…</string>
+    <string name="sos_breathe_inhale">Inspire...</string>
+    <string name="sos_breathe_hold">Segure...</string>
+    <string name="sos_breathe_exhale">Expire...</string>
 </resources>

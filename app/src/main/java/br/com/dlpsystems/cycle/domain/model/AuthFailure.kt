@@ -10,5 +10,6 @@ sealed class AuthFailure : Exception() {
     data object NoAccount : AuthFailure()
     data object ProviderDisabled : AuthFailure()
     data object Network : AuthFailure()
+    data object RequiresRecentLogin : AuthFailure()
     data object Unknown : AuthFailure()
 }

@@ -111,6 +111,16 @@ class FirestoreService @Inject constructor(
             document.toObject(DailyLogEntity::class.java)?.toDomain(date)
         }.sortedBy { it.date }
 
+    suspend fun deleteUserData(uid: String) {
+        val cyclesSnapshot = cycles(uid).get().await()
+        val logsSnapshot = logs(uid).get().await()
+        val batch = services.firestore.batch()
+        cyclesSnapshot.documents.forEach { batch.delete(it.reference) }
+        logsSnapshot.documents.forEach { batch.delete(it.reference) }
+        batch.delete(userDocument(uid))
+        batch.commit().await()
+    }
+
     private fun userDocument(uid: String) =
         services.firestore.collection("users").document(uid)
 

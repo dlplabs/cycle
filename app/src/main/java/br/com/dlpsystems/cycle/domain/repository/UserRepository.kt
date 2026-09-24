@@ -12,6 +12,7 @@ interface UserRepository {
     suspend fun register(name: String, email: String, password: String, birthDate: LocalDate?)
     suspend fun signInWithGoogle(idToken: String)
     suspend fun signOut()
+    suspend fun deleteAccount()
     fun observeProfile(): Flow<UserProfile?>
     suspend fun getProfile(): UserProfile?
     suspend fun updateAverages(averageCycleDays: Int, averagePeriodDays: Int)

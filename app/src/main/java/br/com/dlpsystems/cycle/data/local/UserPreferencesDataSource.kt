@@ -54,6 +54,10 @@ class UserPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun clear() {
+        dataStore.edit { it.clear() }
+    }
+
     private object Keys {
         val DISCLAIMER = booleanPreferencesKey("disclaimer_accepted")
         val REMINDERS = booleanPreferencesKey("reminders_enabled")

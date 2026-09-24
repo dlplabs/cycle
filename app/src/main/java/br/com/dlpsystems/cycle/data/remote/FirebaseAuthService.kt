@@ -56,6 +56,12 @@ class FirebaseAuthService @Inject constructor(
         if (services.available) services.auth.signOut()
     }
 
+    suspend fun deleteAccount() {
+        val auth = authOrThrow()
+        val user = auth.currentUser ?: throw ServiceUnavailableException()
+        user.delete().await()
+    }
+
     fun currentUser(): SignedInUser? {
         if (!services.available) return null
         val user = services.auth.currentUser ?: return null

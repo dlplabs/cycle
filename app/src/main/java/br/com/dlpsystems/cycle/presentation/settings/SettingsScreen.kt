@@ -13,13 +13,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -105,6 +112,28 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { userRepository.signOut() }
     }
 
+    private val _isDeleting = MutableStateFlow(false)
+    val isDeleting = _isDeleting.asStateFlow()
+
+    fun deleteAccount(onDeleted: () -> Unit) {
+        viewModelScope.launch {
+            _isDeleting.value = true
+            try {
+                userRepository.deleteAccount()
+                preferences.clear()
+                reminderScheduler.setEnabled(false)
+                _isDeleting.value = false
+                onDeleted()
+            } catch (_: br.com.dlpsystems.cycle.domain.model.AuthFailure.RequiresRecentLogin) {
+                _isDeleting.value = false
+                _message.value = "requires_recent_login"
+            } catch (error: Throwable) {
+                _isDeleting.value = false
+                _message.value = error.message ?: "unknown"
+            }
+        }
+    }
+
     fun export(onFile: (java.io.File) -> Unit) {
         viewModelScope.launch {
             val file = exportDoctorReport()
@@ -126,6 +155,8 @@ fun SettingsScreen(
     val premium by viewModel.isPremium.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
     val prefs by viewModel.prefs.collectAsStateWithLifecycle()
+    val isDeleting by viewModel.isDeleting.collectAsStateWithLifecycle()
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -135,6 +166,33 @@ fun SettingsScreen(
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.delete_account_confirm_title)) },
+            text = { Text(stringResource(R.string.delete_account_confirm_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.deleteAccount {}
+                    },
+                ) {
+                    Text(
+                        stringResource(R.string.delete_account_confirm_button),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -179,8 +237,27 @@ fun SettingsScreen(
             )
             if (message == "premium") {
                 Text(stringResource(R.string.export_locked))
+            } else if (message == "requires_recent_login") {
+                Text(
+                    stringResource(R.string.error_requires_recent_login),
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
             PrimaryButton(text = stringResource(R.string.sign_out), onClick = viewModel::signOut)
+
+            OutlinedButton(
+                onClick = { showDeleteDialog = true },
+                enabled = !isDeleting,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            ) {
+                Text(
+                    if (isDeleting) stringResource(R.string.deleting_account)
+                    else stringResource(R.string.delete_account),
+                )
+            }
         }
         AdBannerContainer(isPremium = premium)
     }

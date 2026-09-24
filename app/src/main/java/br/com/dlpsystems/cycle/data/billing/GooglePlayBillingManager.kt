@@ -5,6 +5,7 @@ import android.content.Context
 import br.com.dlpsystems.cycle.data.local.UserPreferencesDataSource
 import br.com.dlpsystems.cycle.domain.model.SubscriptionState
 import br.com.dlpsystems.cycle.domain.repository.BillingRepository
+import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
@@ -79,10 +80,12 @@ class GooglePlayBillingManager @Inject constructor(
                 .build(),
         ) { result, purchases ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryPurchasesAsync
-            val active = purchases.any { purchase ->
+            val activePurchases = purchases.filter { purchase ->
                 purchase.purchaseState == Purchase.PurchaseState.PURCHASED &&
                     purchase.products.any { it in BillingProducts.all }
             }
+            activePurchases.forEach { acknowledgePurchaseIfNeeded(it) }
+            val active = activePurchases.isNotEmpty()
             scope.launch {
                 preferences.setPremiumCached(active)
                 applyPremium(active)
@@ -107,7 +110,19 @@ class GooglePlayBillingManager @Inject constructor(
     }
 
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
-        if (result.responseCode == BillingClient.BillingResponseCode.OK) refresh()
+        if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+            purchases?.forEach { acknowledgePurchaseIfNeeded(it) }
+            refresh()
+        }
+    }
+
+    private fun acknowledgePurchaseIfNeeded(purchase: Purchase) {
+        if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged) {
+            val params = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(purchase.purchaseToken)
+                .build()
+            client.acknowledgePurchase(params) { /* no-op acknowledgment callback */ }
+        }
     }
 
     private fun queryProducts() {

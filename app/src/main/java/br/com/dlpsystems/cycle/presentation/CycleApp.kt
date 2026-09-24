@@ -117,7 +117,7 @@ private fun MainGraph(
                 )
             }
             composable("sos") {
-                SosReliefScreen(onBack = {})
+                SosReliefScreen()
             }
             composable("planner") {
                 FutureEventPlannerScreen(onPaywall = { navController.navigate("paywall") })

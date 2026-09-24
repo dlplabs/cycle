@@ -54,6 +54,12 @@ class UserRepositoryImpl @Inject constructor(
         authService.signOut()
     }
 
+    override suspend fun deleteAccount() = guard {
+        val uid = currentUid()
+        runCatching { firestore.deleteUserData(uid) }
+        authService.deleteAccount()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeProfile(): Flow<UserProfile?> =
         authService.observeUser().flatMapLatest { user ->
@@ -109,6 +115,7 @@ class UserRepositoryImpl @Inject constructor(
                 "ERROR_EMAIL_ALREADY_IN_USE" -> AuthFailure.EmailInUse
                 "ERROR_WEAK_PASSWORD" -> AuthFailure.WeakPassword
                 "ERROR_OPERATION_NOT_ALLOWED" -> AuthFailure.ProviderDisabled
+                "ERROR_REQUIRES_RECENT_LOGIN" -> AuthFailure.RequiresRecentLogin
                 "ERROR_NETWORK_REQUEST_FAILED" -> AuthFailure.Network
                 "ERROR_INVALID_EMAIL",
                 "ERROR_WRONG_PASSWORD",

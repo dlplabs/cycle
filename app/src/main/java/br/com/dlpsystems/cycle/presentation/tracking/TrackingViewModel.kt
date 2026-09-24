@@ -46,9 +46,9 @@ class TrackingViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     fun selectDate(date: LocalDate) = _state.update { it.copy(date = date, saved = false) }
-    fun selectMood(mood: Mood) = _state.update { it.copy(mood = mood) }
-    fun selectSkin(skin: SkinCondition) = _state.update { it.copy(skin = skin) }
-    fun selectFlow(flow: FlowIntensity) = _state.update { it.copy(flow = flow) }
+    fun selectMood(mood: Mood) = _state.update { it.copy(mood = if (it.mood == mood) null else mood) }
+    fun selectSkin(skin: SkinCondition) = _state.update { it.copy(skin = if (it.skin == skin) null else skin) }
+    fun selectFlow(flow: FlowIntensity) = _state.update { it.copy(flow = if (it.flow == flow) null else flow) }
     fun onNotes(value: String) = _state.update { it.copy(notes = value.take(500)) }
     fun setPeriodStarted(started: Boolean) = _state.update { it.copy(periodStarted = started) }
 

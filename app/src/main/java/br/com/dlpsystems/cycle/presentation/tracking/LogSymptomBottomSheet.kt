@@ -1,45 +1,73 @@
 package br.com.dlpsystems.cycle.presentation.tracking
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.accessibility.accessibleTouchTarget
-import br.com.dlpsystems.cycle.core.designsystem.CycleIcons
+import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
+import br.com.dlpsystems.cycle.core.designsystem.HeaderSage
+import br.com.dlpsystems.cycle.core.designsystem.OffWhiteBackground
+import br.com.dlpsystems.cycle.core.designsystem.PlayfairDisplay
 import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
+import br.com.dlpsystems.cycle.core.designsystem.SurfaceCard
+import br.com.dlpsystems.cycle.core.designsystem.TextPrimary
+import br.com.dlpsystems.cycle.core.designsystem.TextSecondary
 import br.com.dlpsystems.cycle.domain.model.FlowIntensity
 import br.com.dlpsystems.cycle.domain.model.Mood
 import br.com.dlpsystems.cycle.domain.model.SkinCondition
 import br.com.dlpsystems.cycle.domain.model.Symptom
-import br.com.dlpsystems.cycle.presentation.components.SymptomChip
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -50,38 +78,50 @@ fun LogSymptomBottomSheet(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    androidx.compose.runtime.LaunchedEffect(state.saved) {
+
+    LaunchedEffect(state.saved) {
         if (state.saved) onDismiss()
     }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        containerColor = OffWhiteBackground,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.92f)
-                .navigationBarsPadding(),
+                .fillMaxHeight(0.92f),
         ) {
+            // Scrollable Content
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                    .padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(stringResource(R.string.log_title), style = MaterialTheme.typography.titleLarge)
-                Text(stringResource(R.string.mood), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Mood.entries.forEach { mood ->
-                        FilterChip(
-                            selected = state.mood == mood,
-                            onClick = { viewModel.selectMood(mood) },
-                            label = { Text(stringResource(mood.labelRes())) },
-                            modifier = Modifier.accessibleTouchTarget(),
-                        )
-                    }
+                // Top Header: Title & Selected Date in Full
+                Column(modifier = Modifier.padding(top = 4.dp)) {
+                    Text(
+                        text = stringResource(R.string.log_title),
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = PlayfairDisplay,
+                            fontWeight = FontWeight.Normal,
+                            color = DeepPlum,
+                        ),
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = formatSelectedDateSubtitle(state.date),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = DeepPlum.copy(alpha = 0.75f),
+                            fontWeight = FontWeight.Medium,
+                        ),
+                    )
                 }
+
+                // Date Strip Picker at the Top
                 DateStrip(
                     selected = state.date,
                     onSelect = { date ->
@@ -89,92 +129,450 @@ fun LogSymptomBottomSheet(
                         viewModel.selectDate(date)
                     },
                 )
-                Text(stringResource(R.string.symptoms), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Symptom.entries.forEach { symptom ->
-                        SymptomChip(
-                            label = stringResource(symptom.labelRes()),
-                            selected = symptom in state.symptoms,
-                            icon = CycleIcons.Mind,
-                            onClick = { viewModel.toggleSymptom(symptom) },
-                        )
-                    }
-                }
-                Text(stringResource(R.string.skin), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SkinCondition.entries.forEach { skin ->
-                        FilterChip(
-                            selected = state.skin == skin,
-                            onClick = { viewModel.selectSkin(skin) },
-                            label = { Text(stringResource(skin.labelRes())) },
-                            modifier = Modifier.accessibleTouchTarget(),
-                        )
-                    }
-                }
-                Text(stringResource(R.string.flow), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FlowIntensity.entries.forEach { flow ->
-                        FilterChip(
-                            selected = state.flow == flow,
-                            onClick = { viewModel.selectFlow(flow) },
-                            label = { Text(stringResource(flow.labelRes())) },
-                            modifier = Modifier.accessibleTouchTarget(),
-                        )
-                    }
-                }
-                OutlinedTextField(
-                    value = state.notes,
-                    onValueChange = viewModel::onNotes,
-                    label = { Text(stringResource(R.string.notes)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 2,
-                )
-                androidx.compose.foundation.layout.Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth(),
+
+                // Section 1: Fluxo Menstrual
+                TrackingSectionCard(
+                    title = stringResource(R.string.flow),
+                    iconEmoji = "🩸",
                 ) {
-                    Text(stringResource(R.string.period_started), style = MaterialTheme.typography.bodyLarge)
-                    Switch(checked = state.periodStarted, onCheckedChange = viewModel::setPeriodStarted)
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(HeaderSage.copy(alpha = 0.15f))
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.period_started),
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = DeepPlum,
+                                    ),
+                                )
+                                Text(
+                                    text = "Marca o início de um novo ciclo",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = TextSecondary,
+                                    ),
+                                )
+                            }
+                            Switch(
+                                checked = state.periodStarted,
+                                onCheckedChange = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    viewModel.setPeriodStarted(it)
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = DeepPlum,
+                                    uncheckedThumbColor = TextSecondary,
+                                    uncheckedTrackColor = HeaderSage.copy(alpha = 0.4f),
+                                ),
+                            )
+                        }
+
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            FlowIntensity.entries.forEach { flow ->
+                                WellnessChip(
+                                    label = stringResource(flow.labelRes()),
+                                    emoji = flow.emoji(),
+                                    selected = state.flow == flow,
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        viewModel.selectFlow(flow)
+                                    },
+                                )
+                            }
+                        }
+                    }
                 }
+
+                // Section 2: Humor
+                TrackingSectionCard(
+                    title = stringResource(R.string.mood),
+                    iconEmoji = "✨",
+                    badge = state.mood?.let { stringResource(it.labelRes()) },
+                ) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Mood.entries.forEach { mood ->
+                            WellnessChip(
+                                label = stringResource(mood.labelRes()),
+                                emoji = mood.emoji(),
+                                selected = state.mood == mood,
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    viewModel.selectMood(mood)
+                                },
+                            )
+                        }
+                    }
+                }
+
+                // Section 3: Sintomas do Corpo
+                TrackingSectionCard(
+                    title = stringResource(R.string.symptoms),
+                    iconEmoji = "🩺",
+                    badge = if (state.symptoms.isNotEmpty()) "${state.symptoms.size} marcados" else null,
+                ) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Symptom.entries.forEach { symptom ->
+                            WellnessChip(
+                                label = stringResource(symptom.labelRes()),
+                                emoji = symptom.emoji(),
+                                selected = symptom in state.symptoms,
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    viewModel.toggleSymptom(symptom)
+                                },
+                            )
+                        }
+                    }
+                }
+
+                // Section 4: Pele
+                TrackingSectionCard(
+                    title = stringResource(R.string.skin),
+                    iconEmoji = "🌿",
+                    badge = state.skin?.let { stringResource(it.labelRes()) },
+                ) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        SkinCondition.entries.forEach { skin ->
+                            WellnessChip(
+                                label = stringResource(skin.labelRes()),
+                                emoji = skin.emoji(),
+                                selected = state.skin == skin,
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    viewModel.selectSkin(skin)
+                                },
+                            )
+                        }
+                    }
+                }
+
+                // Section 5: Notas
+                TrackingSectionCard(
+                    title = stringResource(R.string.notes),
+                    iconEmoji = "📝",
+                ) {
+                    OutlinedTextField(
+                        value = state.notes,
+                        onValueChange = viewModel::onNotes,
+                        placeholder = {
+                            Text(
+                                "Como foi o seu dia? Sentiu algo diferente?",
+                                color = TextSecondary.copy(alpha = 0.7f),
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = DeepPlum,
+                            unfocusedBorderColor = HeaderSage.copy(alpha = 0.5f),
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                        ),
+                    )
+                }
+
+                // Feedback Errors
                 if (state.needsPeriod) {
-                    Text(stringResource(R.string.need_period), color = MaterialTheme.colorScheme.error)
+                    Surface(
+                        color = Color(0xFFFBEAEA),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.need_period),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(14.dp),
+                        )
+                    }
                 }
-                state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+
+                state.errorMessage?.let { errorMsg ->
+                    Surface(
+                        color = Color(0xFFFBEAEA),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = errorMsg,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(14.dp),
+                        )
+                    }
+                }
+
+                // Extra breathing space at bottom of scroll
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            PrimaryButton(
-                text = stringResource(R.string.log_save),
-                enabled = !state.saving,
-                onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    viewModel.save()
-                },
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+
+            // Sticky Bottom Save Button
+            Surface(
+                color = OffWhiteBackground,
+                shadowElevation = 6.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+            ) {
+                HorizontalDivider(color = HeaderSage.copy(alpha = 0.3f), thickness = 1.dp)
+                Box(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
+                    PrimaryButton(
+                        text = if (state.saving) "Salvando..." else stringResource(R.string.log_save),
+                        enabled = !state.saving,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            viewModel.save()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrackingSectionCard(
+    title: String,
+    iconEmoji: String,
+    badge: String? = null,
+    content: @Composable () -> Unit,
+) {
+    Surface(
+        color = SurfaceCard,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, HeaderSage.copy(alpha = 0.35f)),
+        shadowElevation = 1.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(text = iconEmoji, fontSize = 18.sp)
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = DeepPlum,
+                        ),
+                    )
+                }
+                if (badge != null) {
+                    Surface(
+                        color = HeaderSage.copy(alpha = 0.25f),
+                        shape = RoundedCornerShape(8.dp),
+                    ) {
+                        Text(
+                            text = badge,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = DeepPlum,
+                                fontWeight = FontWeight.Medium,
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        )
+                    }
+                }
+            }
+            content()
+        }
+    }
+}
+
+@Composable
+private fun WellnessChip(
+    label: String,
+    emoji: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) DeepPlum.copy(alpha = 0.12f) else HeaderSage.copy(alpha = 0.1f),
+        animationSpec = tween(durationMillis = 150),
+        label = "chipBg",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) DeepPlum else HeaderSage.copy(alpha = 0.4f),
+        animationSpec = tween(durationMillis = 150),
+        label = "chipBorder",
+    )
+
+    Surface(
+        color = backgroundColor,
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(if (selected) 1.5.dp else 1.dp, borderColor),
+        modifier = modifier
+            .accessibleTouchTarget()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+        ) {
+            Text(text = emoji, fontSize = 16.sp)
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    color = if (selected) DeepPlum else TextPrimary,
+                ),
             )
         }
     }
 }
 
 @Composable
-private fun DateStrip(selected: LocalDate, onSelect: (LocalDate) -> Unit) {
+private fun DateStrip(
+    selected: LocalDate,
+    onSelect: (LocalDate) -> Unit,
+) {
     val today = LocalDate.now()
     val days = (0..13).map { today.minusDays(it.toLong()) }.reversed()
-    val formatter = DateTimeFormatter.ofPattern("dd/MM")
-    androidx.compose.foundation.layout.Row(
+    val localePt = Locale.forLanguageTag("pt-BR")
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         days.forEach { day ->
-            FilterChip(
-                selected = day == selected,
-                onClick = { onSelect(day) },
-                label = { Text(day.format(formatter)) },
-                modifier = Modifier.accessibleTouchTarget(),
-            )
+            val isSelected = day == selected
+            val isToday = day == today
+            val weekDayName = day.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, localePt)
+                .uppercase()
+                .take(3)
+                .replace(".", "")
+
+            val bgColor = if (isSelected) DeepPlum else SurfaceCard
+            val textColor = if (isSelected) Color.White else DeepPlum
+            val borderColor = if (isSelected) DeepPlum else HeaderSage.copy(alpha = 0.5f)
+
+            Surface(
+                color = bgColor,
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, borderColor),
+                shadowElevation = if (isSelected) 3.dp else 0.dp,
+                modifier = Modifier
+                    .accessibleTouchTarget()
+                    .clip(RoundedCornerShape(14.dp))
+                    .clickable { onSelect(day) },
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        text = weekDayName,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isSelected) Color.White.copy(alpha = 0.85f) else TextSecondary,
+                        ),
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = day.dayOfMonth.toString(),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = textColor,
+                        ),
+                    )
+                    if (isToday) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(4.dp)
+                                .clip(CircleShape)
+                                .background(if (isSelected) Color.White else DeepPlum),
+                        )
+                    }
+                }
+            }
         }
     }
+}
+
+private fun formatSelectedDateSubtitle(date: LocalDate): String {
+    val today = LocalDate.now()
+    val localePt = Locale.forLanguageTag("pt-BR")
+    val formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", localePt)
+    val formatted = date.format(formatter).replaceFirstChar { it.uppercase() }
+
+    return when (date) {
+        today -> "Hoje • $formatted"
+        today.minusDays(1) -> "Ontem • $formatted"
+        else -> formatted
+    }
+}
+
+private fun Mood.emoji(): String = when (this) {
+    Mood.CALM -> "🧘‍♀️"
+    Mood.ENERGETIC -> "⚡"
+    Mood.TIRED -> "🥱"
+    Mood.ANXIOUS -> "💭"
+    Mood.IRRITABLE -> "💢"
+    Mood.SENSITIVE -> "🌸"
+}
+
+private fun Symptom.emoji(): String = when (this) {
+    Symptom.CRAMPS -> "⚡"
+    Symptom.HEADACHE -> "🤕"
+    Symptom.BLOATING -> "🎈"
+    Symptom.FATIGUE -> "🔋"
+    Symptom.BREAST_TENDERNESS -> "🌸"
+    Symptom.BACK_PAIN -> "🦴"
+    Symptom.NAUSEA -> "🤢"
+    Symptom.CRAVINGS -> "🍫"
+}
+
+private fun SkinCondition.emoji(): String = when (this) {
+    SkinCondition.BALANCED -> "✨"
+    SkinCondition.DRY -> "🏜️"
+    SkinCondition.OILY -> "💧"
+    SkinCondition.BREAKOUT -> "🔴"
+    SkinCondition.SENSITIVE -> "🧴"
+}
+
+private fun FlowIntensity.emoji(): String = when (this) {
+    FlowIntensity.NONE -> "⚪"
+    FlowIntensity.LIGHT -> "💧"
+    FlowIntensity.MEDIUM -> "💧💧"
+    FlowIntensity.HEAVY -> "💧💧💧"
 }
 
 private fun FlowIntensity.labelRes(): Int = when (this) {

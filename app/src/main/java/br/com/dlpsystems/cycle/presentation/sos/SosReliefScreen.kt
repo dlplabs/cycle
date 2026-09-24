@@ -59,7 +59,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.delay
 
 @Composable
-fun SosReliefScreen(onBack: () -> Unit) {
+fun SosReliefScreen(onAccount: () -> Unit) {
     val context = LocalContext.current
     var minutes by remember { mutableIntStateOf(25) }
     var remaining by remember { mutableLongStateOf(0L) }
@@ -97,7 +97,10 @@ fun SosReliefScreen(onBack: () -> Unit) {
             .coachRoot(coach),
     ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        ScreenHeader(title = stringResource(R.string.sos_title))
+        ScreenHeader(
+            title = stringResource(R.string.sos_title),
+            onAccount = onAccount,
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()

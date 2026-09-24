@@ -34,7 +34,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.app.Activity
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -68,14 +72,14 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val activity = LocalActivity.current
+    val startGoogle = rememberGoogleSignIn(viewModel)
 
     LoginContent(
         state = state,
         onEmailChange = viewModel::onEmail,
         onPasswordChange = viewModel::onPassword,
         onSignIn = viewModel::signIn,
-        onGoogleSignIn = { activity?.let(viewModel::signInWithGoogle) },
+        onGoogleSignIn = startGoogle,
         onRegister = onRegister,
     )
 }
@@ -224,7 +228,7 @@ fun RegisterScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val activity = LocalActivity.current
+    val startGoogle = rememberGoogleSignIn(viewModel)
 
     RegisterContent(
         state = state,
@@ -233,7 +237,7 @@ fun RegisterScreen(
         onEmailChange = viewModel::onEmail,
         onPasswordChange = viewModel::onPassword,
         onRegister = viewModel::register,
-        onGoogleSignIn = { activity?.let(viewModel::signInWithGoogle) },
+        onGoogleSignIn = startGoogle,
         onBack = onBack,
     )
 }
@@ -396,6 +400,28 @@ private fun AuthColumn(content: @Composable ColumnScope.() -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
         content = { content() },
     )
+}
+
+@Composable
+private fun rememberGoogleSignIn(viewModel: AuthViewModel): () -> Unit {
+    val activity = LocalActivity.current
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult(),
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            viewModel.completeGoogleSignIn(result.data)
+        } else {
+            viewModel.completeGoogleSignIn(null)
+        }
+    }
+    return {
+        val host = activity
+        if (host != null) {
+            viewModel.beginGoogleSignIn(host) { pending ->
+                launcher.launch(IntentSenderRequest.Builder(pending).build())
+            }
+        }
+    }
 }
 
 @Composable

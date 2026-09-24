@@ -126,6 +126,7 @@ class SettingsViewModel @Inject constructor(
 
 @Composable
 fun SettingsScreen(
+    onBack: () -> Unit,
     onPaywall: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -148,7 +149,10 @@ fun SettingsScreen(
             .coachRoot(coach),
     ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        ScreenHeader(title = stringResource(R.string.settings_title))
+        ScreenHeader(
+            title = stringResource(R.string.settings_title),
+            onBack = onBack,
+        )
         Column(
             modifier = Modifier
                 .weight(1f)

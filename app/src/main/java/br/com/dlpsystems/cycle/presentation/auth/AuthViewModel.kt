@@ -1,11 +1,15 @@
 package br.com.dlpsystems.cycle.presentation.auth
 
+import android.app.Activity
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.dlpsystems.cycle.domain.model.AuthFailure
 import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -30,6 +34,7 @@ data class AuthUiState(
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
     private val _state = MutableStateFlow(AuthUiState(backendAvailable = userRepository.isBackendAvailable))
     val state = _state.asStateFlow()
@@ -65,11 +70,23 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signInWithGoogle(context: Context) {
+    fun beginGoogleSignIn(activity: Activity, launch: (PendingIntent) -> Unit) {
         viewModelScope.launch {
             _state.update { it.copy(loading = true, error = null) }
             try {
-                val token = requestGoogleIdToken(context)
+                launch(googleSignInIntent(activity))
+            } catch (failure: AuthFailure) {
+                _state.update { it.copy(loading = false, error = failure) }
+            } catch (_: Throwable) {
+                _state.update { it.copy(loading = false, error = AuthFailure.GoogleFailed) }
+            }
+        }
+    }
+
+    fun completeGoogleSignIn(data: Intent?) {
+        viewModelScope.launch {
+            try {
+                val token = googleIdTokenFromIntent(appContext, data)
                 userRepository.signInWithGoogle(token)
                 _state.update { it.copy(loading = false) }
             } catch (_: GoogleSignInCancelled) {

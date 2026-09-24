@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.accessibility.SemanticsUtils
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
@@ -123,13 +124,15 @@ fun CycleWheel(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .offset(y = wheelSize * 0.045f)
+                .offset(x = wheelSize * 0.027f, y = wheelSize * -0.018f)
                 .clearAndSetSemantics { },
         ) {
             Text(
                 text = cycleDay.coerceAtLeast(0).toString(),
                 style = MaterialTheme.typography.displayMedium.copy(
                     fontWeight = FontWeight.Bold,
+                    fontSize = (wheelSize.value * 0.24f).sp,
+                    lineHeight = (wheelSize.value * 0.26f).sp,
                 ),
                 color = DeepPlum,
             )
@@ -137,6 +140,8 @@ fun CycleWheel(
                 text = phaseName,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Medium,
+                    fontSize = (wheelSize.value * 0.078f).sp,
+                    lineHeight = (wheelSize.value * 0.09f).sp,
                 ),
                 color = DeepPlum,
                 maxLines = 1,

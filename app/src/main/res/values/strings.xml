@@ -23,10 +23,10 @@
     <string name="sign_out">Sair</string>
     <string name="backend_missing">Adicione google-services.json para ativar login e sincronização.</string>
     <string name="error_invalid_credentials">E-mail ou senha incorretos.</string>
-    <string name="error_email_in_use">Este e-mail já está em uso.</string>
+    <string name="error_email_in_use">Este e-mail já tem conta. Entre com a senha ou com o mesmo Google usado no cadastro.</string>
     <string name="error_weak_password">A senha precisa ter pelo menos 6 caracteres.</string>
     <string name="error_not_configured">O serviço de conta ainda não está configurado neste aparelho.</string>
-    <string name="error_google_not_configured">O Google Sign-In precisa ser ativado no Firebase Console (Web Client ID ausente no google-services.json).</string>
+    <string name="error_google_not_configured">O Google não concluiu o login. No Firebase, ative o provedor Google e confira o SHA-1 deste app.</string>
     <string name="error_no_account">Ainda não há uma conta Cycle para este acesso. Toque em Criar uma conta para se cadastrar.</string>
     <string name="error_google_failed">Não foi possível entrar com o Google. Confira se há uma conta Google no aparelho e tente de novo.</string>
     <string name="error_unknown">Não foi possível concluir. Tente de novo.</string>
@@ -113,9 +113,9 @@
     <string name="symptom_nausea">Náusea</string>
     <string name="symptom_cravings">Desejos</string>
 
-    <string name="reminder_channel_name">Lembretes do ciclo</string>
-    <string name="reminder_title">Fase de hoje</string>
-    <string name="reminder_body">Dia %1$d, fase %2$s. %3$s</string>
+    <string name="reminder_channel_name">Mudança de fase</string>
+    <string name="reminder_title">Nova fase</string>
+    <string name="reminder_body">Você entrou na fase %1$s. Dia %2$d do ciclo.</string>
     <string name="cd_phase_icon">Ícone da fase %1$s</string>
     <string name="cd_pillar_icon">Ícone de %1$s</string>
     <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>

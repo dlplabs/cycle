@@ -40,6 +40,14 @@ class UserPreferencesDataSource @Inject constructor(
         prefs[Keys.COACH_MARKS] ?: emptySet()
     }
 
+    val lastNotifiedPhase: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.LAST_PHASE]
+    }
+
+    val lastNotifiedDate: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.LAST_PHASE_DATE]
+    }
+
     suspend fun setDisclaimerAccepted(accepted: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.DISCLAIMER] = accepted }
     }
@@ -58,6 +66,13 @@ class UserPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setLastNotifiedPhase(date: String, phase: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.LAST_PHASE_DATE] = date
+            prefs[Keys.LAST_PHASE] = phase
+        }
+    }
+
     suspend fun setWidgetSnapshot(day: Int, phase: String) {
         dataStore.edit { prefs ->
             prefs[Keys.WIDGET_DAY] = day
@@ -72,5 +87,7 @@ class UserPreferencesDataSource @Inject constructor(
         val WIDGET_DAY = intPreferencesKey("widget_day")
         val WIDGET_PHASE = stringPreferencesKey("widget_phase")
         val COACH_MARKS = stringSetPreferencesKey("coach_marks_seen")
+        val LAST_PHASE = stringPreferencesKey("last_notified_phase")
+        val LAST_PHASE_DATE = stringPreferencesKey("last_notified_phase_date")
     }
 }

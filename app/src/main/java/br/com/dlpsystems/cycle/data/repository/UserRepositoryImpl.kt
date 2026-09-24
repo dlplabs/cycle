@@ -122,7 +122,10 @@ class UserRepositoryImpl @Inject constructor(
             throw AuthFailure.NotConfigured
         } catch (error: Throwable) {
             throw when (error.firebaseAuthCode()) {
-                "ERROR_EMAIL_ALREADY_IN_USE" -> AuthFailure.EmailInUse
+                "ERROR_EMAIL_ALREADY_IN_USE",
+                "ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL",
+                "ERROR_CREDENTIAL_ALREADY_IN_USE",
+                -> AuthFailure.EmailInUse
                 "ERROR_WEAK_PASSWORD" -> AuthFailure.WeakPassword
                 "ERROR_OPERATION_NOT_ALLOWED" -> AuthFailure.ProviderDisabled
                 "ERROR_NETWORK_REQUEST_FAILED" -> AuthFailure.Network

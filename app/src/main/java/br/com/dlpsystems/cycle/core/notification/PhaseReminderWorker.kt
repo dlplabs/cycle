@@ -52,27 +52,45 @@ class PhaseReminderWorker @AssistedInject constructor(
 
         val profile = userRepository.getProfile()
         val cycles = cycleRepository.getCycles()
-        val result = calculateCurrentPhase(
-            PhaseCalculationInput(LocalDate.now(), profile, cycles),
+        val today = LocalDate.now()
+        val todayResult = calculateCurrentPhase(
+            PhaseCalculationInput(today, profile, cycles),
         )
-        val phaseName = result.phase?.let { applicationContext.getString(it.labelRes()) }
-            ?: applicationContext.getString(R.string.phase_unknown)
-        val detail = when (result.status) {
-            PhaseStatus.EXTENDED -> result.message.orEmpty()
-            PhaseStatus.NO_CYCLE -> applicationContext.getString(R.string.no_cycle_hint)
-            PhaseStatus.IN_PHASE -> applicationContext.getString(
-                R.string.days_until_period,
-                result.daysUntilNextPeriod,
+        val todayPhase = todayResult.phase
+        if (todayResult.status != PhaseStatus.IN_PHASE || todayPhase == null) {
+            return Result.success()
+        }
+        val lastPhase = preferences.lastNotifiedPhase.first()
+        val storedDate = preferences.lastNotifiedDate.first()?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        if (lastPhase == null || storedDate == null) {
+            preferences.setLastNotifiedPhase(today.toString(), todayPhase.name)
+            return Result.success()
+        }
+        var cursor: LocalDate = storedDate
+        var previous: String = lastPhase
+        val entered = mutableListOf<Pair<CyclePhase, Int>>()
+        while (cursor.isBefore(today)) {
+            cursor = cursor.plusDays(1)
+            val day = calculateCurrentPhase(PhaseCalculationInput(cursor, profile, cycles))
+            val phase = day.phase ?: continue
+            if (day.status == PhaseStatus.IN_PHASE && phase.name != previous) {
+                entered.add(phase to day.cycleDay)
+                previous = phase.name
+            }
+        }
+        entered.takeLast(4).forEach { (phase, cycleDay) ->
+            val phaseName = applicationContext.getString(phase.labelRes())
+            showNotification(
+                phase.ordinal,
+                applicationContext.getString(R.string.reminder_title),
+                applicationContext.getString(R.string.reminder_body, phaseName, cycleDay),
             )
         }
-        showNotification(
-            applicationContext.getString(R.string.reminder_title),
-            applicationContext.getString(R.string.reminder_body, result.cycleDay, phaseName, detail),
-        )
+        preferences.setLastNotifiedPhase(today.toString(), todayPhase.name)
         return Result.success()
     }
 
-    private fun showNotification(title: String, body: String) {
+    private fun showNotification(idOffset: Int, title: String, body: String) {
         createChannel()
         val intent = Intent(applicationContext, MainActivity::class.java)
         val pending = PendingIntent.getActivity(
@@ -96,7 +114,7 @@ class PhaseReminderWorker @AssistedInject constructor(
         ) == PackageManager.PERMISSION_GRANTED
         if (!allowed || !manager.areNotificationsEnabled()) return
         try {
-            manager.notify(NOTIFICATION_ID, notification)
+            manager.notify(NOTIFICATION_ID + idOffset, notification)
         } catch (_: SecurityException) {
             return
         }

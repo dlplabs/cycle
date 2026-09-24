@@ -69,6 +69,7 @@ class DashboardViewModel @Inject constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardUiState())
     val state = _state.asStateFlow()
+    private var shownAvatar: ByteArray? = null
 
     init {
         viewModelScope.launch {
@@ -102,8 +103,8 @@ class DashboardViewModel @Inject constructor(
             }.collect { snapshot ->
                 val previous = _state.value
                 val remindersChanged = previous.remindersEnabled != snapshot.remindersEnabled || previous.loading
-                val bytes = if (snapshot.photoDriveId == previous.photoDriveId) previous.avatarBytes else null
-                _state.value = snapshot.copy(avatarBytes = bytes)
+                if (snapshot.photoDriveId.isNullOrBlank()) shownAvatar = null
+                _state.value = snapshot.copy(avatarBytes = shownAvatar)
                 if (remindersChanged) reminderScheduler.setEnabled(snapshot.remindersEnabled)
                 val phaseName = snapshot.result?.phase?.let { context.getString(it.labelRes()) }.orEmpty()
                 preferences.setWidgetSnapshot(snapshot.result?.cycleDay ?: 0, phaseName)
@@ -123,8 +124,12 @@ class DashboardViewModel @Inject constructor(
         val url = _state.value.googlePhotoUrl ?: return
         viewModelScope.launch {
             runCatching {
-                val source = withContext(Dispatchers.IO) { URL(url).openStream().use { it.readBytes() } }
-                userRepository.saveAvatar(accessToken, AvatarCompressor.jpeg(source))
+                val jpeg = AvatarCompressor.jpeg(
+                    withContext(Dispatchers.IO) { URL(url).openStream().use { it.readBytes() } },
+                )
+                shownAvatar = jpeg
+                _state.update { it.copy(avatarBytes = jpeg, errorMessage = null) }
+                userRepository.saveAvatar(accessToken, jpeg)
             }.onFailure { reportPhotoFailure() }
         }
     }
@@ -132,7 +137,10 @@ class DashboardViewModel @Inject constructor(
     fun uploadAvatar(uri: Uri, accessToken: String) {
         viewModelScope.launch {
             runCatching {
-                userRepository.saveAvatar(accessToken, AvatarCompressor.jpeg(context, uri))
+                val jpeg = AvatarCompressor.jpeg(context, uri)
+                shownAvatar = jpeg
+                _state.update { it.copy(avatarBytes = jpeg, errorMessage = null) }
+                userRepository.saveAvatar(accessToken, jpeg)
             }.onFailure { reportPhotoFailure() }
         }
     }
@@ -141,7 +149,10 @@ class DashboardViewModel @Inject constructor(
         val fileId = _state.value.photoDriveId ?: return
         viewModelScope.launch {
             runCatching { userRepository.readAvatar(accessToken, fileId) }
-                .onSuccess { bytes -> _state.update { it.copy(avatarBytes = bytes, errorMessage = null) } }
+                .onSuccess { bytes ->
+                    shownAvatar = bytes
+                    _state.update { it.copy(avatarBytes = bytes, errorMessage = null) }
+                }
                 .onFailure { reportPhotoFailure() }
         }
     }

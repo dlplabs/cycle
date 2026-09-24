@@ -48,7 +48,6 @@ private val mainTabs = listOf(
     MainTab("dashboard", R.string.nav_today, CycleIcons.AppMark),
     MainTab("sos", R.string.nav_relief, CycleIcons.Menstrual),
     MainTab("planner", R.string.nav_plan, CycleIcons.Follicular),
-    MainTab("settings", R.string.nav_account, CycleIcons.Luteal),
 )
 
 private data class MainTab(
@@ -148,16 +147,23 @@ private fun MainGraph(
                 DashboardScreen(
                     startPeriodOnOpen = startPeriodOnOpen,
                     onStartPeriodConsumed = onStartPeriodConsumed,
+                    onAccount = { navController.navigate("settings") },
                 )
             }
             composable("sos") {
-                SosReliefScreen(onBack = {})
+                SosReliefScreen(onAccount = { navController.navigate("settings") })
             }
             composable("planner") {
-                FutureEventPlannerScreen(onPaywall = { navController.navigate("paywall") })
+                FutureEventPlannerScreen(
+                    onPaywall = { navController.navigate("paywall") },
+                    onAccount = { navController.navigate("settings") },
+                )
             }
             composable("settings") {
-                SettingsScreen(onPaywall = { navController.navigate("paywall") })
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onPaywall = { navController.navigate("paywall") },
+                )
             }
             composable("paywall") {
                 PaywallScreen(onBack = { navController.popBackStack() })

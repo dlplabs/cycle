@@ -107,6 +107,7 @@ class PlannerViewModel @Inject constructor(
 @Composable
 fun FutureEventPlannerScreen(
     onPaywall: () -> Unit,
+    onAccount: () -> Unit,
     viewModel: PlannerViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -120,6 +121,7 @@ fun FutureEventPlannerScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader(
             title = stringResource(R.string.planner_title),
+            onAccount = onAccount,
             titleModifier = Modifier.coachTarget(coach),
         )
         Column(

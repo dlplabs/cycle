@@ -27,7 +27,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -93,6 +97,7 @@ import java.net.URL
 fun DashboardScreen(
     startPeriodOnOpen: Boolean,
     onStartPeriodConsumed: () -> Unit,
+    onAccount: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -155,6 +160,7 @@ fun DashboardScreen(
             PhaseCareScreen(
                 state = state,
                 onBack = { showCare = false },
+                onAccount = onAccount,
                 onOpenSource = viewModel::onOpenSource,
             )
         } else {
@@ -170,6 +176,7 @@ fun DashboardScreen(
                     photoUrl = state.photoUrl,
                     photoBytes = state.avatarBytes,
                     onPhotoClick = { showPhotoOptions = true },
+                    onAccount = onAccount,
                 )
                 Surface(
                     modifier = Modifier
@@ -287,6 +294,7 @@ private fun HomeHeader(
     photoUrl: String?,
     photoBytes: ByteArray?,
     onPhotoClick: () -> Unit,
+    onAccount: () -> Unit,
 ) {
     val firstName = name.trim().substringBefore(' ').ifBlank { name.trim() }
     Row(
@@ -319,6 +327,13 @@ private fun HomeHeader(
             photoBytes = photoBytes,
             onClick = onPhotoClick,
         )
+        IconButton(onClick = onAccount) {
+            Icon(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = stringResource(R.string.nav_account),
+                tint = TextPrimary,
+            )
+        }
     }
 }
 
@@ -416,12 +431,14 @@ private suspend fun loadProfilePhoto(url: String): ImageBitmap? = withContext(Di
 private fun PhaseCareScreen(
     state: DashboardUiState,
     onBack: () -> Unit,
+    onAccount: () -> Unit,
     onOpenSource: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader(
             title = stringResource(R.string.pillars_title),
             onBack = onBack,
+            onAccount = onAccount,
         )
         Column(
             modifier = Modifier

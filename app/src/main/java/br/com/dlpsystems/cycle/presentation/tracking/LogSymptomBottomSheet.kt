@@ -101,24 +101,93 @@ fun LogSymptomBottomSheet(
                     .padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                // Top Header: Title & Selected Date in Full
-                Column(modifier = Modifier.padding(top = 4.dp)) {
-                    Text(
-                        text = stringResource(R.string.log_title),
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = PlayfairDisplay,
-                            fontWeight = FontWeight.Normal,
-                            color = DeepPlum,
-                        ),
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = formatSelectedDateSubtitle(state.date),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = DeepPlum.copy(alpha = 0.75f),
-                            fontWeight = FontWeight.Medium,
-                        ),
-                    )
+                // Top Header: Title & Current Date in Focus
+                val today = LocalDate.now()
+                val isToday = state.date == today
+                Column(
+                    modifier = Modifier.padding(top = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.log_title),
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontFamily = PlayfairDisplay,
+                                fontWeight = FontWeight.Normal,
+                                color = DeepPlum,
+                            ),
+                        )
+                        if (!isToday) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = DeepPlum,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        viewModel.selectDate(today)
+                                    },
+                            ) {
+                                Text(
+                                    text = "Ir para Hoje",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                )
+                            }
+                        }
+                    }
+
+                    // Card em destaque: Data Atual em Foco
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = if (isToday) HeaderSage.copy(alpha = 0.35f) else OffWhiteBackground,
+                        border = BorderStroke(1.dp, if (isToday) DeepPlum.copy(alpha = 0.2f) else HeaderSage.copy(alpha = 0.5f)),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isToday) DeepPlum else HeaderSage.copy(alpha = 0.6f)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = if (isToday) "✨" else "📅",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = if (isToday) "Data Atual em Foco" else "Data do Registro",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = DeepPlum.copy(alpha = 0.7f),
+                                    ),
+                                )
+                                Text(
+                                    text = formatSelectedDateSubtitle(state.date),
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = DeepPlum,
+                                    ),
+                                )
+                            }
+                        }
+                    }
                 }
 
                 // Date Strip Picker at the Top
@@ -462,29 +531,57 @@ private fun DateStrip(
     val today = LocalDate.now()
     val days = (0..13).map { today.minusDays(it.toLong()) }.reversed()
     val localePt = Locale.forLanguageTag("pt-BR")
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(scrollState.maxValue) {
+        if (scrollState.maxValue > 0 && selected == today) {
+            scrollState.scrollTo(scrollState.maxValue)
+        }
+    }
+
+    LaunchedEffect(selected) {
+        if (selected == today && scrollState.maxValue > 0) {
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
+            .horizontalScroll(scrollState),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         days.forEach { day ->
             val isSelected = day == selected
             val isToday = day == today
-            val weekDayName = day.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, localePt)
-                .uppercase()
-                .take(3)
-                .replace(".", "")
+            val weekDayName = if (isToday) {
+                "HOJE"
+            } else {
+                day.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, localePt)
+                    .uppercase()
+                    .take(3)
+                    .replace(".", "")
+            }
 
-            val bgColor = if (isSelected) DeepPlum else SurfaceCard
-            val textColor = if (isSelected) Color.White else DeepPlum
-            val borderColor = if (isSelected) DeepPlum else HeaderSage.copy(alpha = 0.5f)
+            val bgColor = when {
+                isSelected -> DeepPlum
+                isToday -> HeaderSage.copy(alpha = 0.25f)
+                else -> SurfaceCard
+            }
+            val textColor = when {
+                isSelected -> Color.White
+                else -> DeepPlum
+            }
+            val borderColor = when {
+                isSelected -> DeepPlum
+                isToday -> DeepPlum.copy(alpha = 0.5f)
+                else -> HeaderSage.copy(alpha = 0.5f)
+            }
 
             Surface(
                 color = bgColor,
                 shape = RoundedCornerShape(14.dp),
-                border = BorderStroke(1.dp, borderColor),
+                border = BorderStroke(if (isToday && !isSelected) 1.5.dp else 1.dp, borderColor),
                 shadowElevation = if (isSelected) 3.dp else 0.dp,
                 modifier = Modifier
                     .accessibleTouchTarget()
@@ -500,8 +597,12 @@ private fun DateStrip(
                         text = weekDayName,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 10.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isSelected) Color.White.copy(alpha = 0.85f) else TextSecondary,
+                            fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = when {
+                                isSelected -> Color.White.copy(alpha = 0.9f)
+                                isToday -> DeepPlum
+                                else -> TextSecondary
+                            },
                         ),
                     )
                     Spacer(modifier = Modifier.height(2.dp))
@@ -516,7 +617,7 @@ private fun DateStrip(
                         Spacer(modifier = Modifier.height(2.dp))
                         Box(
                             modifier = Modifier
-                                .size(4.dp)
+                                .size(5.dp)
                                 .clip(CircleShape)
                                 .background(if (isSelected) Color.White else DeepPlum),
                         )

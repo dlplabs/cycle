@@ -109,9 +109,10 @@ class PlannerViewModel @Inject constructor(
             val length = open?.cycleLength ?: profile?.averageCycleDays ?: 28
             val period = open?.periodLength ?: profile?.averagePeriodDays ?: 5
             val start = open?.startDate ?: LocalDate.now()
-            val horizon = if (premium) length * 6 else length
-            val tooFar = target.isAfter(LocalDate.now().plusDays(horizon.toLong()))
-            if (tooFar || target.isBefore(LocalDate.now())) {
+            // Previsões completas gratuitas e liberadas para todos os usuários
+            val maxHorizonDays = (length * 12).toLong()
+            val tooFar = target.isAfter(LocalDate.now().plusDays(maxHorizonDays))
+            if (tooFar) {
                 _state.value = _state.value.copy(blocked = true, phase = null, targetDate = target)
                 return@launch
             }
@@ -187,33 +188,6 @@ fun FutureEventPlannerScreen(
                 )
 
                 when {
-                    state.blocked && !state.premium -> {
-                        br.com.dlpsystems.cycle.core.designsystem.AppCard(
-                            modifier = Modifier
-                                .focusRequester(focusRequester)
-                                .focusable()
-                                .semantics { liveRegion = LiveRegionMode.Polite },
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(20.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.planner_locked_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = br.com.dlpsystems.cycle.core.designsystem.DeepPlum,
-                                )
-                                Text(
-                                    text = stringResource(R.string.planner_locked),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                                PrimaryButton(
-                                    text = stringResource(R.string.open_paywall),
-                                    onClick = onPaywall,
-                                )
-                            }
-                        }
-                    }
                     state.blocked -> {
                         br.com.dlpsystems.cycle.core.designsystem.AppCard(
                             modifier = Modifier
@@ -223,7 +197,7 @@ fun FutureEventPlannerScreen(
                         ) {
                             Column(modifier = Modifier.padding(18.dp)) {
                                 Text(
-                                    text = stringResource(R.string.planner_past),
+                                    text = "A data selecionada está além do período de 1 ano. Escolha uma data dentro dos próximos 12 meses.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = br.com.dlpsystems.cycle.core.designsystem.DeepPlum,
                                 )

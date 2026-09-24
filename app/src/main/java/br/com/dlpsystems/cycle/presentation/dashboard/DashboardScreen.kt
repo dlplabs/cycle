@@ -68,6 +68,7 @@ import br.com.dlpsystems.cycle.core.notification.labelRes
 import br.com.dlpsystems.cycle.domain.model.CyclePhase
 import br.com.dlpsystems.cycle.domain.model.PhaseStatus
 import br.com.dlpsystems.cycle.domain.model.WellnessPillar
+import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
 import br.com.dlpsystems.cycle.presentation.components.CoachMarkOverlay
 import br.com.dlpsystems.cycle.presentation.components.CycleWheel
 import br.com.dlpsystems.cycle.presentation.components.PhaseRecommendationCard
@@ -437,6 +438,7 @@ private fun PhaseCareScreen(
                 onOpenSource = { onOpenSource() },
             )
         }
+        AdBannerContainer(isPremium = state.premium)
         }
     }
 }

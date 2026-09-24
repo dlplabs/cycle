@@ -194,8 +194,8 @@ fun SettingsScreen(
                 Text(stringResource(R.string.export_locked))
             }
             PrimaryButton(text = stringResource(R.string.sign_out), onClick = viewModel::signOut)
+            AdBannerContainer(isPremium = premium)
         }
-        AdBannerContainer(isPremium = premium)
     }
     CoachMarkOverlay(
         state = coach,

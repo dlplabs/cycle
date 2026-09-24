@@ -22,6 +22,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -34,6 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.designsystem.AppCard
 import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
@@ -45,10 +48,14 @@ import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
 import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
 import br.com.dlpsystems.cycle.data.remote.AnalyticsEvents
 import br.com.dlpsystems.cycle.data.remote.AnalyticsService
+import br.com.dlpsystems.cycle.domain.repository.BillingRepository
+import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 
 @Composable
@@ -174,6 +181,10 @@ fun SosReliefScreen(onBack: () -> Unit) {
                 )
             }
         }
+        if (remaining == 0L && breathing == 0) {
+            val premium by hiltViewModel<SosPremiumViewModel>().isPremium.collectAsStateWithLifecycle()
+            AdBannerContainer(isPremium = premium)
+        }
 
     }
     }
@@ -200,4 +211,11 @@ private fun pulse(context: Context, amplitude: Int) {
 @InstallIn(SingletonComponent::class)
 interface SosEntryPoint {
     fun analytics(): AnalyticsService
+}
+
+@HiltViewModel
+class SosPremiumViewModel @Inject constructor(
+    billingRepository: BillingRepository,
+) : ViewModel() {
+    val isPremium = billingRepository.isPremiumUser
 }

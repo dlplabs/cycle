@@ -16,6 +16,7 @@ import br.com.dlpsystems.cycle.domain.model.DailyLog
 import br.com.dlpsystems.cycle.domain.model.FlowIntensity
 import br.com.dlpsystems.cycle.domain.model.PhaseEvidence
 import br.com.dlpsystems.cycle.domain.model.Symptom
+import br.com.dlpsystems.cycle.domain.repository.BillingRepository
 import br.com.dlpsystems.cycle.domain.repository.CycleRepository
 import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import br.com.dlpsystems.cycle.domain.usecase.CalculateCurrentPhaseUseCase
@@ -50,6 +51,7 @@ data class DashboardUiState(
     val averageCycleDays: Int = CycleConstants.DEFAULT_CYCLE_DAYS,
     val averagePeriodDays: Int = CycleConstants.DEFAULT_PERIOD_DAYS,
     val errorMessage: String? = null,
+    val premium: Boolean = false,
 )
 
 @HiltViewModel
@@ -62,6 +64,7 @@ class DashboardViewModel @Inject constructor(
     private val reminderScheduler: ReminderScheduler,
     private val saveDailyLog: SaveDailyLogUseCase,
     private val analyticsService: AnalyticsService,
+    private val billingRepository: BillingRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardUiState())
@@ -74,7 +77,8 @@ class DashboardViewModel @Inject constructor(
                 cycleRepository.observeCycles(),
                 preferences.remindersEnabled,
                 userRepository.observeAuth(),
-            ) { profile, cycles, reminders, user ->
+                billingRepository.isPremiumUser,
+            ) { profile, cycles, reminders, user, premium ->
                 val result = calculateCurrentPhase(
                     PhaseCalculationInput(LocalDate.now(), profile, cycles),
                 )
@@ -93,6 +97,7 @@ class DashboardViewModel @Inject constructor(
                     remindersEnabled = reminders,
                     averageCycleDays = profile?.averageCycleDays ?: CycleConstants.DEFAULT_CYCLE_DAYS,
                     averagePeriodDays = profile?.averagePeriodDays ?: CycleConstants.DEFAULT_PERIOD_DAYS,
+                    premium = premium,
                 )
             }.collect { snapshot ->
                 val previous = _state.value

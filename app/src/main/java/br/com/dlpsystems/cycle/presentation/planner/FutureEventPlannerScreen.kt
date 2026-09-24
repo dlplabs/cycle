@@ -143,10 +143,10 @@ fun FutureEventPlannerScreen(
                 state.phase != null -> {
                     Text(stringResource(R.string.planner_result, state.cycleDay, stringResource(state.phase!!.labelRes())))
                     Text(state.guidance)
+                    AdBannerContainer(isPremium = state.premium)
                 }
             }
         }
-        AdBannerContainer(isPremium = state.premium)
     }
     CoachMarkOverlay(
         state = coach,

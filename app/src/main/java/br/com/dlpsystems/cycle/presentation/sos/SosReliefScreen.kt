@@ -97,15 +97,19 @@ fun SosReliefScreen(
         }
     }
 
-    LaunchedEffect(breathing) {
+    val inhaleText = stringResource(R.string.sos_breathe_inhale)
+    val holdText = stringResource(R.string.sos_breathe_hold)
+    val exhaleText = stringResource(R.string.sos_breathe_exhale)
+
+    LaunchedEffect(breathing, inhaleText, holdText, exhaleText) {
         if (breathing == 0) {
             breatheText = ""
             return@LaunchedEffect
         }
         val pattern = listOf(
-            Triple(4, 40, context.getString(R.string.sos_breathe_inhale)),
-            Triple(7, 80, context.getString(R.string.sos_breathe_hold)),
-            Triple(8, 160, context.getString(R.string.sos_breathe_exhale)),
+            Triple(4, 40, inhaleText),
+            Triple(7, 80, holdText),
+            Triple(8, 160, exhaleText),
         )
         while (breathing > 0) {
             pattern.forEach { (seconds, amplitude, instruction) ->

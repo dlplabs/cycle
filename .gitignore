@@ -19,3 +19,6 @@ docs/secrets/
 *.secret
 *.jks
 *.keystore
+keystore.properties
+/keystore/
+

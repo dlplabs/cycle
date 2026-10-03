@@ -29,7 +29,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GooglePlayBillingManager @Inject constructor(
-    @ApplicationContext context: Context,
+    @ApplicationContext private val context: Context,
     private val preferences: UserPreferencesDataSource,
 ) : BillingRepository, PurchasesUpdatedListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -94,8 +94,22 @@ class GooglePlayBillingManager @Inject constructor(
     }
 
     override fun purchase(activity: Activity, productId: String) {
-        val product = details[productId] ?: return
-        val offer = product.subscriptionOfferDetails?.firstOrNull() ?: return
+        if (!client.isReady) {
+            connect()
+            android.widget.Toast.makeText(context, "Conectando ao Google Play. Aguarde um instante.", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        val product = details[productId]
+        if (product == null) {
+            queryProducts()
+            android.widget.Toast.makeText(context, "Carregando informacoes do plano. Tente em instantes.", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        val offer = product.subscriptionOfferDetails?.firstOrNull()
+        if (offer == null) {
+            android.widget.Toast.makeText(context, "Plano temporariamente indisponivel no Google Play.", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(
                 listOf(
@@ -106,8 +120,12 @@ class GooglePlayBillingManager @Inject constructor(
                 ),
             )
             .build()
-        client.launchBillingFlow(activity, params)
+        val result = client.launchBillingFlow(activity, params)
+        if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+            android.util.Log.e("BillingManager", "Falha ao iniciar compra: ${result.debugMessage}")
+        }
     }
+
 
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
         if (result.responseCode == BillingClient.BillingResponseCode.OK) {

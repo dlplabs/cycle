@@ -28,43 +28,55 @@
 Cycle
 ```
 
-### Descrição Breve (66/80 caracteres)
+### Descrição Breve (76/80 caracteres)
 ```
-Acompanhe ciclo, fases e bem-estar. Não substitui consulta médica.
+Ciclo menstrual, bem-estar, alívio de cólicas e backup gratuito na nuvem!
 ```
 
-### Texto Promocional (Opcional, 58/80 caracteres)
+### Texto Promocional (Opcional, 78/80 caracteres)
 ```
-Fases, check-in, SOS e planner. Premium tira os anúncios.
+Fases do ciclo, SOS de cólica e backup gratuito na nuvem para nunca perder dados!
 ```
 
 ### Descrição Completa (Formatada para a Play Store)
 ```
-O Cycle é o seu companheiro diário para viver em harmonia com cada fase do ciclo menstrual. Baseado em literatura científica internacional, ele traduz variações hormonais em orientações práticas de autocuidado, acolhimento e nutrição.
+Viva em profunda harmonia com o seu corpo! O Cycle é o seu companheiro diário para compreender cada fase do ciclo menstrual com acolhimento, ciência e leveza.
 
-O QUE VOCÊ ENCONTRA NO CYCLE:
-• CycleWheel Orgânica: Visualize graficamente o dia atual e a sua fase em um círculo contínuo e elegante.
-• Cuidado por Pilares: Recomendações personalizadas para Nutrição, Exercício, Pele e Mente adaptadas à fase em que você está.
-• Fontes Científicas Transparentes: Artigos e estudos médicos indexados que você pode consultar diretamente a um toque.
-• Check-in Rápido & Diário Completo: Registre fluxo, sintomas (cólicas, dor de cabeça, inchaço), humor e notas pessoais.
-• SOS Alívio de Cólica: Timer térmico para bolsa de calor morna (20 a 30 min) e Respiração Guiada 4-7-8 com vibrações táteis para relaxamento imediato.
-• Previsor de Datas Futuras: Planeje viagens, eventos e compromissos sabendo com antecedência sua fase hormonal prevista.
-• Widget de Tela Inicial (Glance): Veja o dia e a fase direto na Home do aparelho com atalho rápido "Menstruação desceu hoje".
+Baseado em literatura médica internacional, o Cycle traduz as oscilações hormonais do mês em orientações práticas de autocuidado, energia, alimentação e bem-estar emocional.
 
-GRATUITO & CYCLE PREMIUM:
-• A versão gratuita oferece todas as ferramentas essenciais com anúncios discretos apenas no Planner e em Configurações (a tela inicial e o SOS são 100% livres de anúncios).
-• O Cycle Premium (mensal ou anual) remove completamente os anúncios, expande o horizonte do previsor e libera a exportação do Relatório Médico em PDF dos últimos ciclos para você levar ao seu ginecologista.
+🌸 TUDO O QUE VOCÊ ENCONTRA NO CYCLE:
 
-PRIVACIDADE & CONTROLE TOTAL:
-Seus registros de saúde pertencem exclusivamente a você. Seus dados nunca são vendidos nem compartilhados com terceiros para marketing. Você pode excluir sua conta e todos os dados associados a qualquer momento dentro do app ou pela web.
+• CycleWheel Orgânica & Elegante
+Visualize graficamente o seu momento hormonal em uma roda contínua e intuitiva: descubra se você está na fase Menstrual, Folicular, Ovulatória ou Lútea e o que esperar de cada uma delas.
+
+• Cuidado por 4 Pilares Baseados em Ciência
+Receba recomendações personalizadas para Nutrição, Exercício, Pele e Mente em sintonia com a fase em que você está. Acesse os artigos científicos indexados que fundamentam cada sugestão com total transparência.
+
+• SOS Alívio de Cólica Imediato
+Para os momentos de desconforto: timer térmico seguro para compressa morna (20 a 30 min) e Respiração Guiada 4-7-8 com vibrações táteis relaxantes no aparelho para acalmar o corpo e aliviar a tensão.
+
+• ⭐ SEUS DADOS SEMPRE PROTEGIDOS: BACKUP GRATUITO EM NUVEM
+Trocou de aparelho, perdeu o celular ou passou por um imprevisto? Fique tranquila! Suas memórias, anotações e histórico do ciclo nunca se perdem. Basta entrar com sua conta Google em outro celular ou na web e ter 100% dos seus registros restaurados desde o primeiro dia de uso — totalmente gratuito, para sempre.
+
+• Check-in Diário de Sintomas & Humor
+Registre fluxo, dores, disposição, sono e reflexões em poucos toques. Acompanhe padrões do seu corpo ao longo dos meses.
+
+• Previsor de Datas Futuras & Widget na Tela Inicial
+Planeje férias, viagens e compromissos importantes sabendo com antecedência sua fase prevista. Tenha o resumo do seu ciclo na Home do celular com o widget oficial.
+
+• Cycle Gratuito & Cycle Premium Opcional
+A versão gratuita oferece todas as ferramentas essenciais. O Cycle Premium (mensal ou anual) remove anúncios e libera a exportação do Relatório Médico em PDF consolidado para você apresentar à sua ginecologista nas consultas de rotina.
+
+🔒 PRIVACIDADE & SIGILO TOTAL:
+Sua saúde íntima é sagrada. Seus dados pertencem exclusivamente a você e nunca são vendidos ou repassados a terceiros para marketing. Exclua sua conta e registros quando desejar.
 
 AVISO DE SAÚDE:
-O Cycle é uma ferramenta de autoconhecimento e bem-estar. Ele não substitui consultas médicas, diagnósticos clínicos, tratamentos ou métodos contraceptivos.
+O Cycle é uma ferramenta de autoconhecimento e apoio ao bem-estar. Não substitui diagnósticos médicos, consultas clínicas, tratamentos ou métodos contraceptivos.
 ```
 
 ### Notas da Versão 1.0 (What's New)
 ```
-Primeira versão oficial do Cycle: roda do ciclo interativa, check-in diário de sintomas e dor, alívio SOS com calor e respiração tátil 4-7-8, previsor de datas futuras, widget para tela inicial, artigos científicos integrados e opção Premium sem anúncios com relatório médico em PDF.
+Lançamento oficial do Cycle! Roda do ciclo interativa, check-in diário de sintomas, alívio SOS com calor e respiração tátil 4-7-8, previsor de datas futuras, widget para tela inicial, backup 100% gratuito e seguro em nuvem com conta Google, e opção Premium com relatório médico em PDF para sua ginecologista.
 ```
 
 ---

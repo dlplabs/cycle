@@ -55,6 +55,7 @@ Fases do ciclo menstrual, alívio SOS de cólicas, ciência do bem-estar e backu
 - **E-mail de Suporte**: suporte@dlpsystems.com.br
 - **Site Oficial**: https://www.dlpsystems.com.br
 - **URL da Política de Privacidade**: `https://www.dlpsystems.com.br/privacidade`
+- **URL de Exclusão de Conta e Dados**: `https://www.dlpsystems.com.br/privacidade`
 
 Atenção: Cadastre exatamente a URL acima para aprovação imediata pelo rastreador do Google Play.
 
@@ -72,6 +73,7 @@ Atenção: Cadastre exatamente a URL acima para aprovação imediata pelo rastre
 ### Declaração de Apps de Saúde
 - Marcar que o aplicativo é voltado ao bem-estar e controle pessoal de hábitos de ciclo menstrual.
 - Confirmar que não se trata de dispositivo médico clínico.
+- Confirmar conformidade com a política de apps de saúde do Google Play.
 
 ### Questionário de Classificação de Conteúdo — IARC
 - Categoria: Saúde e Fitness
@@ -79,25 +81,73 @@ Atenção: Cadastre exatamente a URL acima para aprovação imediata pelo rastre
 - Confirme que o app possui anúncios e compras internas.
 - Resultado esperado: Classificação Livre ou 10 a 12 anos.
 
+### Público-alvo e Conteúdo
+- Faixas etárias: 13 a 17 anos e 18 anos ou mais.
+- Menores de 13 anos: Não marcar.
+- Apelo para crianças: Não.
+
+### Apps de Notícias
+- O app é de notícias: Não.
+
+### COVID-19
+- Rastreamento de contatos ou status de COVID-19: Não.
+
+### Recursos Financeiros
+- Serviços de banking, empréstimos ou criptoativos: Não.
+
+### Apps Governamentais
+- Representa governo: Não.
+
+### ID de Publicidade do Android
+- O app usa o ID de publicidade: Sim — para anúncios Google AdMob e telemetria Firebase Analytics.
+
+### Serviços em Primeiro Plano
+- Utiliza permissões de primeiro plano: Não.
+
 ### Segurança dos Dados — Data Safety Form
 - O aplicativo coleta dados: Sim
 - Criptografia em trânsito: Sim — protocolo TLS HTTPS 1.3
 - Exclusão de conta: Sim — disponível dentro do aplicativo e via canal web
+- Link web para exclusão: `https://www.dlpsystems.com.br/privacidade`
+- Dados declarados:
+  - Informações pessoais: Nome, e-mail e IDs de usuário — funcionalidade e gestão de conta
+  - Saúde e bem-estar: Dados do ciclo, sintomas e humor — funcionalidade do app
+  - Fotos e vídeos: Fotos de perfil ou pele opcionais — funcionalidade do app
+  - Atividade e telemetria: Métricas agregadas anônimas — análise
+  - Dispositivo: ID de publicidade compartilhado com Google AdMob para anúncios gratuitos
 - Dados de saúde nunca são comercializados com terceiros.
 
 ---
 
 ## 5. Produtos de Assinatura no Play Billing
 
+Cadastrar no menu Monetizar com o Play → Produtos → Assinaturas:
+
 - `cycle_premium_monthly` — Cycle Premium Mensal por R$ 14,90 ao mês
 - `cycle_premium_yearly` — Cycle Premium Anual por R$ 119,90 ao ano
 
+Requer perfil de pagamentos Google Payments ativo na conta.
+
 ---
 
-## 6. Geração do Pacote AAB e Envio
+## 6. Upload de Recursos Gráficos
+
+- **Ícone do App**: `docs/google-play/graficos/icone-512.png` — 512x512 pixels
+- **Gráfico de Recursos**: `docs/google-play/graficos/grafico-destaque-1024x500.png` — 1024x500 pixels
+- **Capturas para Smartphone**: Seis arquivos 1080x1920 numerados de `01-home` a `06-configuracoes`
+- **Capturas para Tablet 7 Pol**: `docs/google-play/graficos/tablet-7-home-1920x1080.png`
+- **Capturas para Tablet 10 Pol**: `docs/google-play/graficos/tablet-10-planner-1920x1080.png`
+
+---
+
+## 7. Geração do Pacote AAB e Envio
 
 ```bash
 ./gradlew bundleRelease
 ```
 Arquivo gerado: `app/build/outputs/bundle/release/app-release.aab`
-Faça o upload no console e submeta as alterações para revisão.
+
+Observações finais:
+1. Certificar que a conta de desenvolvedor de organização DLP Systems permite publicação direta em produção, ou cumprir a etapa de teste fechado se for conta pessoal.
+2. Atualizar o `admob_app_id` em `strings.xml` para o ID definitivo antes do build final.
+3. Fazer o upload do AAB e submeter as alterações para revisão da equipe do Google Play.

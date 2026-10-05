@@ -3,13 +3,13 @@
 - **Controlador dos Dados**: DLP Systems Ltda
 - **Canal de Contato e DPO**: privacidade@dlpsystems.com.br
 - **Aplicativo**: Cycle — `br.com.dlpsystems.cycle`
-- **Endereço Permanente na Web**: https://www.dlpsystems.com.br/privacidade
+- **Endereço Permanente na Web**: https://www.appcycle.com.br/privacidade
 - **Vigência**: Outubro de 2026
 
 Esta política descreve as regras de privacidade, segurança e tratamento de dados pessoais do aplicativo Cycle. O Cycle é uma ferramenta de autoconhecimento e bem-estar. Não substitui consulta médica, diagnóstico ou método contraceptivo.
 
 O endereço oficial permanente para cadastro na Google Play Console é:
-`https://www.dlpsystems.com.br/privacidade`
+`https://www.appcycle.com.br/privacidade`
 
 ---
 

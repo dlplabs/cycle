@@ -53,9 +53,9 @@ Fases do ciclo menstrual, alívio SOS de cólicas, ciência do bem-estar e backu
 ## 3. Contato e Política de Privacidade
 
 - **E-mail de Suporte**: suporte@dlpsystems.com.br
-- **Site Oficial**: https://www.dlpsystems.com.br
-- **URL da Política de Privacidade**: `https://www.dlpsystems.com.br/privacidade`
-- **URL de Exclusão de Conta e Dados**: `https://www.dlpsystems.com.br/privacidade`
+- **Site Oficial**: https://www.appcycle.com.br
+- **URL da Política de Privacidade**: `https://www.appcycle.com.br/privacidade`
+- **URL de Exclusão de Conta e Dados**: `https://www.appcycle.com.br/privacidade`
 
 Atenção: Cadastre exatamente a URL acima para aprovação imediata pelo rastreador do Google Play.
 
@@ -108,7 +108,7 @@ Atenção: Cadastre exatamente a URL acima para aprovação imediata pelo rastre
 - O aplicativo coleta dados: Sim
 - Criptografia em trânsito: Sim — protocolo TLS HTTPS 1.3
 - Exclusão de conta: Sim — disponível dentro do aplicativo e via canal web
-- Link web para exclusão: `https://www.dlpsystems.com.br/privacidade`
+- Link web para exclusão: `https://www.appcycle.com.br/privacidade`
 - Dados declarados:
   - Informações pessoais: Nome, e-mail e IDs de usuário — funcionalidade e gestão de conta
   - Saúde e bem-estar: Dados do ciclo, sintomas e humor — funcionalidade do app

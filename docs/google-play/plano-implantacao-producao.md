@@ -99,8 +99,9 @@ Fases do ciclo menstrual, alívio SOS de cólicas, ciência do bem-estar e backu
 - **Nome da Empresa**: DLP Systems Ltda
 - **E-mail de Suporte**: suporte@dlpsystems.com.br
 - **Site Institucional**: https://www.dlpsystems.com.br
-- **URL Oficial da Política de Privacidade**: https://www.dlpsystems.com.br/privacidade
-- **URL Oficial para Solicitação de Exclusão de Conta**: https://www.dlpsystems.com.br/privacidade
+- **Site do Aplicativo**: https://www.appcycle.com.br
+- **URL Oficial da Política de Privacidade**: https://www.appcycle.com.br/privacidade
+- **URL Oficial para Solicitação de Exclusão de Conta**: https://www.appcycle.com.br/privacidade
 - **E-mail do Encarregado de Proteção de Dados**: privacidade@dlpsystems.com.br
 
 ---
@@ -112,7 +113,7 @@ Para assegurar aprovação do rastreador do Google Play:
 2. Localize a seção **Política de privacidade** e clique em **Gerenciar** ou **Editar**.
 3. No campo **URL da política de privacidade**, insira a rota oficial testada com código HTTP 200:
    ```text
-   https://www.dlpsystems.com.br/privacidade
+   https://www.appcycle.com.br/privacidade
    ```
 4. Salve a alteração.
 5. Em **Visão geral da publicação**, o alerta desaparecerá e o botão de submissão estará habilitado.
@@ -185,7 +186,7 @@ Para assegurar aprovação do rastreador do Google Play:
 - **O aplicativo coleta ou compartilha dados de usuários**: Sim
 - **Criptografia em Trânsito**: Sim — todas as conexões usam protocolo seguro HTTPS TLS 1.3
 - **Exclusão de Conta e Dados**: Sim — o aplicativo oferece botão nativo de exclusão imediata na tela de configurações e solicitação web
-- **URL da Web para Solicitação de Exclusão de Conta**: `https://www.dlpsystems.com.br/privacidade`
+- **URL da Web para Solicitação de Exclusão de Conta**: `https://www.appcycle.com.br/privacidade`
 - **Mapeamento Detalhado dos Tipos de Dados**:
 
 | Categoria do Dado | Tipo Específico | Coleta | Compartilha | Obrigatório ou Opcional | Finalidade |
@@ -274,7 +275,7 @@ Antes de subir o pacote:
 - [x] Package ID validado como `br.com.dlpsystems.cycle`
 - [x] Versão 1.0 com version code 1 configurada no Gradle
 - [x] Target SDK 35 em conformidade com as regras do Google Play
-- [x] URL da Política de Privacidade preenchida como `https://www.dlpsystems.com.br/privacidade`
+- [x] URL da Política de Privacidade preenchida como `https://www.appcycle.com.br/privacidade`
 - [x] URL web para solicitação de exclusão de dados cadastrada
 - [x] Acesso ao app com credenciais de teste do revisor configuradas
 - [x] Declaração de anúncios marcada como Sim

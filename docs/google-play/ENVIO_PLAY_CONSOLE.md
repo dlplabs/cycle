@@ -37,18 +37,18 @@ Ciclo menstrual, bem-estar, gravidez e backup gratuito na nuvem.
 Fases do ciclo menstrual, alívio SOS de cólicas, ciência do bem-estar e backup gratuito em nuvem. Da DLP Systems.
 ```
 
-### Notas da Versão — O Que Há de Novo
+### Notas da Versão — O Que Há de Novo (Máximo 500 caracteres)
 ```text
-• Lançamento oficial do Cycle no Google Play.
-• Roda do ciclo menstrual intuitiva com cálculo das quatro fases.
-• Modo gestacional completo e cronômetro de contrações resiliente.
-• Mandala lunar e identificação de padrões pessoais sem viés.
-• Lembretes inteligentes para anticoncepcional com confirmação de tomada.
-• Mapeamento de sintomas por região anatômica do corpo.
-• Pasta segura de exames e modo de compartilhamento consentido com parceiro(a).
-• Alívio SOS de cólicas com calor e respiração tátil 4-7-8.
-• Backup seguro e gratuito em nuvem com sincronização por conta Google.
-• Atualização para Play Billing 8.0.0 e compatibilidade total com Android 16 (API 36).
+<pt-BR>
+• Roda do ciclo com cálculo das 4 fases hormonais
+• Modo gestação e cronômetro de contrações
+• Mandala lunar e identificação de padrões pessoais
+• Mapeamento de sintomas por região do corpo
+• Lembrete de anticoncepcional e pasta de exames
+• Central SOS para alívio térmico de cólicas
+• Backup seguro e gratuito em nuvem
+• Compatível com Android 16 (API 36) e Play Billing 8
+</pt-BR>
 ```
 
 ---

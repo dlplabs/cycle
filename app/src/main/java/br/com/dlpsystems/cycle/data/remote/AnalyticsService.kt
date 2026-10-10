@@ -17,6 +17,8 @@ object AnalyticsEvents {
     const val EVENT_SUBSCRIPTION_PURCHASED = "subscription_activated"
     const val EVENT_DLP_SERVICES_CLICK = "dlp_services_click"
     const val EVENT_SHARE_HEALTH_CARD = "share_health_card"
+    const val EVENT_AD_IMPRESSION = "ad_impression"
+    const val EVENT_CLOUD_BACKUP_SYNC = "cloud_backup_sync"
 }
 
 @Singleton
@@ -30,6 +32,14 @@ class AnalyticsService @Inject constructor(
         val params = Bundle()
         if (screen != null) params.putString(FirebaseAnalytics.Param.SCREEN_NAME, screen)
         analytics?.logEvent(event, params)
+    }
+
+    fun logAdImpression(adUnitId: String, format: String = "banner") {
+        val params = Bundle().apply {
+            putString("ad_unit_id", adUnitId)
+            putString("ad_format", format)
+        }
+        analytics?.logEvent(AnalyticsEvents.EVENT_AD_IMPRESSION, params)
     }
 
     fun logDlpServicesClick(originScreen: String) {

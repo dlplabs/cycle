@@ -163,6 +163,42 @@ private fun MainGraph(
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
                     onPaywall = { navController.navigate("paywall") },
+                    onNavigatePregnancy = { navController.navigate("pregnancy") },
+                    onNavigateLunar = { navController.navigate("lunar") },
+                    onNavigatePill = { navController.navigate("pill") },
+                    onNavigateExams = { navController.navigate("exams") },
+                    onNavigatePartner = { navController.navigate("partner") },
+                    onNavigateBodySymptoms = { navController.navigate("body_symptoms") },
+                )
+            }
+            composable("pregnancy") {
+                br.com.dlpsystems.cycle.presentation.pregnancy.PregnancyScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable("lunar") {
+                br.com.dlpsystems.cycle.presentation.lunar.LunarScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable("pill") {
+                br.com.dlpsystems.cycle.presentation.pill.PillScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable("exams") {
+                br.com.dlpsystems.cycle.presentation.exams.ExamsScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable("partner") {
+                br.com.dlpsystems.cycle.presentation.partner.PartnerScreen(
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable("body_symptoms") {
+                br.com.dlpsystems.cycle.presentation.symptoms.BodySymptomsScreen(
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable("paywall") {

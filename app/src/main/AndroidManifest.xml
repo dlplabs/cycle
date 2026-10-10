@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:name=".CycleApplication"
@@ -40,6 +42,19 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/cycle_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".core.notification.ContraceptiveAlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="br.com.dlpsystems.cycle.ACTION_PILL_ALARM" />
+                <action android:name="br.com.dlpsystems.cycle.ACTION_PILL_TAKEN" />
+                <action android:name="br.com.dlpsystems.cycle.ACTION_PILL_SNOOZE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
         </receiver>
 
         <provider

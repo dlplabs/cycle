@@ -166,6 +166,12 @@ class SettingsViewModel @Inject constructor(
 fun SettingsScreen(
     onBack: () -> Unit = {},
     onPaywall: () -> Unit,
+    onNavigatePregnancy: () -> Unit = {},
+    onNavigateLunar: () -> Unit = {},
+    onNavigatePill: () -> Unit = {},
+    onNavigateExams: () -> Unit = {},
+    onNavigatePartner: () -> Unit = {},
+    onNavigateBodySymptoms: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val premium by viewModel.isPremium.collectAsStateWithLifecycle()
@@ -232,6 +238,27 @@ fun SettingsScreen(
                 Text(stringResource(R.string.reminders), style = MaterialTheme.typography.titleMedium)
                 Switch(checked = prefs.remindersEnabled, onCheckedChange = viewModel::setReminders)
             }
+
+            Text("Recursos de Saúde e Bem-Estar", style = MaterialTheme.typography.titleMedium)
+            OutlinedButton(onClick = onNavigatePregnancy, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.pregnancy_mode_title))
+            }
+            OutlinedButton(onClick = onNavigateLunar, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.lunar_mandala_title))
+            }
+            OutlinedButton(onClick = onNavigatePill, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.pill_alarm_title))
+            }
+            OutlinedButton(onClick = onNavigateExams, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.exams_folder_title))
+            }
+            OutlinedButton(onClick = onNavigatePartner, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.partner_invite_title))
+            }
+            OutlinedButton(onClick = onNavigateBodySymptoms, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.body_symptoms_title))
+            }
+
             PrimaryButton(text = stringResource(R.string.open_paywall), onClick = onPaywall)
             PrimaryButton(
                 text = stringResource(R.string.export_pdf),

@@ -26,4 +26,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindBillingRepository(impl: BillingRepositoryImpl): BillingRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHealthRecordsRepository(
+        impl: br.com.dlpsystems.cycle.data.repository.HealthRecordsRepositoryImpl,
+    ): br.com.dlpsystems.cycle.domain.repository.HealthRecordsRepository
 }

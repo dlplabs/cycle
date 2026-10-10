@@ -196,4 +196,60 @@
     <string name="calendar_mark_period">Marcar início da menstruação nesta data</string>
     <string name="calendar_period_marked_success">Início do ciclo atualizado com sucesso!</string>
     <string name="calendar_confirm_mark_period">Deseja marcar o início do ciclo nesta data?</string>
+    <!-- Modo Gravidez -->
+    <string name="pregnancy_mode_title">Modo Gravidez</string>
+    <string name="pregnancy_mode_desc">Acompanhe a evolução da sua gestação semana a semana com base em diretrizes clínicas.</string>
+    <string name="pregnancy_activate">Ativar acompanhamento de gestação</string>
+    <string name="pregnancy_deactivate">Encerrar modo gravidez (mantendo histórico)</string>
+    <string name="pregnancy_confirm_end">Deseja encerrar o modo gravidez? Todo o histórico de consultas, sintomas e exames continuará seguro e acessível.</string>
+    <string name="pregnancy_method_dum">Data da Última Menstruação (DUM - Regra de Naegele)</string>
+    <string name="pregnancy_method_dpp">Data Provável do Parto (DPP informada)</string>
+    <string name="pregnancy_method_us">Ultrassonografia (Data e Idade Aferida)</string>
+    <string name="gestational_week_format">%1$dª semana + %2$d dias</string>
+    <string name="gestational_trimester_1">1º Trimestre (Semanas 1 a 13)</string>
+    <string name="gestational_trimester_2">2º Trimestre (Semanas 14 a 27)</string>
+    <string name="gestational_trimester_3">3º Trimestre (Semanas 28 a 40+)</string>
+    <string name="estimated_due_date_label">Data Provável do Parto (Estimativa): %1$s</string>
+    <string name="pregnancy_calculation_disclaimer">A idade gestacional e a data provável do parto são estimativas estatísticas baseadas na regra de Naegele e em referências do Ministério da Saúde e ACOG. Elas não substituem a datação definitiva por ultrassonografia precoce nem a avaliação do seu obstetra.</string>
+    <!-- Cronômetro de Contrações -->
+    <string name="contractions_title">Cronômetro de Contrações</string>
+    <string name="contractions_start">Iniciar Contração</string>
+    <string name="contractions_stop">Parar Contração</string>
+    <string name="contraction_duration_format">Duração: %1$d seg</string>
+    <string name="contraction_interval_format">Intervalo: %1$d min %2$d seg</string>
+    <string name="contractions_disclaimer">Este cronômetro serve apenas para seu registro pessoal. Ele NÃO diagnostica trabalho de parto nem determina momento de internação. Busque atendimento imediato caso note perda de líquido, sangramento, dor súbita ou redução de movimentos do bebê.</string>
+    <!-- Mandala Lunar e Padrões -->
+    <string name="lunar_mandala_title">Mandala Lunar e Padrões</string>
+    <string name="lunar_energy_label">Energia e Disposição</string>
+    <string name="lunar_productivity_label">Produtividade Percebida</string>
+    <string name="lunar_view_mandala">Visualização em Mandala</string>
+    <string name="lunar_view_list">Visualização em Lista</string>
+    <string name="lunar_disclaimer">As correlações entre fases da Lua e bem-estar apresentadas neste app são estritamente descritivas dos seus registros pessoais. A literatura médica não comprova relação de causa e efeito entre a gravidade lunar e a fisiologia humana.</string>
+    <string name="lunar_insufficient_data">Dados insuficientes para identificar tendências (são necessários pelo menos 7 registros com avaliação de energia).</string>
+    <!-- Alarme Anticoncepcional -->
+    <string name="pill_alarm_title">Despertador do Anticoncepcional</string>
+    <string name="pill_alarm_enable">Ativar Lembrete Diário</string>
+    <string name="pill_taken_button">Confirmar Tomada</string>
+    <string name="pill_snooze_button">Adiar</string>
+    <string name="pill_hide_sensitive">Ocultar nome do medicamento na tela bloqueada</string>
+    <string name="pill_disclaimer">Este alarme é um auxiliar de memória e não substitui a orientação médica ou a bula do medicamento. O app não prescreve reposição de doses esquecidas; consulte a bula oficial do seu anticoncepcional ou seu ginecologista.</string>
+    <!-- Pasta de Exames -->
+    <string name="exams_folder_title">Pasta de Exames</string>
+    <string name="exams_import_file">Importar PDF ou Imagem</string>
+    <string name="exams_privacy_notice">Seus exames são armazenados em diretório seguro e privado neste aparelho e NUNCA são compartilhados automaticamente com terceiros.</string>
+    <!-- Convite ao Parceiro -->
+    <string name="partner_invite_title">Acesso para Parceiro</string>
+    <string name="partner_invite_desc">Compartilhe apenas as informações que desejar. Exames médicos e notas íntimas permanecem restritos por padrão.</string>
+    <string name="partner_revoke">Revogar Acesso</string>
+    <string name="partner_active_connections">Conexões Ativas</string>
+    <!-- Sintomas por Região do Corpo -->
+    <string name="body_symptoms_title">Sintomas por Região do Corpo</string>
+    <string name="region_head">Cabeça</string>
+    <string name="region_breasts">Mamas</string>
+    <string name="region_abdomen">Abdômen</string>
+    <string name="region_pelvis">Pelve</string>
+    <string name="region_back">Costas / Lombar</string>
+    <string name="region_limbs">Membros</string>
+    <string name="region_general">Gerais</string>
+    <string name="region_emotional">Emocionais</string>
 </resources>

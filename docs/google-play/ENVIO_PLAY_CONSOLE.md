@@ -3,9 +3,9 @@
 **Aplicativo**: Cycle — Acompanhamento Menstrual e Bem-Estar  
 **ID do Pacote**: `br.com.dlpsystems.cycle`  
 **Idioma padrão**: Português do Brasil — `pt-BR`  
-**Target SDK**: 35 — Android 15  
+**Target SDK**: 36 — Android 16  
 **Min SDK**: 26 — Android 8.0  
-**Status de Conformidade**: Totalmente adequado às diretrizes do Google Play para apps de saúde, segurança de dados e Play Billing.
+**Status de Conformidade**: Totalmente adequado às diretrizes do Google Play para apps de saúde, segurança de dados e Play Billing 8.0.0.
 
 ---
 
@@ -29,7 +29,7 @@ Cycle
 
 ### Descrição Breve — Até 80 caracteres
 ```text
-Ciclo menstrual, bem-estar, alívio de cólicas e backup gratuito na nuvem.
+Ciclo menstrual, bem-estar, gravidez e backup gratuito na nuvem.
 ```
 
 ### Texto Promocional — Até 140 caracteres
@@ -41,11 +41,14 @@ Fases do ciclo menstrual, alívio SOS de cólicas, ciência do bem-estar e backu
 ```text
 • Lançamento oficial do Cycle no Google Play.
 • Roda do ciclo menstrual intuitiva com cálculo das quatro fases.
+• Modo gestacional completo e cronômetro de contrações resiliente.
+• Mandala lunar e identificação de padrões pessoais sem viés.
+• Lembretes inteligentes para anticoncepcional com confirmação de tomada.
+• Mapeamento de sintomas por região anatômica do corpo.
+• Pasta segura de exames e modo de compartilhamento consentido com parceiro(a).
 • Alívio SOS de cólicas com calor e respiração tátil 4-7-8.
-• Check-in diário de sintomas, fluxo, humor, pele e notas pessoais.
-• Previsor de fases futuras e widget exclusivo para tela inicial.
 • Backup seguro e gratuito em nuvem com sincronização por conta Google.
-• Plano Premium com relatório consolidado para consulta médica.
+• Atualização para Play Billing 8.0.0 e compatibilidade total com Android 16 (API 36).
 ```
 
 ---

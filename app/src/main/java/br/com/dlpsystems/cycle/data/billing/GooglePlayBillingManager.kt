@@ -151,9 +151,9 @@ class GooglePlayBillingManager @Inject constructor(
                 .build()
         }
         val params = QueryProductDetailsParams.newBuilder().setProductList(products).build()
-        client.queryProductDetailsAsync(params) { result, list ->
+        client.queryProductDetailsAsync(params) { result, queryResult ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                list.forEach { details[it.productId] = it }
+                queryResult.productDetailsList.forEach { details[it.productId] = it }
             }
         }
     }

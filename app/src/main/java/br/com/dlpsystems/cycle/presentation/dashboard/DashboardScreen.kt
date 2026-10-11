@@ -96,8 +96,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
-import java.net.URL
 
 @Composable
 fun DashboardScreen(
@@ -458,14 +456,9 @@ private fun ProfileAvatar(
     photoBytes: ByteArray?,
     onClick: () -> Unit,
 ) {
-    var photo by remember(photoUrl, photoBytes) { mutableStateOf<ImageBitmap?>(null) }
-    LaunchedEffect(photoUrl, photoBytes) {
-        photo = when {
-            photoBytes != null -> withContext(Dispatchers.IO) {
-                BitmapFactory.decodeByteArray(photoBytes, 0, photoBytes.size)?.asImageBitmap()
-            }
-            photoUrl != null -> loadProfilePhoto(photoUrl)
-            else -> null
+    val bitmap = remember(photoBytes) {
+        photoBytes?.let {
+            BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap()
         }
     }
     Box(
@@ -477,20 +470,30 @@ private fun ProfileAvatar(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        val bitmap = photo
-        if (bitmap != null) {
-            Image(
-                bitmap = bitmap,
-                contentDescription = stringResource(R.string.cd_profile_photo, name),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-        } else {
-            Text(
-                text = name.firstOrNull()?.uppercaseChar()?.toString().orEmpty(),
-                style = MaterialTheme.typography.titleLarge,
-                color = TextPrimary,
-            )
+        when {
+            bitmap != null -> {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = stringResource(R.string.cd_profile_photo, name),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+            !photoUrl.isNullOrBlank() -> {
+                coil.compose.AsyncImage(
+                    model = photoUrl,
+                    contentDescription = stringResource(R.string.cd_profile_photo, name),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+            else -> {
+                Text(
+                    text = name.firstOrNull()?.uppercaseChar()?.toString().orEmpty(),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = TextPrimary,
+                )
+            }
         }
     }
 }
@@ -528,17 +531,6 @@ private fun PhotoSourceDialog(
             }
         },
     )
-}
-
-private suspend fun loadProfilePhoto(url: String): ImageBitmap? = withContext(Dispatchers.IO) {
-    runCatching {
-        val connection = URL(url).openConnection() as HttpURLConnection
-        connection.connectTimeout = 4_000
-        connection.readTimeout = 4_000
-        connection.inputStream.use { stream ->
-            BitmapFactory.decodeStream(stream)?.asImageBitmap()
-        }
-    }.getOrNull()
 }
 
 @Composable

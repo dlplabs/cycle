@@ -22,8 +22,8 @@ android {
         applicationId = "br.com.dlpsystems.cycle"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 5
+        versionName = "1.0.4"
         buildConfigField(
             "boolean",
             "FIREBASE_CONFIGURED",
@@ -134,6 +134,7 @@ dependencies {
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
     implementation(libs.hilt.android)
+    implementation(libs.coil.compose)
     implementation("androidx.compose.material:material-icons-extended")
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)

@@ -250,6 +250,19 @@
     <string name="region_pelvis">Pelve</string>
     <string name="region_back">Costas / Lombar</string>
     <string name="region_limbs">Membros</string>
-    <string name="region_general">Gerais</string>
-    <string name="region_emotional">Emocionais</string>
+    <!-- Boas-vindas e Acesso Inicial -->
+    <string name="welcome_title">Boas-vindas ao Cycle</string>
+    <string name="welcome_description">Seu espaço seguro para entender suas fases hormonais, acompanhar sinais do seu corpo e cuidar do seu bem-estar com leveza e privacidade.</string>
+    <string name="welcome_explore_app">Conhecer o aplicativo</string>
+    <string name="welcome_login">Entrar</string>
+    <string name="welcome_register">Criar conta</string>
+
+    <!-- Modal de Autenticação Necessária -->
+    <string name="auth_required_title">Salve e acompanhe seu ciclo</string>
+    <string name="auth_required_message">Entre ou crie uma conta para registrar seu ciclo e acessar seu histórico.</string>
+    <string name="auth_required_action_login">Entrar</string>
+    <string name="auth_required_action_register">Criar conta</string>
+    <string name="auth_required_action_not_now">Agora não</string>
+    <string name="guest_account_notice">Você está usando o Cycle como visitante. Entre na sua conta para sincronizar e salvar seus dados.</string>
+    <string name="guest_name">Visitante</string>
 </resources>

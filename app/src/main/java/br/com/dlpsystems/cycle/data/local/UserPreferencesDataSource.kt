@@ -56,6 +56,14 @@ class UserPreferencesDataSource @Inject constructor(
         prefs[Keys.LAST_DAILY_REMINDER_DATE]
     }
 
+    val welcomeSeen: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.WELCOME_SEEN] ?: false
+    }
+
+    suspend fun setWelcomeSeen(seen: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.WELCOME_SEEN] = seen }
+    }
+
     suspend fun setDisclaimerAccepted(accepted: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.DISCLAIMER] = accepted }
     }
@@ -102,6 +110,7 @@ class UserPreferencesDataSource @Inject constructor(
 
     private object Keys {
         val DISCLAIMER = booleanPreferencesKey("disclaimer_accepted")
+        val WELCOME_SEEN = booleanPreferencesKey("welcome_seen")
         val REMINDERS = booleanPreferencesKey("reminders_enabled")
         val CYCLE_REMINDERS = booleanPreferencesKey("cycle_reminders_enabled")
         val PREMIUM = booleanPreferencesKey("premium_cached")

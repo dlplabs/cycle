@@ -104,14 +104,32 @@ fun DashboardScreen(
     startPeriodOnOpen: Boolean,
     onStartPeriodConsumed: () -> Unit,
     onAccount: () -> Unit,
+    onRequireAuth: (pendingAction: () -> Unit) -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showLog by remember { mutableStateOf(false) }
     var showCare by remember { mutableStateOf(false) }
+    var showAuthDialog by remember { mutableStateOf(false) }
+    var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    val executeOrRequireAuth: (() -> Unit) -> Unit = { action ->
+        if (state.isGuest) {
+            pendingAction = action
+            showAuthDialog = true
+        } else {
+            action()
+        }
+    }
+
     LaunchedEffect(startPeriodOnOpen) {
         if (startPeriodOnOpen) {
-            viewModel.startPeriodToday()
+            if (state.isGuest) {
+                pendingAction = { viewModel.startPeriodToday() }
+                showAuthDialog = true
+            } else {
+                viewModel.startPeriodToday()
+            }
             onStartPeriodConsumed()
         }
     }
@@ -264,11 +282,13 @@ fun DashboardScreen(
                         )
                     },
                     onClick = {
-                        if (needsFirstPeriod) {
-                            viewModel.startPeriodToday()
-                        } else {
-                            logSelectedDate = LocalDate.now()
-                            showLog = true
+                        executeOrRequireAuth {
+                            if (needsFirstPeriod) {
+                                viewModel.startPeriodToday()
+                            } else {
+                                logSelectedDate = LocalDate.now()
+                                showLog = true
+                            }
                         }
                     },
                     modifier = Modifier.coachTarget(coach),
@@ -315,11 +335,15 @@ fun DashboardScreen(
                 averageCycleDays = state.averageCycleDays,
                 averagePeriodDays = state.averagePeriodDays,
                 onLogSymptomOnDate = { date ->
-                    logSelectedDate = date
-                    showLog = true
+                    executeOrRequireAuth {
+                        logSelectedDate = date
+                        showLog = true
+                    }
                 },
                 onStartPeriodOnDate = { date ->
-                    viewModel.startPeriodOnDate(date)
+                    executeOrRequireAuth {
+                        viewModel.startPeriodOnDate(date)
+                    }
                 },
             )
         }
@@ -334,19 +358,45 @@ fun DashboardScreen(
                 googleAvailable = !state.googlePhotoUrl.isNullOrBlank(),
                 onGoogle = {
                     showPhotoOptions = false
-                    saveWithDrive { token -> viewModel.useGooglePhoto(token) }
+                    executeOrRequireAuth {
+                        saveWithDrive { token -> viewModel.useGooglePhoto(token) }
+                    }
                 },
                 onGallery = {
                     showPhotoOptions = false
-                    galleryLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                    )
+                    executeOrRequireAuth {
+                        galleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                        )
+                    }
                 },
                 onCamera = {
                     showPhotoOptions = false
-                    cameraPermission.launch(Manifest.permission.CAMERA)
+                    executeOrRequireAuth {
+                        cameraPermission.launch(Manifest.permission.CAMERA)
+                    }
                 },
                 onDismiss = { showPhotoOptions = false },
+            )
+        }
+        if (showAuthDialog) {
+            br.com.dlpsystems.cycle.presentation.components.AuthRequiredDialog(
+                onDismiss = {
+                    showAuthDialog = false
+                    pendingAction = null
+                },
+                onLogin = {
+                    showAuthDialog = false
+                    val resumeAction = pendingAction
+                    pendingAction = null
+                    onRequireAuth { resumeAction?.invoke() }
+                },
+                onRegister = {
+                    showAuthDialog = false
+                    val resumeAction = pendingAction
+                    pendingAction = null
+                    onRequireAuth { resumeAction?.invoke() }
+                },
             )
         }
     }

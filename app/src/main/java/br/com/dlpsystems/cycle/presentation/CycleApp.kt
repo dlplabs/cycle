@@ -14,6 +14,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,7 +73,25 @@ fun CycleApp(
 
     when {
         session.loading -> Box(Modifier.fillMaxSize())
-        session.userId == null -> AuthGraph()
+        session.userId == null && !session.welcomeSeen -> {
+            var showAuthDestination by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
+            if (showAuthDestination != null) {
+                AuthSubGraph(
+                    startDestination = showAuthDestination ?: "login",
+                    onBackToWelcome = { showAuthDestination = null },
+                    onAuthenticated = {
+                        sessionViewModel.completeWelcome()
+                        showAuthDestination = null
+                    },
+                )
+            } else {
+                br.com.dlpsystems.cycle.presentation.auth.WelcomeScreen(
+                    onExploreApp = { sessionViewModel.completeWelcome() },
+                    onLogin = { showAuthDestination = "login" },
+                    onCreateAccount = { showAuthDestination = "register" },
+                )
+            }
+        }
         else -> MainGraph(
             startPeriodOnOpen = startPeriodOnOpen,
             onStartPeriodConsumed = onStartPeriodConsumed,
@@ -79,14 +100,26 @@ fun CycleApp(
 }
 
 @Composable
-private fun AuthGraph() {
+private fun AuthSubGraph(
+    startDestination: String,
+    onBackToWelcome: () -> Unit,
+    onAuthenticated: () -> Unit,
+) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("login") {
-            LoginScreen(onRegister = { navController.navigate("register") })
+            LoginScreen(
+                onRegister = { navController.navigate("register") },
+            )
         }
         composable("register") {
-            RegisterScreen(onBack = { navController.popBackStack() })
+            RegisterScreen(
+                onBack = {
+                    if (!navController.popBackStack()) {
+                        onBackToWelcome()
+                    }
+                },
+            )
         }
     }
 }
@@ -99,6 +132,9 @@ private fun MainGraph(
     val navController = rememberNavController()
     val current = navController.currentBackStackEntryAsState().value?.destination?.route
     val showBar = current in mainTabs.map { it.route }
+    var pendingActionAfterAuth by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<(() -> Unit)?>(null) }
+    var showAuthModal by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
     Scaffold(
         bottomBar = {
             if (showBar) {
@@ -148,6 +184,10 @@ private fun MainGraph(
                     startPeriodOnOpen = startPeriodOnOpen,
                     onStartPeriodConsumed = onStartPeriodConsumed,
                     onAccount = { navController.navigate("settings") },
+                    onRequireAuth = { action ->
+                        pendingActionAfterAuth = action
+                        navController.navigate("login")
+                    },
                 )
             }
             composable("sos") {
@@ -169,6 +209,17 @@ private fun MainGraph(
                     onNavigateExams = { navController.navigate("exams") },
                     onNavigatePartner = { navController.navigate("partner") },
                     onNavigateBodySymptoms = { navController.navigate("body_symptoms") },
+                    onLogin = { navController.navigate("login") },
+                )
+            }
+            composable("login") {
+                LoginScreen(
+                    onRegister = { navController.navigate("register") },
+                )
+            }
+            composable("register") {
+                RegisterScreen(
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable("pregnancy") {
@@ -204,6 +255,19 @@ private fun MainGraph(
             composable("paywall") {
                 PaywallScreen(onBack = { navController.popBackStack() })
             }
+        }
+    }
+
+    val sessionViewModel: SessionViewModel = hiltViewModel()
+    val sessionState by sessionViewModel.state.collectAsStateWithLifecycle()
+    androidx.compose.runtime.LaunchedEffect(sessionState.userId) {
+        if (sessionState.userId != null) {
+            val pending = pendingActionAfterAuth
+            pendingActionAfterAuth = null
+            if (current == "login" || current == "register") {
+                navController.popBackStack("dashboard", inclusive = false)
+            }
+            pending?.invoke()
         }
     }
 }

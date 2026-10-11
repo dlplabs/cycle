@@ -58,6 +58,7 @@ data class DashboardUiState(
     val errorMessage: String? = null,
     val userMessage: String? = null,
     val premium: Boolean = false,
+    val isGuest: Boolean = false,
     val cycles: List<MenstrualCycle> = emptyList(),
     val dailyLogs: List<DailyLog> = emptyList(),
 )
@@ -106,9 +107,14 @@ class DashboardViewModel @Inject constructor(
                 val result = calculateCurrentPhase(
                     PhaseCalculationInput(LocalDate.now(), profile, cycles),
                 )
+                val isGuest = user == null
+                val displayName = profile?.name?.takeIf { it.isNotBlank() }
+                    ?: user?.displayName?.takeIf { it.isNotBlank() }
+                    ?: if (isGuest) context.getString(R.string.guest_name) else ""
+
                 DashboardUiState(
                     loading = false,
-                    userName = profile?.name.orEmpty(),
+                    userName = displayName,
                     photoUrl = if (profile?.photoDriveId.isNullOrBlank()) {
                         profile?.photoUrl?.takeIf { it.isNotBlank() } ?: user?.photoUrl
                     } else {
@@ -122,6 +128,7 @@ class DashboardViewModel @Inject constructor(
                     averageCycleDays = profile?.averageCycleDays ?: CycleConstants.DEFAULT_CYCLE_DAYS,
                     averagePeriodDays = profile?.averagePeriodDays ?: CycleConstants.DEFAULT_PERIOD_DAYS,
                     premium = premium,
+                    isGuest = isGuest,
                     cycles = cycles,
                     dailyLogs = dailyLogs,
                 )

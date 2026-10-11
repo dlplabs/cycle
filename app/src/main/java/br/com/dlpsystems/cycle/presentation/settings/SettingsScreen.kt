@@ -18,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -70,6 +71,7 @@ class SettingsViewModel @Inject constructor(
     private val reminderScheduler: ReminderScheduler,
 ) : ViewModel() {
     val isPremium: kotlinx.coroutines.flow.StateFlow<Boolean> = billingRepository.isPremiumUser
+    val authUser = userRepository.observeAuth()
     private val _message = MutableStateFlow<String?>(null)
     val message = _message.asStateFlow()
     private val _prefs = MutableStateFlow(AccountPrefs())
@@ -172,9 +174,12 @@ fun SettingsScreen(
     onNavigateExams: () -> Unit = {},
     onNavigatePartner: () -> Unit = {},
     onNavigateBodySymptoms: () -> Unit = {},
+    onLogin: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val premium by viewModel.isPremium.collectAsStateWithLifecycle()
+    val authUser by viewModel.authUser.collectAsStateWithLifecycle(initialValue = null)
+    val isGuest = authUser == null
     val message by viewModel.message.collectAsStateWithLifecycle()
     val prefs by viewModel.prefs.collectAsStateWithLifecycle()
     val isDeleting by viewModel.isDeleting.collectAsStateWithLifecycle()
@@ -286,20 +291,42 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
-            PrimaryButton(text = stringResource(R.string.sign_out), onClick = viewModel::signOut)
+            if (isGuest) {
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.guest_account_notice),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        PrimaryButton(
+                            text = stringResource(R.string.welcome_login),
+                            onClick = onLogin,
+                        )
+                    }
+                }
+            } else {
+                PrimaryButton(text = stringResource(R.string.sign_out), onClick = viewModel::signOut)
 
-            OutlinedButton(
-                onClick = { showDeleteDialog = true },
-                enabled = !isDeleting,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
-            ) {
-                Text(
-                    if (isDeleting) stringResource(R.string.deleting_account)
-                    else stringResource(R.string.delete_account),
-                )
+                OutlinedButton(
+                    onClick = { showDeleteDialog = true },
+                    enabled = !isDeleting,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) {
+                    Text(
+                        if (isDeleting) stringResource(R.string.deleting_account)
+                        else stringResource(R.string.delete_account),
+                    )
+                }
             }
         }
         AdBannerContainer(isPremium = premium)

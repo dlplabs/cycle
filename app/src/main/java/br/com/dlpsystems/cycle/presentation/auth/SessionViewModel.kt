@@ -15,6 +15,7 @@ data class SessionUiState(
     val loading: Boolean = true,
     val userId: String? = null,
     val disclaimerAccepted: Boolean = false,
+    val welcomeSeen: Boolean = false,
 )
 
 @HiltViewModel
@@ -25,11 +26,13 @@ class SessionViewModel @Inject constructor(
     val state = combine(
         userRepository.observeAuth(),
         preferences.disclaimerAccepted,
-    ) { user, accepted ->
+        preferences.welcomeSeen,
+    ) { user, accepted, welcome ->
         SessionUiState(
             loading = false,
             userId = user?.id,
             disclaimerAccepted = accepted,
+            welcomeSeen = welcome,
         )
     }.stateIn(
         viewModelScope,
@@ -39,5 +42,9 @@ class SessionViewModel @Inject constructor(
 
     fun acceptDisclaimer() {
         viewModelScope.launch { preferences.setDisclaimerAccepted(true) }
+    }
+
+    fun completeWelcome() {
+        viewModelScope.launch { preferences.setWelcomeSeen(true) }
     }
 }

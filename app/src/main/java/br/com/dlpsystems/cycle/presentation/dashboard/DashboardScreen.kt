@@ -171,14 +171,14 @@ fun DashboardScreen(
         }
     }
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) saveWithDrive { token -> viewModel.uploadAvatar(uri, token) }
+        if (uri != null) viewModel.uploadAvatar(uri)
     }
     val captureUri = remember {
         val file = File(context.cacheDir, "avatar-capture.jpg")
         FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
     }
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
-        if (saved) saveWithDrive { token -> viewModel.uploadAvatar(captureUri, token) }
+        if (saved) viewModel.uploadAvatar(captureUri)
     }
     val cameraPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) cameraLauncher.launch(captureUri)
@@ -352,23 +352,17 @@ fun DashboardScreen(
                 googleAvailable = !state.googlePhotoUrl.isNullOrBlank(),
                 onGoogle = {
                     showPhotoOptions = false
-                    executeOrRequireAuth {
-                        saveWithDrive { token -> viewModel.useGooglePhoto(token) }
-                    }
+                    viewModel.useGooglePhoto()
                 },
                 onGallery = {
                     showPhotoOptions = false
-                    executeOrRequireAuth {
-                        galleryLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                        )
-                    }
+                    galleryLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                    )
                 },
                 onCamera = {
                     showPhotoOptions = false
-                    executeOrRequireAuth {
-                        cameraPermission.launch(Manifest.permission.CAMERA)
-                    }
+                    cameraPermission.launch(Manifest.permission.CAMERA)
                 },
                 onDismiss = { showPhotoOptions = false },
             )

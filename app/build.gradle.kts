@@ -22,8 +22,8 @@ android {
         applicationId = "br.com.dlpsystems.cycle"
         minSdk = 26
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.0.7"
+        versionCode = 9
+        versionName = "1.0.8"
         buildConfigField(
             "boolean",
             "FIREBASE_CONFIGURED",
@@ -84,6 +84,9 @@ android {
             val releaseSigning = signingConfigs.getByName("release")
             if (releaseSigning.storeFile != null) {
                 signingConfig = releaseSigning
+            }
+            ndk {
+                debugSymbolLevel = "FULL"
             }
         }
     }

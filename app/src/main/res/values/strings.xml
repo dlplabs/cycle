@@ -126,8 +126,6 @@
     <string name="reminder_body">Você entrou na fase %1$s. Dia %2$d do ciclo.</string>
     <string name="cd_phase_icon">Ícone da fase %1$s</string>
     <string name="cd_pillar_icon">Ícone de %1$s</string>
-    <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
-    <string name="admob_banner_id" translatable="false">ca-app-pub-3940256099942544/9214589741</string>
     <string name="ad_label">Anúncio</string>
     <string name="quick_checkin">Check-in de agora</string>
     <string name="quick_save">Salvar check-in</string>

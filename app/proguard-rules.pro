@@ -15,3 +15,7 @@
 # Glance AppWidget
 -keep class androidx.glance.** { *; }
 -keep class br.com.dlpsystems.cycle.presentation.widget.** { *; }
+
+# Reempacotamento de classes para reduzir DEX
+-repackageclasses ''
+-allowaccessmodification

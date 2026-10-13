@@ -2,66 +2,46 @@ package br.com.dlpsystems.cycle.data.local
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
+import androidx.core.graphics.drawable.toBitmap
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
+import coil.size.Precision
+import coil.size.Scale
 import java.io.ByteArrayOutputStream
-import kotlin.math.max
 
 object AvatarCompressor {
     private const val MAX_EDGE = 512
     private const val QUALITY = 80
 
-    fun jpeg(source: ByteArray): ByteArray {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(source, 0, source.size, bounds)
-        val decoded = BitmapFactory.decodeByteArray(
-            source,
-            0,
-            source.size,
-            BitmapFactory.Options().apply { inSampleSize = sampleSize(bounds.outWidth, bounds.outHeight) },
-        ) ?: error("avatar")
-        return encode(decoded)
-    }
-
-    fun jpeg(context: Context, uri: Uri): ByteArray {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        context.contentResolver.openInputStream(uri)?.use { stream ->
-            BitmapFactory.decodeStream(stream, null, bounds)
-        }
-        val sample = sampleSize(bounds.outWidth, bounds.outHeight)
-        val decoded = BitmapFactory.Options().apply { inSampleSize = sample }.let { options ->
-            context.contentResolver.openInputStream(uri)?.use { stream ->
-                BitmapFactory.decodeStream(stream, null, options)
-            }
-        } ?: error("avatar")
-        return encode(decoded)
-    }
-
-    private fun encode(decoded: Bitmap): ByteArray {
-        val longest = max(decoded.width, decoded.height).coerceAtLeast(1)
-        val bitmap = if (longest > MAX_EDGE) {
-            val scale = MAX_EDGE.toFloat() / longest
-            Bitmap.createScaledBitmap(
-                decoded,
-                (decoded.width * scale).toInt().coerceAtLeast(1),
-                (decoded.height * scale).toInt().coerceAtLeast(1),
-                true,
-            )
+    suspend fun jpeg(context: Context, data: Any): ByteArray {
+        val request = ImageRequest.Builder(context)
+            .data(data)
+            .size(MAX_EDGE, MAX_EDGE)
+            .scale(Scale.FIT)
+            .precision(Precision.INEXACT)
+            .allowHardware(false)
+            .build()
+        val result = context.imageLoader.execute(request)
+        val drawable = (result as? SuccessResult)?.drawable ?: error("avatar")
+        val targetWidth = if (drawable.intrinsicWidth > 0) {
+            drawable.intrinsicWidth.coerceAtMost(MAX_EDGE)
         } else {
-            decoded
+            MAX_EDGE
         }
+        val targetHeight = if (drawable.intrinsicHeight > 0) {
+            drawable.intrinsicHeight.coerceAtMost(MAX_EDGE)
+        } else {
+            MAX_EDGE
+        }
+        val bitmap = drawable.toBitmap(
+            width = targetWidth,
+            height = targetHeight,
+            config = Bitmap.Config.ARGB_8888,
+        )
         return ByteArrayOutputStream().use { output ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, QUALITY, output)
-            if (bitmap !== decoded) bitmap.recycle()
-            decoded.recycle()
             output.toByteArray()
         }
-    }
-
-    private fun sampleSize(width: Int, height: Int): Int {
-        var sample = 1
-        val longest = max(width, height)
-        while (longest / sample > MAX_EDGE * 2) sample *= 2
-        return sample
     }
 }

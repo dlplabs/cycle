@@ -156,9 +156,7 @@ class DashboardViewModel @Inject constructor(
         val url = _state.value.googlePhotoUrl ?: return
         viewModelScope.launch {
             runCatching {
-                val jpeg = AvatarCompressor.jpeg(
-                    withContext(Dispatchers.IO) { URL(url).openStream().use { it.readBytes() } },
-                )
+                val jpeg = AvatarCompressor.jpeg(context, url)
                 shownAvatar = jpeg
                 _state.update { it.copy(avatarBytes = jpeg, errorMessage = null) }
                 userRepository.saveAvatar(accessToken, jpeg)

@@ -59,7 +59,22 @@ android {
     }
 
     buildTypes {
+        debug {
+            resValue("string", "admob_app_id", "ca-app-pub-3940256099942544~3347511713")
+            resValue("string", "admob_banner_id", "ca-app-pub-3940256099942544/9214589741")
+        }
         release {
+            resValue(
+                "string",
+                "admob_app_id",
+                providers.environmentVariable("ADMOB_APP_ID").orNull?.takeIf { it.isNotBlank() }
+                    ?: "ca-app-pub-6678306811480199~9347331345",
+            )
+            resValue(
+                "string",
+                "admob_banner_id",
+                providers.environmentVariable("ADMOB_BANNER_ID").orNull?.takeIf { it.isNotBlank() } ?: "",
+            )
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

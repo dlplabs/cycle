@@ -26,6 +26,8 @@ fun AdBannerContainer(
 ) {
     if (isPremium) return
     val context = LocalContext.current
+    val bannerId = stringResource(R.string.admob_banner_id)
+    if (bannerId.isBlank()) return
     LaunchedEffect(Unit) {
         MobileAds.initialize(context)
     }
@@ -49,7 +51,7 @@ fun AdBannerContainer(
                         setAdSize(
                             AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(viewContext, widthDp),
                         )
-                        adUnitId = viewContext.getString(R.string.admob_banner_id)
+                        adUnitId = bannerId
                         loadAd(AdRequest.Builder().build())
                     }
                 },

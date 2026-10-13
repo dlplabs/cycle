@@ -1,21 +1,17 @@
-# Firestore models are mapped by reflection.
--keep class br.com.dlpsystems.cycle.data.model.** { *; }
--keepclassmembers class br.com.dlpsystems.cycle.data.model.** {
-    <init>(...);
-    get*();
-    set*(...);
+# Keep annotated classes and members (e.g. @Keep on Firestore entities and Glance widget components)
+-keep @androidx.annotation.Keep class * { *; }
+-keepclassmembers class * {
+    @androidx.annotation.Keep <fields>;
+    @androidx.annotation.Keep <init>(...);
+    @androidx.annotation.Keep <methods>;
 }
 
-# Domain models for state serialization
--keep class br.com.dlpsystems.cycle.domain.model.** { *; }
+# Keep Glance AppWidget Receiver referenced in AndroidManifest.xml
+-keep class br.com.dlpsystems.cycle.presentation.widget.CycleGlanceWidgetReceiver { *; }
 
-# Google Play Billing 8.0.0
+# Google Play Billing
 -keep class com.android.billingclient.api.** { *; }
 
-# Glance AppWidget
--keep class androidx.glance.** { *; }
--keep class br.com.dlpsystems.cycle.presentation.widget.** { *; }
-
-# Reempacotamento de classes para reduzir DEX
+# Reempacotamento de classes para otimizacao DEX no R8
 -repackageclasses ''
 -allowaccessmodification

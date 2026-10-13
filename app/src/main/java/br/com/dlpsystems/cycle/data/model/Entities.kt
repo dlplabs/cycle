@@ -1,7 +1,9 @@
 package br.com.dlpsystems.cycle.data.model
 
+import androidx.annotation.Keep
 import com.google.firebase.Timestamp
 
+@Keep
 data class UserProfileEntity(
     val name: String = "",
     val birthDate: Timestamp? = null,
@@ -12,6 +14,7 @@ data class UserProfileEntity(
     val photoDriveId: String? = null,
 )
 
+@Keep
 data class CycleEntity(
     val startDate: Timestamp? = null,
     val endDate: Timestamp? = null,
@@ -19,6 +22,7 @@ data class CycleEntity(
     val periodLength: Int = 5,
 )
 
+@Keep
 data class DailyLogEntity(
     val cycleId: String = "",
     val cycleDay: Int = 0,

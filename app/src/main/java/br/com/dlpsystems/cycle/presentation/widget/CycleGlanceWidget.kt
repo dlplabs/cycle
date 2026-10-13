@@ -42,6 +42,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import androidx.annotation.Keep
 import br.com.dlpsystems.cycle.MainActivity
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.data.local.UserPreferencesDataSource
@@ -51,6 +52,7 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
 
+@Keep
 class CycleGlanceWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
@@ -302,6 +304,7 @@ private fun WheelCenterContent(
     }
 }
 
+@Keep
 class StartPeriodAction : ActionCallback {
     override suspend fun onAction(
         context: Context,
@@ -317,10 +320,12 @@ class StartPeriodAction : ActionCallback {
     }
 }
 
+@Keep
 class CycleGlanceWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = CycleGlanceWidget()
 }
 
+@Keep
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface WidgetEntryPoint {

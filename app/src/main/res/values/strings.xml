@@ -41,8 +41,8 @@
     <string name="photo_gallery">Escolher na galeria</string>
     <string name="photo_camera">Tirar foto</string>
     <string name="photo_close">Fechar</string>
-    <string name="photo_drive_note">A foto é criptografada neste aparelho e gravada no seu Google Drive.</string>
-    <string name="photo_save_failed">Não foi possível guardar a foto no Drive.</string>
+    <string name="photo_drive_note">Escolha uma foto da galeria, tire uma foto nova ou use a do seu perfil Google.</string>
+    <string name="photo_save_failed">Não foi possível carregar a imagem selecionada.</string>
     <string name="greeting_anonymous">Olá</string>
     <string name="register_today">Registrar sintomas e humor</string>
     <string name="phase_menstrual">Menstrual</string>

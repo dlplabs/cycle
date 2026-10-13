@@ -135,8 +135,9 @@ class DashboardViewModel @Inject constructor(
             }.collect { snapshot ->
                 val previous = _state.value
                 val remindersChanged = previous.remindersEnabled != snapshot.remindersEnabled || previous.loading
-                if (snapshot.photoDriveId.isNullOrBlank()) shownAvatar = null
-                _state.value = snapshot.copy(avatarBytes = shownAvatar)
+                val currentAvatar = shownAvatar ?: loadLocalAvatar()
+                shownAvatar = currentAvatar
+                _state.value = snapshot.copy(avatarBytes = currentAvatar)
                 if (remindersChanged) reminderScheduler.setEnabled(snapshot.remindersEnabled)
                 val phaseName = snapshot.result?.phase?.let { context.getString(it.labelRes()) }.orEmpty()
                 preferences.setWidgetSnapshot(snapshot.result?.cycleDay ?: 0, phaseName)
@@ -152,25 +153,27 @@ class DashboardViewModel @Inject constructor(
         analyticsService.log(AnalyticsEvents.EVENT_EVIDENCE_CLICKED, screen = "dashboard")
     }
 
-    fun useGooglePhoto(accessToken: String) {
+    fun useGooglePhoto(accessToken: String? = null) {
         val url = _state.value.googlePhotoUrl ?: return
         viewModelScope.launch {
             runCatching {
                 val jpeg = AvatarCompressor.jpeg(context, url)
-                shownAvatar = jpeg
-                _state.update { it.copy(avatarBytes = jpeg, errorMessage = null) }
-                userRepository.saveAvatar(accessToken, jpeg)
+                persistAvatar(jpeg)
+                if (!accessToken.isNullOrBlank()) {
+                    runCatching { userRepository.saveAvatar(accessToken, jpeg) }
+                }
             }.onFailure { reportPhotoFailure() }
         }
     }
 
-    fun uploadAvatar(uri: Uri, accessToken: String) {
+    fun uploadAvatar(uri: Uri, accessToken: String? = null) {
         viewModelScope.launch {
             runCatching {
                 val jpeg = AvatarCompressor.jpeg(context, uri)
-                shownAvatar = jpeg
-                _state.update { it.copy(avatarBytes = jpeg, errorMessage = null) }
-                userRepository.saveAvatar(accessToken, jpeg)
+                persistAvatar(jpeg)
+                if (!accessToken.isNullOrBlank()) {
+                    runCatching { userRepository.saveAvatar(accessToken, jpeg) }
+                }
             }.onFailure { reportPhotoFailure() }
         }
     }
@@ -180,15 +183,32 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { userRepository.readAvatar(accessToken, fileId) }
                 .onSuccess { bytes ->
-                    shownAvatar = bytes
-                    _state.update { it.copy(avatarBytes = bytes, errorMessage = null) }
+                    persistAvatar(bytes)
                 }
                 .onFailure { reportPhotoFailure() }
         }
     }
 
+    private fun persistAvatar(jpeg: ByteArray) {
+        runCatching {
+            val file = java.io.File(context.filesDir, AVATAR_FILE_NAME)
+            file.writeBytes(jpeg)
+        }
+        shownAvatar = jpeg
+        _state.update { it.copy(avatarBytes = jpeg, errorMessage = null) }
+    }
+
+    private fun loadLocalAvatar(): ByteArray? = runCatching {
+        val file = java.io.File(context.filesDir, AVATAR_FILE_NAME)
+        if (file.exists() && file.length() > 0) file.readBytes() else null
+    }.getOrNull()
+
     private fun reportPhotoFailure() {
         _state.update { it.copy(errorMessage = context.getString(br.com.dlpsystems.cycle.R.string.photo_save_failed)) }
+    }
+
+    companion object {
+        private const val AVATAR_FILE_NAME = "user_avatar.jpg"
     }
 
     fun startPeriodToday() = startPeriodOnDate(LocalDate.now())

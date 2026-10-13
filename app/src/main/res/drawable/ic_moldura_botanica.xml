@@ -330,4 +330,157 @@
     <path
         android:pathData="M670.468 191.205C673.008 190.935 674.168 191.083 676.648 191.273C679.328 193.607 678.508 192.515 679.238 196.702C677.128 196.661 675.068 196.515 672.958 196.389C670.418 194.371 671.218 195.244 670.468 191.205Z"
         android:fillColor="#9EA991" />
+
+    <!-- Ilustração do Útero no Centro da Coroa -->
+    <group android:name="id_uterus_illustration">
+        <path
+            android:pathData="M 433 340 C 510 340 565 380 575 440 C 540 515 475 585 433 605 C 391 585 326 515 291 440 C 301 380 356 340 433 340 Z"
+            android:fillColor="#E8D4C8"
+            android:fillAlpha="0.4" />
+        <path
+            android:pathData="M 368 440 C 325 446 295 455 275 460"
+            android:strokeColor="#C5B2A6"
+            android:strokeWidth="4.5"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M 498 440 C 541 446 571 455 591 460"
+            android:strokeColor="#C5B2A6"
+            android:strokeWidth="4.5"
+            android:strokeLineCap="round" />
+
+        <!-- Ovário Esquerdo -->
+        <group
+            android:pivotX="270"
+            android:pivotY="454"
+            android:rotation="-18">
+            <path
+                android:pathData="M 247 454 a 23 31 0 1 0 46 0 a 23 31 0 1 0 -46 0 Z"
+                android:fillColor="#FAF1EA"
+                android:strokeColor="#4A2E4B"
+                android:strokeWidth="6.5" />
+            <path
+                android:pathData="M 268 438 C 277 448 275 462 265 471"
+                android:strokeColor="#9EA991"
+                android:strokeWidth="4.5"
+                android:strokeLineCap="round" />
+            <path
+                android:pathData="M 268 452 a 5 5 0 1 0 10 0 a 5 5 0 1 0 -10 0 Z"
+                android:fillColor="#C5826F" />
+        </group>
+
+        <!-- Ovário Direito -->
+        <group
+            android:pivotX="596"
+            android:pivotY="454"
+            android:rotation="18">
+            <path
+                android:pathData="M 573 454 a 23 31 0 1 0 46 0 a 23 31 0 1 0 -46 0 Z"
+                android:fillColor="#FAF1EA"
+                android:strokeColor="#4A2E4B"
+                android:strokeWidth="6.5" />
+            <path
+                android:pathData="M 598 438 C 589 448 591 462 601 471"
+                android:strokeColor="#9EA991"
+                android:strokeWidth="4.5"
+                android:strokeLineCap="round" />
+            <path
+                android:pathData="M 588 452 a 5 5 0 1 0 10 0 a 5 5 0 1 0 -10 0 Z"
+                android:fillColor="#C5826F" />
+        </group>
+
+        <!-- Trompa Esquerda e Fímbrias -->
+        <path
+            android:pathData="M 365 410 C 330 350 270 340 240 390 C 225 415 238 442 258 446"
+            android:strokeColor="#4A2E4B"
+            android:strokeWidth="7"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M 238 395 C 230 406 236 422 248 428"
+            android:strokeColor="#4A2E4B"
+            android:strokeWidth="5"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M 252 386 C 242 396 248 412 258 418"
+            android:strokeColor="#9EA991"
+            android:strokeWidth="5"
+            android:strokeLineCap="round" />
+
+        <!-- Trompa Direita e Fímbrias -->
+        <path
+            android:pathData="M 501 410 C 536 350 596 340 626 390 C 641 415 628 442 608 446"
+            android:strokeColor="#4A2E4B"
+            android:strokeWidth="7"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M 628 395 C 636 406 630 422 618 428"
+            android:strokeColor="#4A2E4B"
+            android:strokeWidth="5"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M 614 386 C 624 396 618 412 608 418"
+            android:strokeColor="#9EA991"
+            android:strokeWidth="5"
+            android:strokeLineCap="round" />
+
+        <!-- Corpo Uterino Principal -->
+        <path
+            android:pathData="M 365 410 C 388 385 410 376 433 376 C 456 376 478 385 501 410 C 516 438 514 472 490 514 C 472 546 454 570 444 584 C 438 591 428 591 422 584 C 412 570 394 546 376 514 C 352 472 350 438 365 410 Z"
+            android:fillColor="#FDF8F5"
+            android:strokeColor="#4A2E4B"
+            android:strokeWidth="8"
+            android:strokeLineJoin="round" />
+
+        <!-- Cavidade Endometrial -->
+        <path
+            android:pathData="M 392 418 C 410 400 422 398 433 408 C 444 398 456 400 474 418 C 484 445 478 475 456 508 C 445 524 438 538 433 544 C 428 538 421 524 410 508 C 388 475 382 445 392 418 Z"
+            android:fillColor="#EFC7B7"
+            android:fillAlpha="0.75"
+            android:strokeColor="#C5826F"
+            android:strokeWidth="4.5"
+            android:strokeLineJoin="round" />
+
+        <!-- Canal Cervical -->
+        <path
+            android:pathData="M 433 546 L 433 582"
+            android:strokeColor="#4A2E4B"
+            android:strokeWidth="5"
+            android:strokeLineCap="round" />
+
+        <!-- Haste e Folhas Florais Internas -->
+        <path
+            android:pathData="M 433 530 C 433 488 433 452 433 424"
+            android:strokeColor="#9EA991"
+            android:strokeWidth="4.5"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M 433 488 C 415 481 408 465 415 456 C 425 465 430 477 433 488 Z"
+            android:fillColor="#9EA991" />
+        <path
+            android:pathData="M 433 468 C 451 461 458 445 451 436 C 441 445 436 457 433 468 Z"
+            android:fillColor="#9EA991" />
+        <path
+            android:pathData="M 427 420 a 6 6 0 1 0 12 0 a 6 6 0 1 0 -12 0 Z"
+            android:fillColor="#C5826F" />
+
+        <!-- Detalhes Celestes e Lunares no Topo -->
+        <path
+            android:pathData="M 430 340 C 438 340 442 346 441 352 C 435 348 429 346 430 340 Z"
+            android:fillColor="#4A2E4B" />
+        <path
+            android:pathData="M 427.5 357 a 5.5 5.5 0 1 0 11 0 a 5.5 5.5 0 1 0 -11 0 Z"
+            android:fillColor="#4A2E4B" />
+        <path
+            android:pathData="M 404 362 a 4 4 0 1 0 8 0 a 4 4 0 1 0 -8 0 Z"
+            android:fillColor="#BDACA0" />
+        <path
+            android:pathData="M 454 362 a 4 4 0 1 0 8 0 a 4 4 0 1 0 -8 0 Z"
+            android:fillColor="#BDACA0" />
+        <path
+            android:pathData="M 384.5 372 a 3.5 3.5 0 1 0 7 0 a 3.5 3.5 0 1 0 -7 0 Z"
+            android:fillColor="#CEA799" />
+        <path
+            android:pathData="M 474.5 372 a 3.5 3.5 0 1 0 7 0 a 3.5 3.5 0 1 0 -7 0 Z"
+            android:fillColor="#CEA799" />
+    </group>
+
 </vector>

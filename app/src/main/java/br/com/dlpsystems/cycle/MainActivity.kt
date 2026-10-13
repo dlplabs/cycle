@@ -19,9 +19,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         consumeStartPeriod(intent)
-        enableEdgeToEdge()
         setContent {
             CycleTheme {
                 CycleApp(

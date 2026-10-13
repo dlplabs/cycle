@@ -2,7 +2,6 @@ package br.com.dlpsystems.cycle.presentation.dashboard
 
 import android.Manifest
 import android.app.Activity
-import android.graphics.BitmapFactory
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -10,7 +9,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -52,8 +50,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -456,11 +452,7 @@ private fun ProfileAvatar(
     photoBytes: ByteArray?,
     onClick: () -> Unit,
 ) {
-    val bitmap = remember(photoBytes) {
-        photoBytes?.let {
-            BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap()
-        }
-    }
+    val imageModel = photoBytes ?: photoUrl?.takeIf { it.isNotBlank() }
     Box(
         modifier = Modifier
             .size(52.dp)
@@ -470,30 +462,19 @@ private fun ProfileAvatar(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        when {
-            bitmap != null -> {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = stringResource(R.string.cd_profile_photo, name),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-            !photoUrl.isNullOrBlank() -> {
-                coil.compose.AsyncImage(
-                    model = photoUrl,
-                    contentDescription = stringResource(R.string.cd_profile_photo, name),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-            else -> {
-                Text(
-                    text = name.firstOrNull()?.uppercaseChar()?.toString().orEmpty(),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimary,
-                )
-            }
+        if (imageModel != null) {
+            coil.compose.AsyncImage(
+                model = imageModel,
+                contentDescription = stringResource(R.string.cd_profile_photo, name),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            Text(
+                text = name.firstOrNull()?.uppercaseChar()?.toString().orEmpty(),
+                style = MaterialTheme.typography.titleLarge,
+                color = TextPrimary,
+            )
         }
     }
 }

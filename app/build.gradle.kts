@@ -22,8 +22,8 @@ android {
         applicationId = "br.com.dlpsystems.cycle"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
-        versionName = "1.0.10"
+        versionCode = 12
+        versionName = "1.0.11"
         buildConfigField(
             "boolean",
             "FIREBASE_CONFIGURED",
@@ -147,6 +147,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.analytics)
     implementation(libs.play.services.auth)
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.security.crypto)
     implementation(libs.billing.ktx)
     implementation(libs.play.services.ads)
     implementation(libs.glance.appwidget)

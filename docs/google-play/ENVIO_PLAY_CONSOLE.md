@@ -40,14 +40,11 @@ Fases do ciclo menstrual, alívio SOS de cólicas, ciência do bem-estar e backu
 ### Notas da Versão — O Que Há de Novo (Máximo 500 caracteres)
 ```text
 <pt-BR>
-• Roda do ciclo com cálculo das 4 fases hormonais
-• Modo gestação e cronômetro de contrações
-• Mandala lunar e identificação de padrões pessoais
-• Mapeamento de sintomas por região do corpo
-• Lembrete de anticoncepcional e pasta de exames
-• Central SOS para alívio térmico de cólicas
-• Backup seguro e gratuito em nuvem
-• Compatível com Android 16 (API 36) e Play Billing 8
+• Liberdade para alterar sua foto de perfil escolhendo da galeria ou tirando foto, sem depender de conta Google.
+• Nova ilustração botânica do útero integrada à coroa no topo da tela inicial.
+• Exibição de ponta a ponta (Edge-to-Edge) aprimorada para o Android 15 e versões mais recentes.
+• Carregamento de imagens mais leve e rápido com consumo reduzido de memória.
+• Otimizações de desempenho e estabilidade geral.
 </pt-BR>
 ```
 

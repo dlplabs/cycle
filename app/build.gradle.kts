@@ -22,8 +22,8 @@ android {
         applicationId = "br.com.dlpsystems.cycle"
         minSdk = 26
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.0.12"
+        versionCode = 14
+        versionName = "1.0.13"
         buildConfigField(
             "boolean",
             "FIREBASE_CONFIGURED",
@@ -111,6 +111,18 @@ android {
         abortOnError = false
         checkReleaseBuilds = false
     }
+
+    bundle {
+        language {
+            enableSplit = true
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
+        }
+    }
 }
 
 kotlin {
@@ -155,6 +167,7 @@ dependencies {
     implementation(libs.glance.material3)
     implementation(libs.hilt.android)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.profileinstaller)
     implementation("androidx.compose.material:material-icons-extended")
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)

@@ -2,8 +2,10 @@ package br.com.dlpsystems.cycle.data.billing
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import br.com.dlpsystems.cycle.data.local.UserPreferencesDataSource
 import br.com.dlpsystems.cycle.domain.model.SubscriptionState
+import br.com.dlpsystems.cycle.domain.repository.BillingProductsState
 import br.com.dlpsystems.cycle.domain.repository.BillingRepository
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
@@ -35,10 +37,12 @@ class GooglePlayBillingManager @Inject constructor(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val premium = MutableStateFlow(false)
     private val state = MutableStateFlow(SubscriptionState.FREE)
+    private val _productsState = MutableStateFlow(BillingProductsState.LOADING)
     private val details = mutableMapOf<String, ProductDetails>()
 
     override val isPremiumUser: StateFlow<Boolean> = premium.asStateFlow()
     override val subscriptionState: StateFlow<SubscriptionState> = state.asStateFlow()
+    override val productsState: StateFlow<BillingProductsState> = _productsState.asStateFlow()
 
     private val client: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
@@ -57,18 +61,24 @@ class GooglePlayBillingManager @Inject constructor(
 
     override fun connect() {
         if (client.isReady) {
+            queryProducts()
             refresh()
             return
         }
+        _productsState.value = BillingProductsState.LOADING
         client.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     queryProducts()
                     refresh()
+                } else {
+                    _productsState.value = BillingProductsState.ERROR
                 }
             }
 
-            override fun onBillingServiceDisconnected() = Unit
+            override fun onBillingServiceDisconnected() {
+                _productsState.value = BillingProductsState.ERROR
+            }
         })
     }
 
@@ -96,20 +106,14 @@ class GooglePlayBillingManager @Inject constructor(
     override fun purchase(activity: Activity, productId: String) {
         if (!client.isReady) {
             connect()
-            android.widget.Toast.makeText(context, "Conectando ao Google Play. Aguarde um instante.", android.widget.Toast.LENGTH_SHORT).show()
             return
         }
         val product = details[productId]
         if (product == null) {
             queryProducts()
-            android.widget.Toast.makeText(context, "Carregando informacoes do plano. Tente em instantes.", android.widget.Toast.LENGTH_SHORT).show()
             return
         }
-        val offer = product.subscriptionOfferDetails?.firstOrNull()
-        if (offer == null) {
-            android.widget.Toast.makeText(context, "Plano temporariamente indisponivel no Google Play.", android.widget.Toast.LENGTH_SHORT).show()
-            return
-        }
+        val offer = product.subscriptionOfferDetails?.firstOrNull() ?: return
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(
                 listOf(
@@ -122,10 +126,9 @@ class GooglePlayBillingManager @Inject constructor(
             .build()
         val result = client.launchBillingFlow(activity, params)
         if (result.responseCode != BillingClient.BillingResponseCode.OK) {
-            android.util.Log.e("BillingManager", "Falha ao iniciar compra: ${result.debugMessage}")
+            Log.e("BillingManager", "Falha ao iniciar compra: ${result.debugMessage}")
         }
     }
-
 
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
         if (result.responseCode == BillingClient.BillingResponseCode.OK) {
@@ -144,6 +147,8 @@ class GooglePlayBillingManager @Inject constructor(
     }
 
     private fun queryProducts() {
+        if (!client.isReady) return
+        _productsState.value = BillingProductsState.LOADING
         val products = BillingProducts.all.map { id ->
             QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(id)
@@ -154,6 +159,9 @@ class GooglePlayBillingManager @Inject constructor(
         client.queryProductDetailsAsync(params) { result, queryResult ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                 queryResult.productDetailsList.forEach { details[it.productId] = it }
+                _productsState.value = if (details.isNotEmpty()) BillingProductsState.SUCCESS else BillingProductsState.ERROR
+            } else {
+                _productsState.value = BillingProductsState.ERROR
             }
         }
     }

@@ -56,6 +56,7 @@
     <string name="start_first_period">Marcar o 1º dia da menstruação</string>
     <string name="see_phase_care">Ver cuidado desta fase</string>
     <string name="nav_today">Hoje</string>
+    <string name="nav_wellness">Bem-Estar</string>
     <string name="nav_relief">Alívio</string>
     <string name="nav_plan">Planejar</string>
     <string name="nav_account">Conta</string>
@@ -242,6 +243,7 @@
     <string name="partner_active_connections">Conexões Ativas</string>
     <!-- Sintomas por Região do Corpo -->
     <string name="body_symptoms_title">Sintomas por Região do Corpo</string>
+    <string name="safety_routine_title">Check-in de Segurança Pessoal</string>
     <string name="region_head">Cabeça</string>
     <string name="region_breasts">Mamas</string>
     <string name="region_abdomen">Abdômen</string>

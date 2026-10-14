@@ -13,6 +13,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,17 +41,28 @@ import br.com.dlpsystems.cycle.core.designsystem.OffWhiteBackground
 import br.com.dlpsystems.cycle.presentation.auth.LoginScreen
 import br.com.dlpsystems.cycle.presentation.auth.RegisterScreen
 import br.com.dlpsystems.cycle.presentation.auth.SessionViewModel
+import br.com.dlpsystems.cycle.presentation.auth.WelcomeScreen
 import br.com.dlpsystems.cycle.presentation.components.HealthDisclaimerDialog
 import br.com.dlpsystems.cycle.presentation.dashboard.DashboardScreen
+import br.com.dlpsystems.cycle.presentation.exams.ExamsScreen
+import br.com.dlpsystems.cycle.presentation.lunar.LunarScreen
+import br.com.dlpsystems.cycle.presentation.partner.PartnerScreen
+import br.com.dlpsystems.cycle.presentation.pill.PillScreen
 import br.com.dlpsystems.cycle.presentation.planner.FutureEventPlannerScreen
+import br.com.dlpsystems.cycle.presentation.pregnancy.PregnancyScreen
+import br.com.dlpsystems.cycle.presentation.safety.IavpQuestionnaireScreen
+import br.com.dlpsystems.cycle.presentation.safety.PersonalSafetyScreen
 import br.com.dlpsystems.cycle.presentation.settings.SettingsScreen
 import br.com.dlpsystems.cycle.presentation.sos.SosReliefScreen
 import br.com.dlpsystems.cycle.presentation.subscription.PaywallScreen
+import br.com.dlpsystems.cycle.presentation.symptoms.BodySymptomsScreen
+import br.com.dlpsystems.cycle.presentation.wellness.WellnessScreen
 
 private val mainTabs = listOf(
     MainTab("dashboard", R.string.nav_today, CycleIcons.AppMark),
+    MainTab("wellness", R.string.nav_wellness, CycleIcons.Follicular),
     MainTab("sos", R.string.nav_relief, CycleIcons.Menstrual),
-    MainTab("planner", R.string.nav_plan, CycleIcons.Follicular),
+    MainTab("planner", R.string.nav_plan, CycleIcons.Ovulatory),
 )
 
 private data class MainTab(
@@ -74,7 +86,7 @@ fun CycleApp(
     when {
         session.loading -> Box(Modifier.fillMaxSize())
         session.userId == null && !session.welcomeSeen -> {
-            var showAuthDestination by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
+            var showAuthDestination by remember { mutableStateOf<String?>(null) }
             if (showAuthDestination != null) {
                 AuthSubGraph(
                     startDestination = showAuthDestination ?: "login",
@@ -85,7 +97,7 @@ fun CycleApp(
                     },
                 )
             } else {
-                br.com.dlpsystems.cycle.presentation.auth.WelcomeScreen(
+                WelcomeScreen(
                     onExploreApp = { sessionViewModel.completeWelcome() },
                     onLogin = { showAuthDestination = "login" },
                     onCreateAccount = { showAuthDestination = "register" },
@@ -132,8 +144,7 @@ private fun MainGraph(
     val navController = rememberNavController()
     val current = navController.currentBackStackEntryAsState().value?.destination?.route
     val showBar = current in mainTabs.map { it.route }
-    var pendingActionAfterAuth by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<(() -> Unit)?>(null) }
-    var showAuthModal by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var pendingActionAfterAuth by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     Scaffold(
         bottomBar = {
@@ -190,6 +201,19 @@ private fun MainGraph(
                     },
                 )
             }
+            composable("wellness") {
+                WellnessScreen(
+                    onNavigatePregnancy = { navController.navigate("pregnancy") },
+                    onNavigateLunar = { navController.navigate("lunar") },
+                    onNavigatePill = { navController.navigate("pill") },
+                    onNavigateExams = { navController.navigate("exams") },
+                    onNavigatePartner = { navController.navigate("partner") },
+                    onNavigateBodySymptoms = { navController.navigate("body_symptoms") },
+                    onNavigateSafety = { navController.navigate("safety") },
+                    onPaywall = { navController.navigate("paywall") },
+                    onAccount = { navController.navigate("settings") },
+                )
+            }
             composable("sos") {
                 SosReliefScreen(onAccount = { navController.navigate("settings") })
             }
@@ -202,13 +226,6 @@ private fun MainGraph(
             composable("settings") {
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
-                    onPaywall = { navController.navigate("paywall") },
-                    onNavigatePregnancy = { navController.navigate("pregnancy") },
-                    onNavigateLunar = { navController.navigate("lunar") },
-                    onNavigatePill = { navController.navigate("pill") },
-                    onNavigateExams = { navController.navigate("exams") },
-                    onNavigatePartner = { navController.navigate("partner") },
-                    onNavigateBodySymptoms = { navController.navigate("body_symptoms") },
                     onLogin = { navController.navigate("login") },
                 )
             }
@@ -223,33 +240,45 @@ private fun MainGraph(
                 )
             }
             composable("pregnancy") {
-                br.com.dlpsystems.cycle.presentation.pregnancy.PregnancyScreen(
+                PregnancyScreen(
                     onBack = { navController.popBackStack() },
                 )
             }
             composable("lunar") {
-                br.com.dlpsystems.cycle.presentation.lunar.LunarScreen(
+                LunarScreen(
                     onBack = { navController.popBackStack() },
                 )
             }
             composable("pill") {
-                br.com.dlpsystems.cycle.presentation.pill.PillScreen(
+                PillScreen(
                     onBack = { navController.popBackStack() },
                 )
             }
             composable("exams") {
-                br.com.dlpsystems.cycle.presentation.exams.ExamsScreen(
+                ExamsScreen(
                     onBack = { navController.popBackStack() },
                 )
             }
             composable("partner") {
-                br.com.dlpsystems.cycle.presentation.partner.PartnerScreen(
+                PartnerScreen(
                     onBack = { navController.popBackStack() },
                 )
             }
             composable("body_symptoms") {
-                br.com.dlpsystems.cycle.presentation.symptoms.BodySymptomsScreen(
+                BodySymptomsScreen(
                     onBack = { navController.popBackStack() },
+                )
+            }
+            composable("safety") {
+                PersonalSafetyScreen(
+                    onBack = { navController.popBackStack() },
+                    onStartIavp = { navController.navigate("iavp_questionnaire") },
+                )
+            }
+            composable("iavp_questionnaire") {
+                IavpQuestionnaireScreen(
+                    onBack = { navController.popBackStack() },
+                    onResultReady = {},
                 )
             }
             composable("paywall") {
@@ -260,7 +289,7 @@ private fun MainGraph(
 
     val sessionViewModel: SessionViewModel = hiltViewModel()
     val sessionState by sessionViewModel.state.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(sessionState.userId) {
+    LaunchedEffect(sessionState.userId) {
         if (sessionState.userId != null) {
             val pending = pendingActionAfterAuth
             pendingActionAfterAuth = null

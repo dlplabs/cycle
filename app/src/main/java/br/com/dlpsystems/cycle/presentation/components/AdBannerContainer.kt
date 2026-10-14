@@ -34,13 +34,13 @@ fun AdBannerContainer(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 48.dp, bottom = 48.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Text(
             text = stringResource(R.string.ad_label),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 8.dp),
+            modifier = Modifier.padding(bottom = 4.dp),
         )
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val widthDp = maxWidth.value.toInt().coerceAtLeast(1)

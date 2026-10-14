@@ -2,6 +2,7 @@ package br.com.dlpsystems.cycle.presentation.settings
 
 import android.Manifest
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,11 +14,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -32,27 +40,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import br.com.dlpsystems.cycle.BuildConfig
 import br.com.dlpsystems.cycle.R
 import br.com.dlpsystems.cycle.core.config.CycleConstants
 import br.com.dlpsystems.cycle.core.designsystem.AppCard
+import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
 import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
 import br.com.dlpsystems.cycle.core.notification.ReminderScheduler
 import br.com.dlpsystems.cycle.data.local.UserPreferencesDataSource
+import br.com.dlpsystems.cycle.domain.model.AuthFailure
 import br.com.dlpsystems.cycle.domain.repository.BillingRepository
 import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import br.com.dlpsystems.cycle.domain.usecase.ExportDoctorReportUseCase
 import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
-import kotlinx.coroutines.flow.combine
+import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 data class AccountPrefs(
@@ -70,7 +85,7 @@ class SettingsViewModel @Inject constructor(
     private val preferences: UserPreferencesDataSource,
     private val reminderScheduler: ReminderScheduler,
 ) : ViewModel() {
-    val isPremium: kotlinx.coroutines.flow.StateFlow<Boolean> = billingRepository.isPremiumUser
+    val isPremium: StateFlow<Boolean> = billingRepository.isPremiumUser
     val authUser = userRepository.observeAuth()
     private val _message = MutableStateFlow<String?>(null)
     val message = _message.asStateFlow()
@@ -141,7 +156,7 @@ class SettingsViewModel @Inject constructor(
                 reminderScheduler.setEnabled(false)
                 _isDeleting.value = false
                 onDeleted()
-            } catch (_: br.com.dlpsystems.cycle.domain.model.AuthFailure.RequiresRecentLogin) {
+            } catch (_: AuthFailure.RequiresRecentLogin) {
                 _isDeleting.value = false
                 _message.value = "requires_recent_login"
             } catch (error: Throwable) {
@@ -151,7 +166,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun export(onFile: (java.io.File) -> Unit) {
+    fun export(onFile: (File) -> Unit) {
         viewModelScope.launch {
             val file = exportDoctorReport()
             if (file == null) {
@@ -167,13 +182,6 @@ class SettingsViewModel @Inject constructor(
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit = {},
-    onPaywall: () -> Unit,
-    onNavigatePregnancy: () -> Unit = {},
-    onNavigateLunar: () -> Unit = {},
-    onNavigatePill: () -> Unit = {},
-    onNavigateExams: () -> Unit = {},
-    onNavigatePartner: () -> Unit = {},
-    onNavigateBodySymptoms: () -> Unit = {},
     onLogin: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -188,6 +196,7 @@ fun SettingsScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { }
+
     LaunchedEffect(prefs.remindersEnabled) {
         if (prefs.remindersEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -221,76 +230,120 @@ fun SettingsScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        ScreenHeader(
+            title = stringResource(R.string.settings_title),
+            onBack = onBack,
+        )
+
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium)
+            // Seção Meu Ciclo
+            Text(
+                text = stringResource(R.string.your_cycle),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = DeepPlum,
+            )
             AveragesCard(
                 cycleDays = prefs.cycleDays,
                 periodDays = prefs.periodDays,
                 onCycle = { viewModel.updateAverages(it, prefs.periodDays) },
                 onPeriod = { viewModel.updateAverages(prefs.cycleDays, it) },
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(stringResource(R.string.reminders), style = MaterialTheme.typography.titleMedium)
-                Switch(checked = prefs.remindersEnabled, onCheckedChange = viewModel::setReminders)
-            }
 
-            Text("Recursos de Saúde e Bem-Estar", style = MaterialTheme.typography.titleMedium)
-            OutlinedButton(onClick = onNavigatePregnancy, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.pregnancy_mode_title))
-            }
-            OutlinedButton(onClick = onNavigateLunar, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.lunar_mandala_title))
-            }
-            OutlinedButton(onClick = onNavigatePill, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.pill_alarm_title))
-            }
-            OutlinedButton(onClick = onNavigateExams, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.exams_folder_title))
-            }
-            OutlinedButton(onClick = onNavigatePartner, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.partner_invite_title))
-            }
-            OutlinedButton(onClick = onNavigateBodySymptoms, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.body_symptoms_title))
-            }
-
-            PrimaryButton(text = stringResource(R.string.open_paywall), onClick = onPaywall)
-            PrimaryButton(
-                text = stringResource(R.string.export_pdf),
-                onClick = {
-                    viewModel.export { file ->
-                        val uri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.fileprovider",
-                            file,
-                        )
-                        val share = Intent(Intent.ACTION_SEND).apply {
-                            type = "application/pdf"
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-                        context.startActivity(Intent.createChooser(share, null))
-                    }
-                },
+            // Seção Notificações
+            Text(
+                text = "Notificações",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = DeepPlum,
             )
-            if (message == "premium") {
-                Text(stringResource(R.string.export_locked))
-            } else if (message == "requires_recent_login") {
-                Text(
-                    stringResource(R.string.error_requires_recent_login),
-                    color = MaterialTheme.colorScheme.error,
-                )
+            AppCard {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.reminders),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = "Lembrete diário para registrar sintomas e fase",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = prefs.remindersEnabled,
+                        onCheckedChange = viewModel::setReminders,
+                    )
+                }
             }
+
+            // Seção Geral & Utilidades
+            Text(
+                text = "Geral e Relatórios",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = DeepPlum,
+            )
+            AppCard {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    PrimaryButton(
+                        text = stringResource(R.string.export_pdf),
+                        onClick = {
+                            viewModel.export { file ->
+                                val uri = FileProvider.getUriForFile(
+                                    context,
+                                    "${context.packageName}.fileprovider",
+                                    file,
+                                )
+                                val share = Intent(Intent.ACTION_SEND).apply {
+                                    type = "application/pdf"
+                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                context.startActivity(Intent.createChooser(share, null))
+                            }
+                        },
+                    )
+
+                    if (message == "premium") {
+                        Text(
+                            text = stringResource(R.string.export_locked),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else if (message == "requires_recent_login") {
+                        Text(
+                            text = stringResource(R.string.error_requires_recent_login),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            }
+
+            // Seção Conta / Sessão
+            Text(
+                text = "Sua Conta",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = DeepPlum,
+            )
             if (isGuest) {
                 Surface(
                     shape = MaterialTheme.shapes.medium,
@@ -312,7 +365,12 @@ fun SettingsScreen(
                     }
                 }
             } else {
-                PrimaryButton(text = stringResource(R.string.sign_out), onClick = viewModel::signOut)
+                OutlinedButton(
+                    onClick = viewModel::signOut,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.sign_out))
+                }
 
                 OutlinedButton(
                     onClick = { showDeleteDialog = true },
@@ -328,7 +386,23 @@ fun SettingsScreen(
                     )
                 }
             }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Rodapé
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = "Cycle v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
+
         AdBannerContainer(isPremium = premium)
     }
 }
@@ -341,14 +415,17 @@ private fun AveragesCard(
     onPeriod: (Int) -> Unit,
 ) {
     AppCard {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.your_cycle), style = MaterialTheme.typography.titleMedium)
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
             Stepper(
                 label = stringResource(R.string.average_cycle),
                 value = cycleDays,
                 onDecrease = { onCycle((cycleDays - 1).coerceAtLeast(15)) },
                 onIncrease = { onCycle((cycleDays + 1).coerceAtMost(90)) },
             )
+            HorizontalDivider()
             Stepper(
                 label = stringResource(R.string.average_period),
                 value = periodDays,
@@ -371,13 +448,42 @@ private fun Stepper(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
-            Text(stringResource(R.string.days_value, value), style = MaterialTheme.typography.bodyMedium)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = stringResource(R.string.days_value, value),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
-        Row {
-            IconButton(onClick = onDecrease) { Text(stringResource(R.string.decrease)) }
-            IconButton(onClick = onIncrease) { Text(stringResource(R.string.increase)) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedIconButton(onClick = onDecrease) {
+                Icon(
+                    imageVector = Icons.Default.Remove,
+                    contentDescription = "Diminuir",
+                    tint = DeepPlum,
+                )
+            }
+            Text(
+                text = "$value",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = DeepPlum,
+            )
+            OutlinedIconButton(onClick = onIncrease) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Aumentar",
+                    tint = DeepPlum,
+                )
+            }
         }
     }
 }

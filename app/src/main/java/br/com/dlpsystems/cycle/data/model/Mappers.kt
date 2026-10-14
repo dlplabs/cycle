@@ -101,3 +101,101 @@ fun DailyLogEntity.toDomain(date: LocalDate): DailyLog? {
         painLevel = painLevel,
     )
 }
+
+fun br.com.dlpsystems.cycle.domain.model.PregnancyProfile.toFirestoreMap(): Map<String, Any?> = mapOf(
+    "isActive" to isActive,
+    "calculationMethod" to calculationMethod.name,
+    "lastMenstrualPeriod" to lastMenstrualPeriod?.toString(),
+    "estimatedDueDate" to estimatedDueDate?.toString(),
+    "ultrasoundDate" to ultrasoundDate?.toString(),
+    "ultrasoundWeeks" to ultrasoundWeeks,
+    "ultrasoundDays" to ultrasoundDays,
+    "notes" to notes,
+)
+
+fun Map<String, Any?>.toPregnancyProfile(): br.com.dlpsystems.cycle.domain.model.PregnancyProfile {
+    val methodStr = this["calculationMethod"] as? String ?: br.com.dlpsystems.cycle.domain.model.PregnancyCalculationMethod.DUM.name
+    val method = runCatching { br.com.dlpsystems.cycle.domain.model.PregnancyCalculationMethod.valueOf(methodStr) }.getOrDefault(br.com.dlpsystems.cycle.domain.model.PregnancyCalculationMethod.DUM)
+    val lmp = (this["lastMenstrualPeriod"] as? String)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+    val edd = (this["estimatedDueDate"] as? String)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+    val usDate = (this["ultrasoundDate"] as? String)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+    val weeks = (this["ultrasoundWeeks"] as? Number)?.toInt() ?: 0
+    val days = (this["ultrasoundDays"] as? Number)?.toInt() ?: 0
+    val active = this["isActive"] as? Boolean ?: false
+    val notes = this["notes"] as? String ?: ""
+
+    return br.com.dlpsystems.cycle.domain.model.PregnancyProfile(
+        isActive = active,
+        calculationMethod = method,
+        lastMenstrualPeriod = lmp,
+        estimatedDueDate = edd,
+        ultrasoundDate = usDate,
+        ultrasoundWeeks = weeks,
+        ultrasoundDays = days,
+        notes = notes,
+    )
+}
+
+fun br.com.dlpsystems.cycle.domain.model.BodySymptomEntry.toFirestoreMap(): Map<String, Any?> = mapOf(
+    "id" to id,
+    "date" to date.toString(),
+    "time" to time?.toString(),
+    "region" to region.name,
+    "symptomName" to symptomName,
+    "intensity" to intensity,
+    "durationMinutes" to durationMinutes,
+    "notes" to notes,
+)
+
+fun Map<String, Any?>.toBodySymptomEntry(docId: String): br.com.dlpsystems.cycle.domain.model.BodySymptomEntry? {
+    val dateStr = this["date"] as? String ?: return null
+    val date = runCatching { LocalDate.parse(dateStr) }.getOrNull() ?: return null
+    val time = (this["time"] as? String)?.let { runCatching { java.time.LocalTime.parse(it) }.getOrNull() }
+    val regionStr = this["region"] as? String ?: br.com.dlpsystems.cycle.domain.model.BodyRegion.GENERAL.name
+    val region = runCatching { br.com.dlpsystems.cycle.domain.model.BodyRegion.valueOf(regionStr) }.getOrDefault(br.com.dlpsystems.cycle.domain.model.BodyRegion.GENERAL)
+    val name = this["symptomName"] as? String ?: ""
+    val intensity = (this["intensity"] as? Number)?.toInt() ?: 1
+    val duration = (this["durationMinutes"] as? Number)?.toInt()
+    val notes = this["notes"] as? String ?: ""
+
+    return br.com.dlpsystems.cycle.domain.model.BodySymptomEntry(
+        id = docId,
+        date = date,
+        time = time,
+        region = region,
+        symptomName = name,
+        intensity = intensity,
+        durationMinutes = duration,
+        notes = notes,
+    )
+}
+
+fun br.com.dlpsystems.cycle.domain.model.ContraceptiveAlarmConfig.toFirestoreMap(): Map<String, Any?> = mapOf(
+    "isEnabled" to isEnabled,
+    "type" to type.name,
+    "reminderTime" to reminderTime.toString(),
+    "packStartDate" to packStartDate.toString(),
+    "hideSensitiveInfoOnLockScreen" to hideSensitiveInfoOnLockScreen,
+    "snoozeMinutes" to snoozeMinutes,
+)
+
+fun Map<String, Any?>.toContraceptiveAlarmConfig(): br.com.dlpsystems.cycle.domain.model.ContraceptiveAlarmConfig {
+    val enabled = this["isEnabled"] as? Boolean ?: false
+    val typeStr = this["type"] as? String ?: br.com.dlpsystems.cycle.domain.model.ContraceptiveType.DAILY_PILL_28.name
+    val type = runCatching { br.com.dlpsystems.cycle.domain.model.ContraceptiveType.valueOf(typeStr) }.getOrDefault(br.com.dlpsystems.cycle.domain.model.ContraceptiveType.DAILY_PILL_28)
+    val timeStr = this["reminderTime"] as? String ?: "21:00"
+    val time = runCatching { java.time.LocalTime.parse(timeStr) }.getOrDefault(java.time.LocalTime.of(21, 0))
+    val startStr = this["packStartDate"] as? String ?: LocalDate.now().toString()
+    val start = runCatching { LocalDate.parse(startStr) }.getOrDefault(LocalDate.now())
+    val hide = this["hideSensitiveInfoOnLockScreen"] as? Boolean ?: true
+    val snooze = (this["snoozeMinutes"] as? Number)?.toInt() ?: 15
+
+    return br.com.dlpsystems.cycle.domain.model.ContraceptiveAlarmConfig(
+        isEnabled = enabled,
+        type = type,
+        reminderTime = time,
+        packStartDate = start,
+        hideSensitiveInfoOnLockScreen = hide,
+        snoozeMinutes = snooze,
+    )
+}

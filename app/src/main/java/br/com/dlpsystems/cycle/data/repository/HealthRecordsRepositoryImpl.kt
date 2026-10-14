@@ -50,11 +50,13 @@ private val Context.healthPreferencesDataStore by preferencesDataStore(name = "h
 @Singleton
 class HealthRecordsRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val authService: br.com.dlpsystems.cycle.data.remote.FirebaseAuthService,
+    private val firestore: br.com.dlpsystems.cycle.data.remote.FirestoreService,
 ) : HealthRecordsRepository {
 
     private val dataStore = context.healthPreferencesDataStore
 
-    // Cache em memória reativo persistido no DataStore / arquivos locais protegidos
+    // Cache em memoria reativo persistido no DataStore e arquivos locais protegidos
     private val contractionSessionsFlow = MutableStateFlow<List<ContractionSession>>(emptyList())
     private val lunarLogsFlow = MutableStateFlow<List<LunarLogEntry>>(emptyList())
     private val pillRecordsFlow = MutableStateFlow<List<PillIntakeRecord>>(emptyList())
@@ -73,6 +75,29 @@ class HealthRecordsRepositoryImpl @Inject constructor(
             loadExamsFromDisk()
             loadPartnerInvitesFromDisk()
             loadBodySymptomsFromDisk()
+            syncWithRemoteStorage()
+        }
+    }
+
+    private suspend fun syncWithRemoteStorage() = withContext(Dispatchers.IO) {
+        val uid = authService.currentUser()?.id ?: return@withContext
+        runCatching {
+            val remotePregnancy = firestore.getPregnancyProfile(uid)
+            if (remotePregnancy != null && remotePregnancy.isActive) {
+                savePregnancyProfile(remotePregnancy)
+            }
+            val remoteSymptoms = firestore.getBodySymptoms(uid)
+            if (remoteSymptoms.isNotEmpty()) {
+                val current = bodySymptomsFlow.value
+                val merged = (current.filter { local -> remoteSymptoms.none { it.id == local.id } } + remoteSymptoms)
+                    .sortedByDescending { it.date }
+                bodySymptomsFlow.value = merged
+                persistBodySymptomsToDisk()
+            }
+            val remoteContraceptive = firestore.getContraceptiveConfig(uid)
+            if (remoteContraceptive != null && remoteContraceptive.isEnabled) {
+                saveContraceptiveConfig(remoteContraceptive)
+            }
         }
     }
 
@@ -114,6 +139,11 @@ class HealthRecordsRepositoryImpl @Inject constructor(
             prefs[PregnancyKeys.US_WEEKS] = profile.ultrasoundWeeks
             prefs[PregnancyKeys.US_DAYS] = profile.ultrasoundDays
             prefs[PregnancyKeys.NOTES] = profile.notes
+        }
+        authService.currentUser()?.id?.let { uid ->
+            scope.launch {
+                runCatching { firestore.savePregnancyProfile(uid, profile) }
+            }
         }
     }
 
@@ -207,6 +237,11 @@ class HealthRecordsRepositoryImpl @Inject constructor(
             prefs[PillKeys.PACK_START] = config.packStartDate.toString()
             prefs[PillKeys.HIDE_SENSITIVE] = config.hideSensitiveInfoOnLockScreen
             prefs[PillKeys.SNOOZE_MINUTES] = config.snoozeMinutes
+        }
+        authService.currentUser()?.id?.let { uid ->
+            scope.launch {
+                runCatching { firestore.saveContraceptiveConfig(uid, config) }
+            }
         }
     }
 
@@ -336,11 +371,21 @@ class HealthRecordsRepositoryImpl @Inject constructor(
             (current.filter { it.id != entry.id } + entry).sortedByDescending { it.date }
         }
         persistBodySymptomsToDisk()
+        authService.currentUser()?.id?.let { uid ->
+            scope.launch {
+                runCatching { firestore.saveBodySymptom(uid, entry) }
+            }
+        }
     }
 
     override suspend fun deleteBodySymptom(entryId: String) {
         bodySymptomsFlow.update { current -> current.filter { it.id != entryId } }
         persistBodySymptomsToDisk()
+        authService.currentUser()?.id?.let { uid ->
+            scope.launch {
+                runCatching { firestore.deleteBodySymptom(uid, entryId) }
+            }
+        }
     }
 
     // ==========================================

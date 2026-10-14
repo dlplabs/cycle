@@ -6,8 +6,14 @@ import br.com.dlpsystems.cycle.data.model.toDomain
 import br.com.dlpsystems.cycle.data.model.toEntity
 import br.com.dlpsystems.cycle.data.model.toFirestoreMap
 import br.com.dlpsystems.cycle.data.model.toLogId
+import br.com.dlpsystems.cycle.data.model.toPregnancyProfile
+import br.com.dlpsystems.cycle.data.model.toContraceptiveAlarmConfig
+import br.com.dlpsystems.cycle.data.model.toBodySymptomEntry
+import br.com.dlpsystems.cycle.domain.model.BodySymptomEntry
+import br.com.dlpsystems.cycle.domain.model.ContraceptiveAlarmConfig
 import br.com.dlpsystems.cycle.domain.model.DailyLog
 import br.com.dlpsystems.cycle.domain.model.MenstrualCycle
+import br.com.dlpsystems.cycle.domain.model.PregnancyProfile
 import br.com.dlpsystems.cycle.domain.model.UserProfile
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.channels.awaitClose
@@ -141,12 +147,57 @@ class FirestoreService @Inject constructor(
         }.sortedBy { it.date }
     }.getOrDefault(emptyList())
 
+    suspend fun savePregnancyProfile(uid: String, profile: br.com.dlpsystems.cycle.domain.model.PregnancyProfile) {
+        pregnancy(uid).set(profile.toFirestoreMap(), SetOptions.merge()).await()
+    }
+
+    suspend fun getPregnancyProfile(uid: String): br.com.dlpsystems.cycle.domain.model.PregnancyProfile? = runCatching {
+        val snapshot = pregnancy(uid).get().await()
+        if (snapshot.exists()) snapshot.data?.toPregnancyProfile() else null
+    }.getOrNull()
+
+    suspend fun saveContraceptiveConfig(uid: String, config: br.com.dlpsystems.cycle.domain.model.ContraceptiveAlarmConfig) {
+        contraceptive(uid).set(config.toFirestoreMap(), SetOptions.merge()).await()
+    }
+
+    suspend fun getContraceptiveConfig(uid: String): br.com.dlpsystems.cycle.domain.model.ContraceptiveAlarmConfig? = runCatching {
+        val snapshot = contraceptive(uid).get().await()
+        if (snapshot.exists()) snapshot.data?.toContraceptiveAlarmConfig() else null
+    }.getOrNull()
+
+    suspend fun saveBodySymptom(uid: String, entry: br.com.dlpsystems.cycle.domain.model.BodySymptomEntry) {
+        bodySymptoms(uid).document(entry.id).set(entry.toFirestoreMap(), SetOptions.merge()).await()
+    }
+
+    suspend fun deleteBodySymptom(uid: String, id: String) {
+        bodySymptoms(uid).document(id).delete().await()
+    }
+
+    suspend fun getBodySymptoms(uid: String): List<BodySymptomEntry> = runCatching {
+        val docs = bodySymptoms(uid).get().await().documents
+        val result = mutableListOf<BodySymptomEntry>()
+        for (doc in docs) {
+            val data = doc.data
+            if (data != null) {
+                val item = data.toBodySymptomEntry(doc.id)
+                if (item != null) {
+                    result.add(item)
+                }
+            }
+        }
+        result
+    }.getOrDefault(emptyList())
+
     suspend fun deleteUserData(uid: String) {
         val cyclesSnapshot = cycles(uid).get().await()
         val logsSnapshot = logs(uid).get().await()
+        val symptomsSnapshot = bodySymptoms(uid).get().await()
         val batch = services.firestore.batch()
         cyclesSnapshot.documents.forEach { batch.delete(it.reference) }
         logsSnapshot.documents.forEach { batch.delete(it.reference) }
+        symptomsSnapshot.documents.forEach { batch.delete(it.reference) }
+        batch.delete(pregnancy(uid))
+        batch.delete(contraceptive(uid))
         batch.delete(userDocument(uid))
         batch.commit().await()
     }
@@ -157,5 +208,11 @@ class FirestoreService @Inject constructor(
     private fun cycles(uid: String) = userDocument(uid).collection("cycles")
 
     private fun logs(uid: String) = userDocument(uid).collection("daily_logs")
+
+    private fun bodySymptoms(uid: String) = userDocument(uid).collection("body_symptoms")
+
+    private fun pregnancy(uid: String) = userDocument(uid).collection("health").document("pregnancy")
+
+    private fun contraceptive(uid: String) = userDocument(uid).collection("health").document("contraceptive")
 
 }

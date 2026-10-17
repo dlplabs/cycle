@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "br.com.dlpsystems.cycle",
+      "sha256_cert_fingerprints": [
+        "32:15:15:74:F7:0A:A0:6F:C7:F2:70:80:BB:F1:65:12:A9:12:A1:53:DE:17:31:90:0D:3C:CC:C9:88:AB:F7:63",
+        "31:00:B3:C4:3E:70:2B:1B:4C:A8:EA:04:C7:58:74:BE:EF:E8:43:3E:97:2A:8C:9A:EB:A8:C4:F9:BA:80:13:DA"
+      ]
+    }
+  }
+]

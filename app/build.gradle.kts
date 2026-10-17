@@ -3,7 +3,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
@@ -22,8 +21,8 @@ android {
         applicationId = "br.com.dlpsystems.cycle"
         minSdk = 26
         targetSdk = 36
-        versionCode = 15
-        versionName = "1.0.14"
+        versionCode = 16
+        versionName = "1.0.15"
         buildConfigField(
             "boolean",
             "FIREBASE_CONFIGURED",
@@ -77,6 +76,15 @@ android {
             )
             isMinifyEnabled = true
             isShrinkResources = true
+            optimization {
+                keepRules {
+                    ignoreFrom(
+                        "com.google.firebase:firebase-auth",
+                        "com.google.android.recaptcha:recaptcha",
+                        "androidx.annotation:annotation-jvm",
+                    )
+                }
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -99,6 +107,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
     }
 
     packaging {

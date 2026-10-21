@@ -40,10 +40,10 @@ Fases do ciclo menstrual, alívio SOS de cólicas, ciência do bem-estar e backu
 ### Notas da Versão — O Que Há de Novo (Máximo 500 caracteres)
 ```text
 <pt-BR>
-• Liberdade para alterar sua foto de perfil escolhendo da galeria ou tirando foto, sem depender de conta Google.
-• Nova ilustração botânica do útero integrada à coroa no topo da tela inicial.
-• Exibição de ponta a ponta (Edge-to-Edge) aprimorada para o Android 15 e versões mais recentes.
-• Carregamento de imagens mais leve e rápido com consumo reduzido de memória.
+• Estabilidade e garantia de conexão com conta Google em builds de produção.
+• Preservação de identificadores OAuth e credenciais seguras na inicialização.
+• Liberdade para alterar foto de perfil via câmera ou galeria do aparelho.
+• Exibição de ponta a ponta (Edge-to-Edge) aprimorada para Android 15+.
 • Otimizações de desempenho e estabilidade geral.
 </pt-BR>
 ```

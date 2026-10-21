@@ -151,3 +151,30 @@ Observações finais:
 1. Certificar que a conta de desenvolvedor de organização DLP Systems permite publicação direta em produção, ou cumprir a etapa de teste fechado se for conta pessoal.
 2. Atualizar o `admob_app_id` em `strings.xml` para o ID definitivo antes do build final.
 3. Fazer o upload do AAB e submeter as alterações para revisão da equipe do Google Play.
+
+---
+
+## 8. Certificados de Assinatura, Firebase e Google Sign-In
+
+Para garantir que o Google Sign-In funcione corretamente em todos os ambientes (desenvolvimento local, testes e produção distribuída pela Play Store), as seguintes impressões digitais devem estar sempre registradas no Firebase (`cycle-5d812`) no app `br.com.dlpsystems.cycle`:
+
+### Impressões Digitais (Fingerprints)
+
+1. **Google Play App Signing (Chave de Produção/Distribuição da Google Play)**:
+   - **SHA-1**: `E4:E0:23:0C:3C:24:51:2D:6C:BC:5B:21:8C:8F:A1:2C:BB:0D:66:9C`
+   - **SHA-256**: `32:15:15:74:F7:0A:A0:6F:C7:F2:70:80:BB:F1:65:12:A9:12:A1:53:DE:17:31:90:0D:3C:CC:C9:88:AB:F7:63`
+   - **OAuth Client ID Android**: `604557808835-imkt93k0ldg44b2l0df85fpuri4ifih4.apps.googleusercontent.com`
+
+2. **Chave de Upload / Release Keystore Local (`keystore/release.keystore`)**:
+   - **SHA-1**: `5F:E1:7E:7C:05:15:0B:2B:3B:53:C7:66:4B:6F:84:4D:3D:30:F9:FD`
+   - **SHA-256**: `31:00:B3:C4:3E:70:2B:1B:4C:A8:EA:04:C7:58:74:BE:EF:E8:43:3E:97:2A:8C:9A:EB:A8:C4:F9:BA:80:13:DA`
+   - **OAuth Client ID Android**: `604557808835-1vu2r7n3s8rr5v49gcphdg9h5f1t492s.apps.googleusercontent.com`
+
+3. **Chave de Depuração / Debug Keystore Local (`~/.android/debug.keystore`)**:
+   - **SHA-1**: `83:A1:F4:7B:12:EC:F0:86:CD:0E:28:87:52:F5:74:7C:23:76:2B:B5`
+   - **SHA-256**: `7F:2A:FA:72:38:52:DE:0A:1F:EF:F0:EF:5D:2F:01:0B:0C:2F:65:AE:4B:D9:F6:33:1D:F3:83:14:3A:9A:FA:EF`
+   - **OAuth Client ID Android**: `604557808835-5gcm2ioa3ftm9pffg6et3ug8khr7dbe3.apps.googleusercontent.com`
+
+4. **Web Client ID (Servidor OAuth 2.0)**:
+   - `604557808835-02cdd7s9righc14lhrbuq0juqtbd2047.apps.googleusercontent.com`
+

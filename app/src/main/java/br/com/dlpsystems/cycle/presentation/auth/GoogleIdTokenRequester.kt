@@ -42,9 +42,13 @@ fun googleIdTokenFromIntent(context: Context, data: Intent?): String {
 
 private fun webClientId(context: Context): String? {
     val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
-    if (resId == 0) return null
-    return context.getString(resId).takeIf { it.isNotBlank() }
+    val fromResource = if (resId != 0) context.getString(resId).takeIf { it.isNotBlank() } else null
+    return fromResource ?: DEFAULT_FALLBACK_WEB_CLIENT_ID
 }
+
+private const val DEFAULT_FALLBACK_WEB_CLIENT_ID =
+    "604557808835-02cdd7s9righc14lhrbuq0juqtbd2047.apps.googleusercontent.com"
+
 
 private const val SIGN_IN_CANCELLED = 12501
 private const val SIGN_IN_FAILED = 12500

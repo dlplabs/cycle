@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -81,6 +82,8 @@ fun LoginScreen(
         onSignIn = viewModel::signIn,
         onGoogleSignIn = startGoogle,
         onRegister = onRegister,
+        onForgotPassword = viewModel::sendPasswordReset,
+        onClearPasswordReset = viewModel::clearPasswordResetState,
     )
 }
 
@@ -92,9 +95,26 @@ fun LoginContent(
     onSignIn: () -> Unit,
     onGoogleSignIn: () -> Unit,
     onRegister: () -> Unit,
+    onForgotPassword: (String) -> Unit = {},
+    onClearPasswordReset: () -> Unit = {},
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
+
+    if (showResetDialog) {
+        ResetPasswordDialog(
+            initialEmail = state.email,
+            loading = state.passwordResetLoading,
+            success = state.passwordResetSuccess,
+            error = state.passwordResetError,
+            onDismiss = {
+                showResetDialog = false
+                onClearPasswordReset()
+            },
+            onSend = onForgotPassword,
+        )
+    }
 
     CycleTheme(phase = CyclePhase.LUTEAL) {
         AuthColumn {
@@ -165,17 +185,35 @@ fun LoginContent(
                         ),
                     )
 
-                    PasswordField(
-                        value = state.password,
-                        visible = passwordVisible,
-                        onVisibleChange = { passwordVisible = it },
-                        onValueChange = onPasswordChange,
-                        isError = state.error is AuthFailure.WeakPassword,
-                        onDone = {
-                            focusManager.clearFocus()
-                            if (!state.loading && state.backendAvailable) onSignIn()
-                        },
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        PasswordField(
+                            value = state.password,
+                            visible = passwordVisible,
+                            onVisibleChange = { passwordVisible = it },
+                            onValueChange = onPasswordChange,
+                            isError = state.error is AuthFailure.WeakPassword,
+                            onDone = {
+                                focusManager.clearFocus()
+                                if (!state.loading && state.backendAvailable) onSignIn()
+                            },
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            TextButton(
+                                onClick = { showResetDialog = true },
+                                modifier = Modifier.accessibleTouchTarget(),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.forgot_password),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                    }
 
                     AuthErrorText(state.error, state.birthDateInvalid)
 
@@ -196,6 +234,7 @@ fun LoginContent(
                     )
                 }
             }
+
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -408,7 +447,11 @@ private fun rememberGoogleSignIn(viewModel: AuthViewModel): () -> Unit {
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult(),
     ) { result ->
-        viewModel.completeGoogleSignIn(result.data)
+        if (result.resultCode == Activity.RESULT_OK) {
+            viewModel.completeGoogleSignIn(result.data)
+        } else {
+            viewModel.cancelGoogleSignIn()
+        }
     }
     return {
         val host = activity
@@ -563,6 +606,123 @@ private fun AuthErrorText(error: AuthFailure?, birthDateInvalid: Boolean) {
     }
 }
 
+@Composable
+fun ResetPasswordDialog(
+    initialEmail: String,
+    loading: Boolean,
+    success: Boolean,
+    error: AuthFailure?,
+    onDismiss: () -> Unit,
+    onSend: (String) -> Unit,
+) {
+    var email by remember(initialEmail) { mutableStateOf(initialEmail) }
+
+    AlertDialog(
+        onDismissRequest = {
+            if (!loading) onDismiss()
+        },
+        title = {
+            Text(
+                text = stringResource(R.string.reset_password_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                if (success) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.reset_password_success),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(12.dp),
+                        )
+                    }
+                } else {
+                    Text(
+                        text = stringResource(R.string.reset_password_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text(stringResource(R.string.email)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(onDone = {
+                            if (!loading && email.isNotBlank()) onSend(email)
+                        }),
+                    )
+                    if (error != null) {
+                        val message = when (error) {
+                            is AuthFailure.InvalidCredentials -> stringResource(R.string.error_reset_password_invalid_email)
+                            is AuthFailure.Network -> stringResource(R.string.error_network)
+                            else -> stringResource(R.string.error_unknown)
+                        }
+                        Surface(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = MaterialTheme.shapes.small,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = message,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(8.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            if (success) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.coach_dismiss))
+                }
+            } else {
+                TextButton(
+                    onClick = { onSend(email) },
+                    enabled = !loading && email.isNotBlank(),
+                ) {
+                    if (loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(stringResource(R.string.reset_password_send))
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            if (!success) {
+                TextButton(
+                    onClick = onDismiss,
+                    enabled = !loading,
+                ) {
+                    Text(stringResource(R.string.photo_close))
+                }
+            }
+        },
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun LoginScreenPreview() {
@@ -573,5 +733,8 @@ private fun LoginScreenPreview() {
         onSignIn = {},
         onGoogleSignIn = {},
         onRegister = {},
+        onForgotPassword = {},
+        onClearPasswordReset = {},
     )
 }
+

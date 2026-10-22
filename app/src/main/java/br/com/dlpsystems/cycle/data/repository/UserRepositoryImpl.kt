@@ -53,6 +53,14 @@ class UserRepositoryImpl @Inject constructor(
         ensureProfile(user, user.displayName.orEmpty())
     }
 
+    override suspend fun sendPasswordResetEmail(email: String) = guard {
+        val trimmed = email.trim()
+        if (trimmed.isBlank() || !trimmed.contains('@')) {
+            throw AuthFailure.InvalidCredentials
+        }
+        authService.sendPasswordResetEmail(trimmed)
+    }
+
     override suspend fun signOut() {
         authService.signOut()
     }

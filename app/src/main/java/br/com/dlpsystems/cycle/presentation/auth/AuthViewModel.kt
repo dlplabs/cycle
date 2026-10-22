@@ -29,6 +29,9 @@ data class AuthUiState(
     val error: AuthFailure? = null,
     val birthDateInvalid: Boolean = false,
     val backendAvailable: Boolean = true,
+    val passwordResetLoading: Boolean = false,
+    val passwordResetSuccess: Boolean = false,
+    val passwordResetError: AuthFailure? = null,
 )
 
 @HiltViewModel
@@ -70,15 +73,29 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun cancelGoogleSignIn() {
+        _state.update { it.copy(loading = false) }
+    }
+
     fun beginGoogleSignIn(activity: Activity, launch: (PendingIntent) -> Unit) {
         viewModelScope.launch {
             _state.update { it.copy(loading = true, error = null) }
             try {
-                launch(googleSignInIntent(activity))
+                val token = requestGoogleIdTokenWithCredentialManager(activity)
+                userRepository.signInWithGoogle(token)
+                _state.update { it.copy(loading = false) }
+            } catch (_: GoogleSignInCancelled) {
+                _state.update { it.copy(loading = false) }
             } catch (failure: AuthFailure) {
                 _state.update { it.copy(loading = false, error = failure) }
             } catch (_: Throwable) {
-                _state.update { it.copy(loading = false, error = AuthFailure.GoogleFailed) }
+                try {
+                    launch(googleSignInIntent(activity))
+                } catch (failure: AuthFailure) {
+                    _state.update { it.copy(loading = false, error = failure) }
+                } catch (_: Throwable) {
+                    _state.update { it.copy(loading = false, error = AuthFailure.GoogleFailed) }
+                }
             }
         }
     }
@@ -98,6 +115,42 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
+    fun sendPasswordReset(email: String) {
+        val target = email.trim()
+        if (target.isBlank() || !target.contains('@')) {
+            _state.update {
+                it.copy(passwordResetError = AuthFailure.InvalidCredentials, passwordResetSuccess = false)
+            }
+            return
+        }
+        viewModelScope.launch {
+            _state.update {
+                it.copy(passwordResetLoading = true, passwordResetError = null, passwordResetSuccess = false)
+            }
+            try {
+                userRepository.sendPasswordResetEmail(target)
+                _state.update {
+                    it.copy(passwordResetLoading = false, passwordResetSuccess = true, passwordResetError = null)
+                }
+            } catch (failure: AuthFailure) {
+                _state.update {
+                    it.copy(passwordResetLoading = false, passwordResetError = failure, passwordResetSuccess = false)
+                }
+            } catch (_: Throwable) {
+                _state.update {
+                    it.copy(passwordResetLoading = false, passwordResetError = AuthFailure.Unknown, passwordResetSuccess = false)
+                }
+            }
+        }
+    }
+
+    fun clearPasswordResetState() {
+        _state.update {
+            it.copy(passwordResetLoading = false, passwordResetSuccess = false, passwordResetError = null)
+        }
+    }
+
 
     private fun launchAuth(block: suspend () -> Unit) {
         viewModelScope.launch {

@@ -55,6 +55,11 @@ class FirebaseAuthService @Inject constructor(
         if (services.available) services.auth.signOut()
     }
 
+    suspend fun sendPasswordResetEmail(email: String) {
+        val auth = authOrThrow()
+        auth.sendPasswordResetEmail(email.trim()).await()
+    }
+
     suspend fun deleteAccount() {
         val auth = authOrThrow()
         val user = auth.currentUser ?: throw ServiceUnavailableException()

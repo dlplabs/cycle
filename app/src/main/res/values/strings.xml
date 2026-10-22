@@ -12,6 +12,12 @@
     <string name="birth_date">Data de nascimento</string>
     <string name="birth_date_hint">dd/mm/aaaa</string>
     <string name="password_hint">Use no mínimo 6 caracteres.</string>
+    <string name="forgot_password">Esqueci minha senha</string>
+    <string name="reset_password_title">Recuperar senha</string>
+    <string name="reset_password_description">Informe seu e-mail para receber um link com as instruções de redefinição de senha.</string>
+    <string name="reset_password_send">Enviar e-mail</string>
+    <string name="reset_password_success">Enviamos as instruções para o seu e-mail. Verifique a caixa de entrada e a pasta de spam.</string>
+    <string name="error_reset_password_invalid_email">Informe um e-mail válido para recuperar a senha.</string>
     <string name="sign_in">Entrar</string>
     <string name="create_account">Criar conta</string>
     <string name="sign_in_google">Continuar com Google</string>

@@ -49,4 +49,24 @@ class UserRepositoryImplTest {
         }
         assertEquals(AuthFailure.RequiresRecentLogin, exception)
     }
+
+    @Test
+    fun sendPasswordResetEmailDelegatesToAuthServiceWhenValid() = runTest {
+        every { services.available } returns true
+        coEvery { authService.sendPasswordResetEmail("user@example.com") } returns Unit
+
+        repository.sendPasswordResetEmail("  user@example.com  ")
+
+        coVerify(exactly = 1) { authService.sendPasswordResetEmail("user@example.com") }
+    }
+
+    @Test
+    fun sendPasswordResetEmailThrowsInvalidCredentialsWhenEmailInvalid() = runTest {
+        every { services.available } returns true
+
+        assertThrows(AuthFailure.InvalidCredentials::class.java) {
+            kotlinx.coroutines.runBlocking { repository.sendPasswordResetEmail("invalid-email") }
+        }
+    }
 }
+

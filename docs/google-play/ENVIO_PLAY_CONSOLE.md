@@ -40,13 +40,19 @@ Fases do ciclo menstrual, alívio SOS de cólicas, ciência do bem-estar e backu
 ### Notas da Versão — O Que Há de Novo (Máximo 500 caracteres)
 ```text
 <pt-BR>
-• Estabilidade e garantia de conexão com conta Google em builds de produção.
-• Preservação de identificadores OAuth e credenciais seguras na inicialização.
-• Liberdade para alterar foto de perfil via câmera ou galeria do aparelho.
-• Exibição de ponta a ponta (Edge-to-Edge) aprimorada para Android 15+.
-• Otimizações de desempenho e estabilidade geral.
+• Implementação da funcionalidade "Esqueci minha senha" para recuperação rápida de acesso por e-mail.
+• Integração moderna com Credential Manager do Google para login direto e seguro.
+• Correção no tratamento de cancelamento da seleção de conta Google sem exibir mensagens de erro indevidas.
+• Melhorias gerais de estabilidade e segurança na autenticação.
 </pt-BR>
+<en-US>
+• Added "Forgot password" feature for seamless account recovery via email.
+• Modern Google Credential Manager integration for fast and secure sign-in.
+• Fixed Google Account chooser cancellation to prevent false error notifications.
+• General stability and security improvements across authentication flows.
+</en-US>
 ```
+
 
 ---
 

@@ -8,10 +8,11 @@ import org.junit.jupiter.api.Test
 
 class GoogleIdTokenRequesterTest {
     @Test
-    fun nullIntentThrowsGoogleFailed() {
+    fun nullIntentThrowsGoogleSignInCancelled() {
         val context = mockk<Context>(relaxed = true)
-        assertThrows(AuthFailure.GoogleFailed::class.java) {
+        assertThrows(GoogleSignInCancelled::class.java) {
             googleIdTokenFromIntent(context, null)
         }
     }
 }
+

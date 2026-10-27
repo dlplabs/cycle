@@ -26,10 +26,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.ui.graphics.Color
+import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import br.com.dlpsystems.cycle.presentation.calendar.CycleCalendarBottomSheet
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
 import java.time.LocalDate
@@ -220,6 +222,13 @@ fun DashboardScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                if (state.activeLifeStageMode != LifeStageMode.REGULAR_CYCLE) {
+                    ActiveLifeStageDashboardBanner(
+                        mode = state.activeLifeStageMode,
+                        onClick = onAccount,
+                    )
+                }
+
                 BoxWithConstraints(
                     modifier = Modifier
                         .weight(1f)
@@ -580,3 +589,54 @@ private suspend fun requestDriveToken(
     }
     return result.accessToken ?: error("drive")
 }
+
+@Composable
+private fun ActiveLifeStageDashboardBanner(
+    mode: LifeStageMode,
+    onClick: () -> Unit,
+) {
+    val (label, cohort) = when (mode) {
+        LifeStageMode.TRYING_TO_CONCEIVE -> "Modo Tentante Ativo" to "Janela Fértil e Sintotérmico (Dunson et al., N = 1.077)"
+        LifeStageMode.PREGNANCY -> "Modo Gestação Ativo" to "Semana a semana e marcos fetais (Cardiff/Hadlock, N = 68.654)"
+        LifeStageMode.POSTPARTUM -> "Modo Pós-Parto (Puerpério) Ativo" to "Recuperação puerperal e triagem EPDS (Cox et al., N = 4.453)"
+        LifeStageMode.LACTATION -> "Modo Amamentação & Lactação Ativo" to "Maternidade, Leite e MELA (Bellagio/rBLH, N = 4.118)"
+        LifeStageMode.PERIMENOPAUSE -> "Modo Perimenopausa (Climatério) Ativo" to "Estadiamento STRAW+10 e Escala MRS (Harlow et al., N > 10.000)"
+        LifeStageMode.MENOPAUSE -> "Modo Pós-Menopausa Ativo" to "Amenorreia consolidada e longevidade (Million Women Study, N = 1.388.536)"
+        LifeStageMode.REGULAR_CYCLE -> "" to ""
+    }
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = HeaderSage.copy(alpha = 0.35f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = DeepPlum,
+                )
+                Text(
+                    text = cohort,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = DeepPlum.copy(alpha = 0.8f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Icon(
+                imageVector = Icons.Filled.ChevronRight,
+                contentDescription = "Ver configurações",
+                tint = DeepPlum,
+            )
+        }
+    }
+}
+

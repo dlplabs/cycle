@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -47,7 +48,9 @@ import br.com.dlpsystems.cycle.core.designsystem.OffWhiteBackground
 import br.com.dlpsystems.cycle.core.designsystem.OvulatoryPeach
 import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
 import br.com.dlpsystems.cycle.core.notification.labelRes
+import br.com.dlpsystems.cycle.data.local.UserPreferencesDataSource
 import br.com.dlpsystems.cycle.domain.model.CyclePhase
+import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import br.com.dlpsystems.cycle.domain.repository.BillingRepository
 import br.com.dlpsystems.cycle.domain.repository.CycleRepository
 import br.com.dlpsystems.cycle.domain.repository.UserRepository
@@ -62,6 +65,8 @@ import br.com.dlpsystems.cycle.presentation.components.rememberCoachMark
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -76,6 +81,7 @@ data class PlannerUiState(
     val guidance: String = "",
     val physiology: String = "",
     val targetDate: LocalDate? = null,
+    val activeLifeStageMode: LifeStageMode = LifeStageMode.REGULAR_CYCLE,
 )
 
 @HiltViewModel
@@ -85,6 +91,7 @@ class PlannerViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val projectFuturePhase: ProjectFuturePhaseUseCase,
     private val insights: GetPhaseInsightsUseCase,
+    private val preferences: UserPreferencesDataSource,
 ) : ViewModel() {
     private val _state = MutableStateFlow(PlannerUiState())
     val state = _state.asStateFlow()
@@ -92,9 +99,15 @@ class PlannerViewModel @Inject constructor(
     init {
         billingRepository.connect()
         viewModelScope.launch {
-            billingRepository.isPremiumUser.collect { premium ->
-                _state.value = _state.value.copy(premium = premium)
-            }
+            combine(
+                billingRepository.isPremiumUser,
+                preferences.activeLifeStageMode,
+            ) { premium, lifeStage ->
+                _state.value = _state.value.copy(
+                    premium = premium,
+                    activeLifeStageMode = lifeStage,
+                )
+            }.collect()
         }
     }
 
@@ -127,6 +140,7 @@ class PlannerViewModel @Inject constructor(
                 guidance = text,
                 physiology = evidence.physiology,
                 targetDate = target,
+                activeLifeStageMode = _state.value.activeLifeStageMode,
             )
         }
     }
@@ -298,6 +312,36 @@ private fun ProjectedPhaseCard(
                         color = DeepPlum,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
+                }
+            }
+
+            if (state.activeLifeStageMode != LifeStageMode.REGULAR_CYCLE) {
+                val (stageTitle, stageInfo) = when (state.activeLifeStageMode) {
+                    LifeStageMode.PREGNANCY -> "Planejamento Gestacional" to "Projeção de marcos trimestrais e desenvolvimento fetal (Hadlock et al., N > 1.200)."
+                    LifeStageMode.TRYING_TO_CONCEIVE -> "Planejamento Tentante" to "Estimativa de probabilidade de fecundabilidade sintotérmica (Dunson et al., N = 1.077)."
+                    LifeStageMode.PERIMENOPAUSE, LifeStageMode.MENOPAUSE -> "Rastreio de Amenorreia & Climatério" to "Acompanhamento da transição e consolidação de amenorreia (STRAW+10, N > 10.000)."
+                    LifeStageMode.POSTPARTUM -> "Acompanhamento Puerperal" to "Recuperação puerperal e vigilância de bem-estar materno (Pelotas, N = 4.453)."
+                    LifeStageMode.LACTATION -> "Acompanhamento de Lactação" to "Monitoramento de mamadas e retorno cíclico (Bellagio, N = 4.118)."
+                    else -> "" to ""
+                }
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = HeaderSage.copy(alpha = 0.25f),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = stageTitle,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = DeepPlum,
+                        )
+                        Text(
+                            text = stageInfo,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = DeepPlum.copy(alpha = 0.85f),
+                        )
+                    }
                 }
             }
 

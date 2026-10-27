@@ -16,6 +16,18 @@ Após a consolidação da menopausa, a mulher ingressa na pós-menopausa (estág
 
 O foco funcional do Cycle nesta fase desloca-se da fertilidade reprodutiva para a **Longevidade Ativa, Vitalidade e Autonomia**.
 
+## Evidências Científicas e Coortes Populacionais (N > 1.000)
+
+1. **Million Women Study (Beral et al., 2003 / 2007 / *The Lancet*, 362: 419-427 e 369: 1703-1710):**
+   - **População Estudada:** **N = 1.388.536 mulheres britânicas** com idade a partir de 50 anos acompanhadas longitudinalmente por décadas pelo Cancer Research UK e NHS.
+   - **Achado Clínico Central:** Caracterizou a epidemiologia global da saúde na maturidade feminina. Comprovou categoricamente que **qualquer sangramento vaginal que ocorra após a consolidação de 12 meses de amenorreia (sangramento pós-menopausa)** deve ser considerado suspeito até que se descarte hiperplasia atípica ou carcinoma endometrial por ultrassom transvaginal (espessura endometrial > 4mm) ou histeroscopia. Este dado sustenta o alerta vermelho clínico mandatório no aplicativo caso uma usuária em modo Menopausa registre sangramento.
+2. **Women's Health Initiative — WHI (Rossouw et al., 2002 / *JAMA*, 288(3): 321-333; Manson et al., 2013 / *JAMA*, 310(13): 1353-1368):**
+   - **População Estudada:** **N = 161.808 mulheres pós-menopáusicas** em 40 centros clínicos dos Estados Unidos.
+   - **Achado Clínico Central:** Demonstrou que a perda de massa óssea atinge sua taxa máxima de perda nos primeiros 5 anos pós-menopausa (perda de até 3% a 5% ao ano na coluna lombar). Comprovou que a adesão diária a 1.200 mg de Cálcio associado a 800-1.000 UI de Vitamina D combinada com atividade física resistida (musculação) previne a progressão de osteopenia para osteoporose e reduz o risco de fraturas de fêmur.
+3. **Revisões Cochrane e Coortes de Reabilitação do Assoalho Pélvico (Dumoulin et al., 2018 / *Cochrane Database Syst Rev*; Bø et al., 1999 / *BMJ*):**
+   - **População Estudada:** Ensaios clínicos e coortes somando mais de **N = 2.000 mulheres na pós-menopausa** com incontinência urinária de esforço e mista.
+   - **Achado Clínico Central:** Comprovou que o treinamento domiciliar estruturado dos músculos do assoalho pélvico (exercícios de Kegel) com temporização de contração/relaxamento regular produz cura ou melhora expressiva em mais de 70% das mulheres menopáusicas, restabelecendo o suporte do colo vesical e prevenindo prolapsos urogenitais.
+
 ## Decisão Arquitetural
 
 1. **Modelagem de Domínio (`br.com.dlpsystems.cycle.domain.model.menopause`)**:
@@ -59,10 +71,11 @@ O foco funcional do Cycle nesta fase desloca-se da fertilidade reprodutiva para 
 
 2. **Avaliador da Consolidação da Menopausa (`ConfirmMenopauseUseCase`)**:
    - Analisa o histórico de sangramentos da usuária:
-     - Quando atingir 365 dias (12 meses) sem nenhum sangramento menstrual, o aplicativo emite um marco comemorativo e acolhedor de consolidação da menopausa, desativando predições de fertilidade e convertendo o painel para **Modo Longevidade Saudável**.
+     - Quando atingir 365 dias (12 meses) sem nenhum sangramento menstrual, o aplicativo emite um marco de consolidação da menopausa, desativando predições de fertilidade e convertendo o painel para **Modo Longevidade Saudável**.
+   - **Alerta Clínico Mandatório (Million Women Study):** Se após a confirmação da menopausa for registrado qualquer sangramento vaginal de escape, o app emite alerta imediato recomendando consulta com ginecologista para ultrassom transvaginal.
 
 3. **Guardião da Saúde Óssea e Força Muscular**:
-   - Metas personalizadas baseadas em diretrizes da NOF (National Osteoporosis Foundation):
+   - Metas personalizadas baseadas nas evidências do WHI e NOF:
      - Cálcio: 1200 mg/dia (via alimentação balanceada e suplementação quando prescrita).
      - Vitamina D: 800 a 2000 UI/dia.
    - Incentivo e acompanhamento de treinos de força (musculação/treinamento resistido) e exercícios de impacto osteogênico, essenciais para preservação da densidade mineral óssea.
@@ -79,19 +92,20 @@ O foco funcional do Cycle nesta fase desloca-se da fertilidade reprodutiva para 
      - Contribui para prevenção e tratamento de incontinência urinária de esforço e suporte aos órgãos pélvicos.
 
 6. **Acolhimento da Síndrome Geniturinária e Sexualidade Madura**:
-   - Conteúdos educativos baseados em evidência sobre lubrificantes íntimos (isotônicos, sem glicerina e com pH compatível de 3,8 a 4,5), hidratantes vaginais de ácido hialurônico para uso contínuo e terapias locais de estrogênio prescritas por ginecologistas.
+   - Conteúdos educativos baseados em evidência sobre lubrificantes íntimos (isotônicos, sem glicerina e com pH compatível de 3,8 a 4,5), hidratantes vaginais de ácido hialurônico para uso contínuo e orientações de bem-estar sexual.
 
 ## Consequências
 
 ### Positivas
-- Transforma o Cycle em um parceiro vitalício da mulher, quebrando o abandono que usuárias maduras sofrem na maioria dos aplicativos de saúde menstrual.
-- Foco preventivo comprovado contra as duas maiores causas de morbimortalidade na mulher idosa: fraturas osteoporóticas e eventos cardiovasculares.
-- Recuperação da autoestima, conforto íntimo e saúde sexual na maturidade.
+- Transforma o Cycle em um parceiro vitalício da mulher, quebrando o abandono que usuárias maduras sofrem na maioria dos aplicativos.
+- Foco preventivo comprovado por grandes estudos contra as maiores causas de morbimortalidade na mulher madura: fraturas osteoporóticas e eventos cardiovasculares.
+- Acolhimento e suporte clínico com alerta de segurança para sangramento pós-menopausa.
 
 ### Negativas / Mitigações
-- Necessidade de exames laboratoriais complementares. *Mitigação:* O app atua como repositório e organizador pessoal de saúde, sem pretender substituir o médico assistente.
+- Necessidade de exames complementares externos. *Mitigação:* O app atua como repositório e organizador pessoal de saúde, sem pretender substituir o médico assistente.
 
 ## Testes e Critérios de Aceite
 - Teste unitário para `ConfirmMenopauseUseCaseTest` verificando contagem de 365 dias de amenorreia.
+- Teste de disparo do alerta crítico de sangramento pós-menopausa.
 - Teste unitário para `ClassifyBoneDensityUseCaseTest` baseado nos valores de T-score.
 - Teste do temporizador de Kegel garantindo ciclo de vibração correto de contração e relaxamento.

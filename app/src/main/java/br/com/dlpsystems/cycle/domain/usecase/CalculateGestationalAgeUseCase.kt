@@ -28,6 +28,14 @@ class CalculateGestationalAgeUseCase @Inject constructor() {
                 val daysToDue = 280 - measuredDays
                 usDate.plusDays(daysToDue.toLong())
             }
+            PregnancyCalculationMethod.IVF -> {
+                val transferDate = profile.ivfTransferDate ?: return null
+                // Fertilização In Vitro:
+                // Blastocisto D5: gestação correspondente a 2 semanas + 5 dias na transferência -> 280 - 14 - 5 = 261 dias restantes para a DPP
+                // Embrião D3: gestação correspondente a 2 semanas + 3 dias na transferência -> 280 - 14 - 3 = 263 dias restantes para a DPP
+                val daysToDue = if (profile.isBlastocystD5) 261L else 263L
+                transferDate.plusDays(daysToDue)
+            }
         }
 
         // Data de concepção biológica aproximada (DUM presumida = DPP - 280 dias)

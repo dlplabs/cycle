@@ -2,6 +2,7 @@ package br.com.dlpsystems.cycle.data.local
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -58,6 +59,15 @@ class UserPreferencesDataSource @Inject constructor(
 
     val welcomeSeen: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.WELCOME_SEEN] ?: false
+    }
+
+    val activeLifeStageMode: Flow<LifeStageMode> = dataStore.data.map { prefs ->
+        val raw = prefs[Keys.ACTIVE_LIFE_STAGE_MODE] ?: LifeStageMode.REGULAR_CYCLE.name
+        runCatching { LifeStageMode.valueOf(raw) }.getOrDefault(LifeStageMode.REGULAR_CYCLE)
+    }
+
+    suspend fun setActiveLifeStageMode(mode: LifeStageMode) {
+        dataStore.edit { prefs -> prefs[Keys.ACTIVE_LIFE_STAGE_MODE] = mode.name }
     }
 
     suspend fun setWelcomeSeen(seen: Boolean) {
@@ -120,5 +130,6 @@ class UserPreferencesDataSource @Inject constructor(
         val LAST_PHASE = stringPreferencesKey("last_notified_phase")
         val LAST_PHASE_DATE = stringPreferencesKey("last_notified_phase_date")
         val LAST_DAILY_REMINDER_DATE = stringPreferencesKey("last_daily_reminder_date")
+        val ACTIVE_LIFE_STAGE_MODE = stringPreferencesKey("active_life_stage_mode")
     }
 }

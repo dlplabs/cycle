@@ -6,18 +6,23 @@ import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -38,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,12 +62,17 @@ import br.com.dlpsystems.cycle.core.designsystem.PrimaryButton
 import br.com.dlpsystems.cycle.core.notification.ReminderScheduler
 import br.com.dlpsystems.cycle.data.local.UserPreferencesDataSource
 import br.com.dlpsystems.cycle.domain.model.AuthFailure
+import br.com.dlpsystems.cycle.domain.model.Citation
+import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import br.com.dlpsystems.cycle.domain.repository.BillingRepository
 import br.com.dlpsystems.cycle.domain.repository.UserRepository
 import br.com.dlpsystems.cycle.domain.usecase.ExportDoctorReportUseCase
 import br.com.dlpsystems.cycle.presentation.components.AdBannerContainer
+import br.com.dlpsystems.cycle.presentation.components.ScientificSourceBadge
 import br.com.dlpsystems.cycle.presentation.components.ScreenHeader
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -91,6 +102,19 @@ class SettingsViewModel @Inject constructor(
     val message = _message.asStateFlow()
     private val _prefs = MutableStateFlow(AccountPrefs())
     val prefs = _prefs.asStateFlow()
+
+    val activeLifeStageMode: StateFlow<LifeStageMode> = preferences.activeLifeStageMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = LifeStageMode.REGULAR_CYCLE,
+        )
+
+    fun setLifeStageMode(mode: LifeStageMode) {
+        viewModelScope.launch {
+            preferences.setActiveLifeStageMode(mode)
+        }
+    }
 
     init {
         billingRepository.connect()
@@ -190,6 +214,7 @@ fun SettingsScreen(
     val isGuest = authUser == null
     val message by viewModel.message.collectAsStateWithLifecycle()
     val prefs by viewModel.prefs.collectAsStateWithLifecycle()
+    val activeLifeStage by viewModel.activeLifeStageMode.collectAsStateWithLifecycle()
     val isDeleting by viewModel.isDeleting.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -242,6 +267,18 @@ fun SettingsScreen(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            // Seção Estágio de Vida & Jornada da Mulher
+            Text(
+                text = "Fase de Vida Atual",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = DeepPlum,
+            )
+            LifeStageSelectorCard(
+                activeStage = activeLifeStage,
+                onSelectStage = viewModel::setLifeStageMode,
+            )
+
             // Seção Meu Ciclo
             Text(
                 text = stringResource(R.string.your_cycle),
@@ -487,3 +524,150 @@ private fun Stepper(
         }
     }
 }
+
+@Composable
+private fun LifeStageSelectorCard(
+    activeStage: LifeStageMode,
+    onSelectStage: (LifeStageMode) -> Unit,
+) {
+    val stages = listOf(
+        LifeStageOption(
+            mode = LifeStageMode.REGULAR_CYCLE,
+            title = "Ciclo Menstrual Regular",
+            description = "Acompanhamento fisiológico das 4 fases hormonais do ciclo.",
+            citation = Citation(
+                authors = "Lenton et al.",
+                source = "Clin Endocrinol (N > 1.000)",
+                finding = "Variação e previsibilidade das fases folicular e lútea em ciclos ovulatórios normais.",
+                url = "https://doi.org/10.1111/j.1365-2265.1984.tb03457.x",
+            ),
+        ),
+        LifeStageOption(
+            mode = LifeStageMode.TRYING_TO_CONCEIVE,
+            title = "Tentante (TTC)",
+            description = "Foco em janela fértil, método sintotérmico e chances diárias de concepção.",
+            citation = Citation(
+                authors = "Dunson et al. / Sensiplan",
+                source = "Hum Reprod (N = 1.077)",
+                finding = "Probabilidades de concepção dia a dia da janela fértil e eficácia de regras sintotérmicas.",
+                url = "https://doi.org/10.1093/humrep/17.5.1399",
+            ),
+        ),
+        LifeStageOption(
+            mode = LifeStageMode.PREGNANCY,
+            title = "Gestação",
+            description = "Evolução semana a semana, trimestres, contagem de chutes e contrações.",
+            citation = Citation(
+                authors = "Cardiff / Hadlock et al.",
+                source = "Lancet / Radiology (N = 68.654)",
+                finding = "Contador de chutes Cardiff Count-to-10 e datação biométrica ultrassonográfica.",
+                url = "https://doi.org/10.1016/S0140-6736(89)90370-3",
+            ),
+        ),
+        LifeStageOption(
+            mode = LifeStageMode.POSTPARTUM,
+            title = "Pós-Parto (Puerpério)",
+            description = "Recuperação puerperal, involução uterina, lóquios e triagem de depressão EPDS.",
+            citation = Citation(
+                authors = "Cox et al. / Pelotas",
+                source = "Br J Psychiatry / J Affect Disord (N = 4.453)",
+                finding = "Escala de Depressão Pós-Parto de Edimburgo (EPDS) com validação psicométrica.",
+                url = "https://doi.org/10.1192/bjp.150.6.782",
+            ),
+        ),
+        LifeStageOption(
+            mode = LifeStageMode.LACTATION,
+            title = "Amamentação & Lactação",
+            description = "Cronômetro de mamadas, conservação de leite materno e critérios de MELA.",
+            citation = Citation(
+                authors = "Bellagio / Fiocruz rBLH",
+                source = "Lancet (N = 4.118; rBLH N > 160.000/ano)",
+                finding = "Amenorreia da Lactação (MELA) 98% eficaz e protocolos térmicos da Rede Brasileira de Leite Humano.",
+                url = "https://doi.org/10.1016/0140-6736(88)90753-6",
+            ),
+        ),
+        LifeStageOption(
+            mode = LifeStageMode.PERIMENOPAUSE,
+            title = "Perimenopausa (Climatério)",
+            description = "Monitoramento de irregularidade menstrual, fogachos e escore de sintomas MRS.",
+            citation = Citation(
+                authors = "STRAW+10 / SWAN",
+                source = "Menopause / Am J Epidemiol (N > 10.000)",
+                finding = "Critérios de estadiamento reprodutivo de Harlow et al. e prevalência de sintomas vasomotores.",
+                url = "https://doi.org/10.1097/gme.0b013e31824d8f40",
+            ),
+        ),
+        LifeStageOption(
+            mode = LifeStageMode.MENOPAUSE,
+            title = "Pós-Menopausa & Longevidade",
+            description = "Amenorreia consolidada de 12 meses, saúde óssea e alerta de sangramento atípico.",
+            citation = Citation(
+                authors = "Million Women Study / WHI",
+                source = "Lancet / JAMA (N = 1.388.536)",
+                finding = "Alerta protetor para sangramento pós-menopausa e prevenção osteoporótica com cálcio/vitamina D.",
+                url = "https://doi.org/10.1016/S0140-6736(03)14596-5",
+            ),
+        ),
+    )
+
+    AppCard {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            stages.forEach { stage ->
+                val isSelected = stage.mode == activeStage
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onSelectStage(stage.mode) }
+                        .padding(8.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stage.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                color = if (isSelected) DeepPlum else MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = stage.description,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Icon(
+                            imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
+                            contentDescription = if (isSelected) "Selecionado" else null,
+                            tint = if (isSelected) DeepPlum else MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                    if (isSelected) {
+                        ScientificSourceBadge(
+                            citation = stage.citation,
+                            onOpen = {},
+                        )
+                    }
+                }
+                if (stage != stages.last()) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                }
+            }
+        }
+    }
+}
+
+private data class LifeStageOption(
+    val mode: LifeStageMode,
+    val title: String,
+    val description: String,
+    val citation: Citation,
+)
+

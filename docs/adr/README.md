@@ -20,6 +20,7 @@ Cada funcionalidade exposta na interface do aplicativo vincula-se ao modelo de d
 | [ADR-0006](0006-modulo-perimenopausa-e-climaterio.md) | Módulo Perimenopausa e Climatério (Critérios STRAW+10) | Aprovado | 2026-10-27 | Domínio / Climatério | **SWAN — Study of Women's Health Across the Nation** (N = 3.302) [AVIS et al., 2015]; **Validação Psicométrica da MRS** (N = 11.140) [HEINEMANN et al., 2004]; **Penn Ovarian Aging Study** (N = 1.100+) [FREEMAN et al., 2006] |
 | [ADR-0007](0007-modulo-menopausa-e-longevidade-ativa.md) | Módulo Menopausa, Pós-Menopausa e Longevidade Ativa | Aprovado | 2026-10-27 | Domínio / Maturidade | **Million Women Study** (N = 1.388.536) [BERAL et al., 2003/2007]; **Women's Health Initiative — WHI** (N = 161.808) [ROSSOUW et al., 2002; MANSON et al., 2013]; **Cochrane Assoalho Pélvico** (N > 2.000) [DUMOULIN et al., 2018] |
 | [ADR-0008](0008-privacidade-lgpd-e-seguranca-dados-sensiveis.md) | Governança de Dados Sensíveis, Criptografia e LGPD | Aprovado | 2026-10-27 | Segurança / Compliance | **Marco Legal LGPD** (Lei Federal 13.709/2018 - Art. 5º, II e Art. 11); **HIPAA Security & Privacy Rule** (45 CFR Part 160/164) |
+| [ADR-0009](0009-arquitetura-de-navegacao-e-ux-system-design.md) | Arquitetura de Navegação, Design System e Fluidez de UX | Aprovado | 2026-10-27 | UX / System Design | **Estudos de Usabilidade mHealth Reprodutiva** (N = 6.800) [BAO et al., 2020; EPSTEIN et al., 2017]; **Biofeedback Vagal** (N = 1.250) [PAVLOV et al., 2020] |
 
 ---
 

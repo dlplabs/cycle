@@ -39,6 +39,7 @@ import java.net.URL
 import java.time.LocalDate
 import javax.inject.Inject
 
+import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import br.com.dlpsystems.cycle.domain.model.MenstrualCycle
 import br.com.dlpsystems.cycle.domain.model.SignedInUser
 import br.com.dlpsystems.cycle.domain.model.UserProfile
@@ -61,6 +62,7 @@ data class DashboardUiState(
     val isGuest: Boolean = false,
     val cycles: List<MenstrualCycle> = emptyList(),
     val dailyLogs: List<DailyLog> = emptyList(),
+    val activeLifeStageMode: LifeStageMode = LifeStageMode.REGULAR_CYCLE,
 )
 
 @HiltViewModel
@@ -94,6 +96,7 @@ class DashboardViewModel @Inject constructor(
                 anyReminders,
                 userRepository.observeAuth(),
                 billingRepository.isPremiumUser,
+                preferences.activeLifeStageMode,
             ) { args: Array<Any?> ->
                 val profile = args[0] as UserProfile?
                 @Suppress("UNCHECKED_CAST")
@@ -103,6 +106,7 @@ class DashboardViewModel @Inject constructor(
                 val reminders = args[3] as Boolean
                 val user = args[4] as SignedInUser?
                 val premium = args[5] as Boolean
+                val lifeStage = args[6] as LifeStageMode
 
                 val result = calculateCurrentPhase(
                     PhaseCalculationInput(LocalDate.now(), profile, cycles),
@@ -131,6 +135,7 @@ class DashboardViewModel @Inject constructor(
                     isGuest = isGuest,
                     cycles = cycles,
                     dailyLogs = dailyLogs,
+                    activeLifeStageMode = lifeStage,
                 )
             }.collect { snapshot ->
                 val previous = _state.value

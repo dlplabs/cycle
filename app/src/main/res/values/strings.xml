@@ -194,6 +194,11 @@
     <string name="calendar_legend_luteal">Lútea</string>
     <string name="calendar_cycle_day">Dia %1$d do ciclo</string>
     <string name="calendar_predicted_period">Previsão da menstruação</string>
+    <string name="calendar_next_period_title">Previsão da Próxima Menstruação</string>
+    <string name="calendar_next_period_today">Começa hoje</string>
+    <string name="calendar_next_period_tomorrow">Começa amanhã</string>
+    <string name="calendar_legend_predicted">Previsão</string>
+    <string name="calendar_next_period_detail">Estimativa baseada no seu padrão de ciclo.</string>
     <string name="calendar_fertile_window">Janela fértil prevista</string>
     <string name="calendar_ovulation_peak">Provável pico de ovulação</string>
     <string name="calendar_no_log">Nenhum sintoma registrado neste dia.</string>

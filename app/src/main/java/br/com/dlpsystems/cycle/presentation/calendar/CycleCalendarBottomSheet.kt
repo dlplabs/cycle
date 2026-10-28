@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,6 +95,14 @@ data class CalendarDayState(
     val hasLog: Boolean,
     val dailyLog: DailyLog?,
     val isPredicted: Boolean,
+)
+
+data class NextPeriodInfo(
+    val expectedDate: LocalDate,
+    val daysRemaining: Int,
+    val isDelayed: Boolean,
+    val isToday: Boolean,
+    val cycleLength: Int,
 )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -211,6 +220,23 @@ fun CycleCalendarBottomSheet(
                 }
             }
 
+            // Next Period Prediction Card
+            val nextPeriodInfo = remember(today, cycles, averageCycleDays) {
+                calculateNextPeriodPrediction(today, cycles, averageCycleDays)
+            }
+
+            if (nextPeriodInfo != null) {
+                NextPeriodPredictionCard(
+                    info = nextPeriodInfo,
+                    localePt = localePt,
+                    onNavigateToExpectedDate = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        currentMonth = YearMonth.from(nextPeriodInfo.expectedDate)
+                        selectedDate = nextPeriodInfo.expectedDate
+                    },
+                )
+            }
+
             // Phase Legend
             PhaseLegendRow()
 
@@ -251,6 +277,7 @@ fun CycleCalendarBottomSheet(
 
             SelectedDayCard(
                 state = selectedDayState,
+                nextPeriodInfo = nextPeriodInfo,
                 localePt = localePt,
                 onLogSymptom = {
                     onLogSymptomOnDate(selectedDate)
@@ -303,6 +330,98 @@ fun CycleCalendarBottomSheet(
 }
 
 @Composable
+private fun NextPeriodPredictionCard(
+    info: NextPeriodInfo,
+    localePt: Locale,
+    onNavigateToExpectedDate: () -> Unit,
+) {
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", localePt) }
+    val formattedDate = info.expectedDate.format(dateFormatter).replaceFirstChar { it.uppercase() }
+
+    val countdownText = when {
+        info.isToday -> stringResource(R.string.calendar_next_period_today)
+        info.daysRemaining == 1 -> stringResource(R.string.calendar_next_period_tomorrow)
+        info.daysRemaining > 1 -> "Em ${info.daysRemaining} dias"
+        info.isDelayed -> "Atrasada em ${-info.daysRemaining} dias"
+        else -> "Hoje"
+    }
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MenstrualTerracotta.copy(alpha = 0.12f),
+        border = BorderStroke(1.dp, MenstrualTerracotta.copy(alpha = 0.4f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onNavigateToExpectedDate),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(MenstrualTerracotta.copy(alpha = 0.22f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.WaterDrop,
+                    contentDescription = null,
+                    tint = MenstrualTerracotta,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.calendar_next_period_title).uppercase(),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MenstrualTerracotta,
+                        letterSpacing = 0.5.sp,
+                    ),
+                )
+                Text(
+                    text = formattedDate,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = DeepPlum,
+                    ),
+                )
+                Text(
+                    text = "$countdownText • Ciclo estimado de ${info.cycleLength} dias",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.sp,
+                        color = if (info.isDelayed) MenstrualTerracotta else TextSecondary,
+                        fontWeight = if (info.isDelayed) FontWeight.Bold else FontWeight.Normal,
+                    ),
+                )
+            }
+
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MenstrualTerracotta.copy(alpha = 0.18f),
+            ) {
+                Text(
+                    text = "Ver",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MenstrualTerracotta,
+                    ),
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun PhaseLegendRow() {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -310,6 +429,11 @@ private fun PhaseLegendRow() {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LegendItem(color = MenstrualTerracotta, label = stringResource(R.string.calendar_legend_menstrual))
+        LegendItem(
+            color = MenstrualTerracotta.copy(alpha = 0.45f),
+            label = stringResource(R.string.calendar_legend_predicted),
+            isBordered = true,
+        )
         LegendItem(color = FollicularSage, label = stringResource(R.string.calendar_legend_follicular))
         LegendItem(color = OvulatoryPeach, label = stringResource(R.string.calendar_legend_ovulatory))
         LegendItem(color = LutealLavender, label = stringResource(R.string.calendar_legend_luteal))
@@ -317,7 +441,11 @@ private fun PhaseLegendRow() {
 }
 
 @Composable
-private fun LegendItem(color: Color, label: String) {
+private fun LegendItem(
+    color: Color,
+    label: String,
+    isBordered: Boolean = false,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -326,12 +454,16 @@ private fun LegendItem(color: Color, label: String) {
             modifier = Modifier
                 .size(9.dp)
                 .clip(CircleShape)
-                .background(color),
+                .background(color)
+                .then(
+                    if (isBordered) Modifier.border(1.dp, MenstrualTerracotta, CircleShape)
+                    else Modifier
+                ),
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Medium,
                 color = TextSecondary,
             ),
@@ -427,7 +559,8 @@ private fun DayCell(
     modifier: Modifier = Modifier,
 ) {
     val phaseBgColor = when {
-        state.isMenstrual -> MenstrualTerracotta.copy(alpha = if (state.isPredicted) 0.65f else 0.88f)
+        state.isMenstrual && !state.isPredicted -> MenstrualTerracotta.copy(alpha = 0.88f)
+        state.isMenstrual && state.isPredicted -> MenstrualTerracotta.copy(alpha = 0.45f)
         state.phase == CyclePhase.FOLLICULAR -> FollicularSage.copy(alpha = 0.55f)
         state.phase == CyclePhase.OVULATORY -> OvulatoryPeach.copy(alpha = 0.75f)
         state.phase == CyclePhase.LUTEAL -> LutealLavender.copy(alpha = 0.55f)
@@ -435,7 +568,8 @@ private fun DayCell(
     }
 
     val textColor = when {
-        state.isMenstrual -> Color.White
+        state.isMenstrual && !state.isPredicted -> Color.White
+        state.isMenstrual && state.isPredicted -> DeepPlum
         state.phase != null -> DeepPlum
         else -> TextPrimary
     }
@@ -443,6 +577,7 @@ private fun DayCell(
     val borderColor = when {
         isSelected -> DeepPlum
         state.isToday -> DeepPlum.copy(alpha = 0.6f)
+        state.isMenstrual && state.isPredicted -> MenstrualTerracotta.copy(alpha = 0.7f)
         state.isOvulationPeak -> DeepPlum.copy(alpha = 0.4f)
         else -> Color.Transparent
     }
@@ -450,7 +585,7 @@ private fun DayCell(
     Surface(
         color = phaseBgColor,
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(if (isSelected) 2.dp else if (state.isToday) 1.5.dp else 0.dp, borderColor),
+        border = BorderStroke(if (isSelected) 2.dp else if (state.isToday || (state.isMenstrual && state.isPredicted)) 1.5.dp else 0.dp, borderColor),
         shadowElevation = if (isSelected) 3.dp else 0.dp,
         modifier = modifier
             .padding(2.dp)
@@ -467,12 +602,12 @@ private fun DayCell(
                 Text(
                     text = state.date.dayOfMonth.toString(),
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = if (state.isToday || isSelected) FontWeight.Bold else FontWeight.Medium,
+                        fontWeight = if (state.isToday || isSelected || (state.isMenstrual && state.isPredicted)) FontWeight.Bold else FontWeight.Medium,
                         color = textColor,
                         fontSize = 13.sp,
                     ),
                 )
-                if (state.hasLog || state.isOvulationPeak) {
+                if (state.hasLog || state.isOvulationPeak || (state.isMenstrual && state.isPredicted)) {
                     Spacer(modifier = Modifier.height(1.dp))
                     Box(
                         modifier = Modifier
@@ -480,6 +615,7 @@ private fun DayCell(
                             .clip(CircleShape)
                             .background(
                                 if (state.isOvulationPeak) DeepPlum
+                                else if (state.isMenstrual && state.isPredicted) MenstrualTerracotta
                                 else if (state.isMenstrual) Color.White
                                 else DeepPlum.copy(alpha = 0.7f),
                             ),
@@ -494,6 +630,7 @@ private fun DayCell(
 @Composable
 private fun SelectedDayCard(
     state: CalendarDayState,
+    nextPeriodInfo: NextPeriodInfo?,
     localePt: Locale,
     onLogSymptom: () -> Unit,
     onStartPeriod: () -> Unit,
@@ -526,11 +663,11 @@ private fun SelectedDayCard(
                         ),
                     )
                     val phaseDescription = when {
-                        state.isMenstrual -> if (state.isPredicted) "Previsão da Menstruação" else "Menstruação"
-                        state.isOvulationPeak -> "Pico da Ovulação (Fase Ovulatória)"
-                        state.phase == CyclePhase.OVULATORY -> "Janela Fértil (Fase Ovulatória)"
-                        state.phase == CyclePhase.FOLLICULAR -> "Fase Folicular"
-                        state.phase == CyclePhase.LUTEAL -> "Fase Lútea"
+                        state.isMenstrual -> if (state.isPredicted) "Previsão da Menstruação (Próximo Ciclo)" else "Menstruação"
+                        state.isOvulationPeak -> if (state.isPredicted) "Previsão do Pico de Ovulação" else "Pico da Ovulação (Fase Ovulatória)"
+                        state.phase == CyclePhase.OVULATORY -> if (state.isPredicted) "Previsão de Janela Fértil" else "Janela Fértil (Fase Ovulatória)"
+                        state.phase == CyclePhase.FOLLICULAR -> if (state.isPredicted) "Previsão de Fase Folicular" else "Fase Folicular"
+                        state.phase == CyclePhase.LUTEAL -> if (state.isPredicted) "Previsão de Fase Lútea" else "Fase Lútea"
                         else -> "Sem ciclo registrado"
                     }
                     val cycleDayText = state.cycleDay?.let { " • Dia $it" }.orEmpty()
@@ -547,6 +684,37 @@ private fun SelectedDayCard(
                             },
                         ),
                     )
+
+                    // Informação de apoio sobre próxima menstruação se o dia não for menstrual
+                    if (!state.isMenstrual && nextPeriodInfo != null) {
+                        val nextDateFormatted = nextPeriodInfo.expectedDate.format(DateTimeFormatter.ofPattern("d 'de' MMMM", localePt))
+                        val countdown = when {
+                            nextPeriodInfo.isToday -> "começa hoje"
+                            nextPeriodInfo.daysRemaining == 1 -> "começa amanhã"
+                            nextPeriodInfo.daysRemaining > 1 -> "em ${nextPeriodInfo.daysRemaining} dias"
+                            nextPeriodInfo.isDelayed -> "atrasada em ${-nextPeriodInfo.daysRemaining} dias"
+                            else -> "hoje"
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "🩸 Próxima menstruação: $nextDateFormatted ($countdown)",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Medium,
+                                color = TextSecondary,
+                                fontSize = 11.sp,
+                            ),
+                        )
+                    } else if (state.isMenstrual && state.isPredicted) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "🩸 Previsão estimada com base na duração do seu ciclo.",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Medium,
+                                color = MenstrualTerracotta,
+                                fontSize = 11.sp,
+                            ),
+                        )
+                    }
                 }
             }
 
@@ -659,15 +827,14 @@ private fun computeDayState(
     val dailyLog = dailyLogs.find { it.date == date }
     val hasLog = dailyLog != null
 
-    // Check if within a recorded cycle
-    val activeCycle = cycles.filter { !it.startDate.isAfter(date) }
-        .filter { c -> c.endDate == null || !date.isAfter(c.endDate) }
+    // 1. Ciclo passado finalizado com endDate explícito
+    val closedCycle = cycles.filter { it.endDate != null && !date.isBefore(it.startDate) && !date.isAfter(it.endDate) }
         .maxByOrNull { it.startDate }
 
-    if (activeCycle != null) {
-        val cycleLength = (activeCycle.cycleLength ?: averageCycleDays).coerceAtLeast(2)
-        val periodLength = activeCycle.periodLength.coerceIn(1, cycleLength - 1)
-        val day = ChronoUnit.DAYS.between(activeCycle.startDate, date).toInt() + 1
+    if (closedCycle != null) {
+        val cycleLength = (closedCycle.cycleLength ?: averageCycleDays).coerceIn(15, 60)
+        val periodLength = closedCycle.periodLength.coerceIn(1, cycleLength - 1)
+        val day = ChronoUnit.DAYS.between(closedCycle.startDate, date).toInt() + 1
         val ovulationDay = cycleLength - CycleConstants.LUTEAL_PHASE_DAYS
         val isOvulationPeak = day == ovulationDay
         val isMenstrual = day <= periodLength
@@ -687,30 +854,52 @@ private fun computeDayState(
         )
     }
 
-    // If future date past open cycle, predict
-    val lastCycle = cycles.maxByOrNull { it.startDate }
-    if (lastCycle != null && date.isAfter(lastCycle.startDate)) {
-        val length = (lastCycle.cycleLength ?: averageCycleDays).coerceAtLeast(2)
-        val period = lastCycle.periodLength.coerceIn(1, length - 1)
-        val elapsed = ChronoUnit.DAYS.between(lastCycle.startDate, date).toInt()
-        val day = ((elapsed % length) + length) % length + 1
-        val ovulationDay = length - CycleConstants.LUTEAL_PHASE_DAYS
-        val isOvulationPeak = day == ovulationDay
-        val isMenstrual = day <= period
-        val phase = classifyDay(day, length, period)
+    // 2. Ciclo mais recente (em andamento ou projeção futura)
+    val latestCycle = cycles.maxByOrNull { it.startDate }
+    if (latestCycle != null && !date.isBefore(latestCycle.startDate)) {
+        val cycleLength = (latestCycle.cycleLength ?: averageCycleDays).coerceIn(15, 60)
+        val periodLength = latestCycle.periodLength.coerceIn(1, cycleLength - 1)
+        val ovulationDay = cycleLength - CycleConstants.LUTEAL_PHASE_DAYS
+        val daysFromStart = ChronoUnit.DAYS.between(latestCycle.startDate, date).toInt()
 
-        return CalendarDayState(
-            date = date,
-            phase = phase,
-            cycleDay = day,
-            isMenstrual = isMenstrual,
-            isOvulationPeak = isOvulationPeak,
-            isToday = isToday,
-            isPastOrToday = isPastOrToday,
-            hasLog = hasLog,
-            dailyLog = dailyLog,
-            isPredicted = true,
-        )
+        if (daysFromStart < cycleLength) {
+            val cycleDay = daysFromStart + 1
+            val isMenstrual = cycleDay <= periodLength
+            val isOvulationPeak = cycleDay == ovulationDay
+            val phase = classifyDay(cycleDay, cycleLength, periodLength)
+
+            return CalendarDayState(
+                date = date,
+                phase = phase,
+                cycleDay = cycleDay,
+                isMenstrual = isMenstrual,
+                isOvulationPeak = isOvulationPeak,
+                isToday = isToday,
+                isPastOrToday = isPastOrToday,
+                hasLog = hasLog,
+                dailyLog = dailyLog,
+                isPredicted = false,
+            )
+        } else {
+            // Ciclos futuros previstos após o término do ciclo corrente
+            val dayInPredictedCycle = (daysFromStart % cycleLength) + 1
+            val isMenstrual = dayInPredictedCycle <= periodLength
+            val isOvulationPeak = dayInPredictedCycle == ovulationDay
+            val phase = classifyDay(dayInPredictedCycle, cycleLength, periodLength)
+
+            return CalendarDayState(
+                date = date,
+                phase = phase,
+                cycleDay = dayInPredictedCycle,
+                isMenstrual = isMenstrual,
+                isOvulationPeak = isOvulationPeak,
+                isToday = isToday,
+                isPastOrToday = isPastOrToday,
+                hasLog = hasLog,
+                dailyLog = dailyLog,
+                isPredicted = true,
+            )
+        }
     }
 
     return CalendarDayState(
@@ -724,6 +913,36 @@ private fun computeDayState(
         hasLog = hasLog,
         dailyLog = dailyLog,
         isPredicted = false,
+    )
+}
+
+private fun calculateNextPeriodPrediction(
+    today: LocalDate,
+    cycles: List<MenstrualCycle>,
+    averageCycleDays: Int,
+): NextPeriodInfo? {
+    val latestCycle = cycles.maxByOrNull { it.startDate } ?: return null
+    val cycleLength = (latestCycle.cycleLength ?: averageCycleDays).coerceIn(15, 60)
+
+    var expectedStart = latestCycle.startDate.plusDays(cycleLength.toLong())
+
+    // Se a data já passou há mais de 14 dias sem novo registro, projeta os próximos ciclos
+    if (today.isAfter(expectedStart) && ChronoUnit.DAYS.between(expectedStart, today) > 14) {
+        while (expectedStart.isBefore(today)) {
+            expectedStart = expectedStart.plusDays(cycleLength.toLong())
+        }
+    }
+
+    val daysDiff = ChronoUnit.DAYS.between(today, expectedStart).toInt()
+    val isDelayed = daysDiff < 0
+    val isToday = daysDiff == 0
+
+    return NextPeriodInfo(
+        expectedDate = expectedStart,
+        daysRemaining = daysDiff,
+        isDelayed = isDelayed,
+        isToday = isToday,
+        cycleLength = cycleLength,
     )
 }
 

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun PrimaryButton(
@@ -56,6 +57,8 @@ fun PrimaryButton(
                 text = text,
                 style = MaterialTheme.typography.titleSmall,
                 color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

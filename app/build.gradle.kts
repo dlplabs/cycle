@@ -21,8 +21,8 @@ android {
         applicationId = "br.com.dlpsystems.cycle"
         minSdk = 26
         targetSdk = 36
-        versionCode = 20
-        versionName = "1.0.19"
+        versionCode = 21
+        versionName = "1.0.20"
         buildConfigField(
             "boolean",
             "FIREBASE_CONFIGURED",

@@ -787,6 +787,7 @@ private fun SelectedDayCard(
                         modifier = Modifier.weight(1f),
                     )
 
+                    val isCycleStart = state.cycleDay == 1
                     OutlinedButton(
                         onClick = onStartPeriod,
                         shape = RoundedCornerShape(24.dp),
@@ -801,11 +802,13 @@ private fun SelectedDayCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Início do ciclo",
+                            text = if (isCycleStart) "Início registrado" else "Início do ciclo",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = MenstrualTerracotta,
                             ),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                         )
                     }
                 }

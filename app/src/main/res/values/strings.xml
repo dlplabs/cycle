@@ -202,7 +202,7 @@
     <string name="calendar_fertile_window">Janela fértil prevista</string>
     <string name="calendar_ovulation_peak">Provável pico de ovulação</string>
     <string name="calendar_no_log">Nenhum sintoma registrado neste dia.</string>
-    <string name="calendar_log_day">Registrar sintomas deste dia</string>
+    <string name="calendar_log_day">Registrar sintomas</string>
     <string name="calendar_mark_period">Marcar início da menstruação nesta data</string>
     <string name="calendar_period_marked_success">Início do ciclo atualizado com sucesso!</string>
     <string name="calendar_confirm_mark_period">Deseja marcar o início do ciclo nesta data?</string>

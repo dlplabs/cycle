@@ -57,4 +57,25 @@ class CycleCalendarPredictionTest {
         assertEquals(6, day6InCycle)
         assertFalse(day6InCycle <= periodLength) // Não é menstrual
     }
+
+    @Test
+    fun pastDatePeriodStartCalculatesCorrectCycleDays() {
+        // Usuária ajusta início para uma data passada (ex.: 5 dias atrás)
+        val pastStartDate = LocalDate.of(2026, 10, 24)
+        val today = LocalDate.of(2026, 10, 29)
+        val cycle = MenstrualCycle(
+            id = "c_past",
+            startDate = pastStartDate,
+            endDate = null,
+            cycleLength = 28,
+            periodLength = 5,
+        )
+
+        val daysBetween = java.time.temporal.ChronoUnit.DAYS.between(pastStartDate, today).toInt()
+        val cycleDayToday = daysBetween + 1
+
+        assertEquals(6, cycleDayToday)
+        val nextPeriod = pastStartDate.plusDays(28)
+        assertEquals(LocalDate.of(2026, 11, 21), nextPeriod)
+    }
 }

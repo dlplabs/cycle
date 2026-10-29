@@ -87,38 +87,115 @@ class FirestoreService @Inject constructor(
     }.getOrDefault(emptyList())
 
     suspend fun startPeriod(uid: String, date: LocalDate, periodLength: Int): MenstrualCycle {
-        val existing = getCycles(uid)
+        val existing = getCycles(uid).sortedBy { it.startDate }
         val open = existing.lastOrNull { it.endDate == null }
-        if (open != null && !date.isAfter(open.startDate)) {
-            if (date == open.startDate) return open
-            val previous = existing.filter { it.id != open.id }.maxByOrNull { it.startDate }
-            if (previous == null || date.isAfter(previous.endDate ?: previous.startDate)) {
-                val adjusted = open.copy(startDate = date)
-                cycles(uid).document(open.id).set(adjusted.toEntity()).await()
-                return adjusted
-            }
-            throw IllegalArgumentException("period-before-open-cycle")
-        }
         val batch = services.firestore.batch()
-        if (open != null) {
-            val length = ChronoUnit.DAYS.between(open.startDate, date).toInt()
-            val closed = open.copy(
-                endDate = date.minusDays(1),
-                cycleLength = length,
-            )
-            batch.set(cycles(uid).document(open.id), closed.toEntity())
+
+        val exactMatch = existing.firstOrNull { it.startDate == date }
+        if (exactMatch != null) {
+            return exactMatch
         }
-        val document = cycles(uid).document()
-        val created = MenstrualCycle(
-            id = document.id,
-            startDate = date,
-            endDate = null,
-            cycleLength = null,
-            periodLength = periodLength,
-        )
-        batch.set(document, created.toEntity())
-        batch.commit().await()
-        return created
+
+        if (existing.isEmpty()) {
+            val document = cycles(uid).document()
+            val created = MenstrualCycle(
+                id = document.id,
+                startDate = date,
+                endDate = null,
+                cycleLength = null,
+                periodLength = periodLength,
+            )
+            batch.set(document, created.toEntity())
+            batch.commit().await()
+            return created
+        }
+
+        if (open != null) {
+            if (!date.isAfter(open.startDate)) {
+                val previous = existing.filter { it.id != open.id && it.startDate.isBefore(open.startDate) }
+                    .maxByOrNull { it.startDate }
+
+                if (previous != null && !date.isAfter(previous.startDate)) {
+                    val adjustedPrev = previous.copy(
+                        endDate = if (date.isAfter(previous.startDate)) date.minusDays(1) else previous.endDate,
+                        cycleLength = if (date.isAfter(previous.startDate)) ChronoUnit.DAYS.between(previous.startDate, date).toInt() else previous.cycleLength,
+                    )
+                    batch.set(cycles(uid).document(previous.id), adjustedPrev.toEntity())
+                } else if (previous != null) {
+                    val adjustedPrev = previous.copy(
+                        endDate = date.minusDays(1),
+                        cycleLength = ChronoUnit.DAYS.between(previous.startDate, date).toInt(),
+                    )
+                    batch.set(cycles(uid).document(previous.id), adjustedPrev.toEntity())
+                }
+
+                val adjustedOpen = open.copy(startDate = date)
+                batch.set(cycles(uid).document(open.id), adjustedOpen.toEntity())
+                batch.commit().await()
+                return adjustedOpen
+            }
+
+            val daysSinceOpenStart = ChronoUnit.DAYS.between(open.startDate, date).toInt()
+            if (daysSinceOpenStart in 1..7) {
+                val adjustedOpen = open.copy(startDate = date)
+                batch.set(cycles(uid).document(open.id), adjustedOpen.toEntity())
+                batch.commit().await()
+                return adjustedOpen
+            } else {
+                val closed = open.copy(
+                    endDate = date.minusDays(1),
+                    cycleLength = daysSinceOpenStart,
+                )
+                batch.set(cycles(uid).document(open.id), closed.toEntity())
+
+                val document = cycles(uid).document()
+                val created = MenstrualCycle(
+                    id = document.id,
+                    startDate = date,
+                    endDate = null,
+                    cycleLength = null,
+                    periodLength = periodLength,
+                )
+                batch.set(document, created.toEntity())
+                batch.commit().await()
+                return created
+            }
+        }
+
+        val lastClosed = existing.maxByOrNull { it.startDate }!!
+        if (date.isAfter(lastClosed.startDate)) {
+            val document = cycles(uid).document()
+            val created = MenstrualCycle(
+                id = document.id,
+                startDate = date,
+                endDate = null,
+                cycleLength = null,
+                periodLength = periodLength,
+            )
+            batch.set(document, created.toEntity())
+            batch.commit().await()
+            return created
+        } else {
+            val targetCycle = existing.find { c ->
+                !date.isBefore(c.startDate) && (c.endDate == null || !date.isAfter(c.endDate))
+            } ?: existing.minByOrNull { it.startDate }!!
+
+            val prevCycle = existing.filter { it.id != targetCycle.id && it.startDate.isBefore(targetCycle.startDate) }
+                .maxByOrNull { it.startDate }
+
+            if (prevCycle != null && date.isAfter(prevCycle.startDate)) {
+                val adjustedPrev = prevCycle.copy(
+                    endDate = date.minusDays(1),
+                    cycleLength = ChronoUnit.DAYS.between(prevCycle.startDate, date).toInt(),
+                )
+                batch.set(cycles(uid).document(prevCycle.id), adjustedPrev.toEntity())
+            }
+
+            val adjustedTarget = targetCycle.copy(startDate = date)
+            batch.set(cycles(uid).document(targetCycle.id), adjustedTarget.toEntity())
+            batch.commit().await()
+            return adjustedTarget
+        }
     }
 
     fun observeDailyLogs(uid: String): Flow<List<DailyLog>> = callbackFlow {

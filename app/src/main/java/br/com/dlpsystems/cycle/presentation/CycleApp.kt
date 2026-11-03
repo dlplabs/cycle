@@ -195,6 +195,7 @@ private fun MainGraph(
                     startPeriodOnOpen = startPeriodOnOpen,
                     onStartPeriodConsumed = onStartPeriodConsumed,
                     onAccount = { navController.navigate("settings") },
+                    onNavigateSafety = { navController.navigate("safety") },
                     onRequireAuth = { action ->
                         pendingActionAfterAuth = action
                         navController.navigate("login")

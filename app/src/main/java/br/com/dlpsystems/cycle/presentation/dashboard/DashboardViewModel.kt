@@ -42,6 +42,7 @@ import javax.inject.Inject
 import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import br.com.dlpsystems.cycle.domain.model.MenstrualCycle
 import br.com.dlpsystems.cycle.domain.model.SignedInUser
+import br.com.dlpsystems.cycle.domain.model.TransitProtectionSession
 import br.com.dlpsystems.cycle.domain.model.UserProfile
 
 data class DashboardUiState(
@@ -63,6 +64,7 @@ data class DashboardUiState(
     val cycles: List<MenstrualCycle> = emptyList(),
     val dailyLogs: List<DailyLog> = emptyList(),
     val activeLifeStageMode: LifeStageMode = LifeStageMode.REGULAR_CYCLE,
+    val activeTransitSession: TransitProtectionSession? = null,
 )
 
 @HiltViewModel
@@ -97,6 +99,7 @@ class DashboardViewModel @Inject constructor(
                 userRepository.observeAuth(),
                 billingRepository.isPremiumUser,
                 preferences.activeLifeStageMode,
+                preferences.activeTransitSession,
             ) { args: Array<Any?> ->
                 val profile = args[0] as UserProfile?
                 @Suppress("UNCHECKED_CAST")
@@ -107,6 +110,7 @@ class DashboardViewModel @Inject constructor(
                 val user = args[4] as SignedInUser?
                 val premium = args[5] as Boolean
                 val lifeStage = args[6] as LifeStageMode
+                val transitSession = args[7] as TransitProtectionSession?
 
                 val result = calculateCurrentPhase(
                     PhaseCalculationInput(LocalDate.now(), profile, cycles),
@@ -136,6 +140,7 @@ class DashboardViewModel @Inject constructor(
                     cycles = cycles,
                     dailyLogs = dailyLogs,
                     activeLifeStageMode = lifeStage,
+                    activeTransitSession = transitSession,
                 )
             }.collect { snapshot ->
                 val previous = _state.value

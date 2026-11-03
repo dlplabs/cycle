@@ -281,6 +281,11 @@ fun WellnessScreen(
                 }
             }
 
+            // Destaque Primordial: Módulo de Segurança Pessoal
+            item(span = { GridItemSpan(2) }) {
+                SafetyPriorityHeroCard(onClick = onNavigateSafety)
+            }
+
             // Bloco 1: Jornada & Fases da Mulher
             item(span = { GridItemSpan(2) }) {
                 SectionHeaderItem(
@@ -319,6 +324,71 @@ fun WellnessScreen(
             item(span = { GridItemSpan(2) }) {
                 AdBannerContainer(isPremium = isPremium)
             }
+        }
+    }
+}
+
+@Composable
+private fun SafetyPriorityHeroCard(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFBE9E7)),
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = Color.White,
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFD96548)),
+                        )
+                        Text(
+                            text = "Segurança Pessoal • Sempre Ativo",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFD96548),
+                        )
+                    }
+                }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = DeepPlum,
+                )
+            }
+
+            Text(
+                text = "Cuidar de você também é garantir que você chegue bem em casa.",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = DeepPlum,
+            )
+
+            Text(
+                text = "Círculo de Confiança, Alerta SOS Silencioso, Modo Discreto e Proteção em Trânsito (\"Cheguei Bem\").",
+                style = MaterialTheme.typography.bodySmall,
+                color = DeepPlum.copy(alpha = 0.85f),
+            )
         }
     }
 }

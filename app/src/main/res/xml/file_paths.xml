@@ -2,4 +2,5 @@
 <paths>
     <cache-path name="reports" path="." />
     <files-path name="medical_exams" path="medical_exams" />
+    <files-path name="secure_audio_evidence" path="secure_audio_evidence" />
 </paths>

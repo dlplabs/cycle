@@ -3,6 +3,8 @@ package br.com.dlpsystems.cycle.data.local
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import br.com.dlpsystems.cycle.domain.model.LifeStageMode
+import br.com.dlpsystems.cycle.domain.model.TransitProtectionSession
+import br.com.dlpsystems.cycle.domain.model.TrustedContact
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -64,6 +66,43 @@ class UserPreferencesDataSource @Inject constructor(
     val activeLifeStageMode: Flow<LifeStageMode> = dataStore.data.map { prefs ->
         val raw = prefs[Keys.ACTIVE_LIFE_STAGE_MODE] ?: LifeStageMode.REGULAR_CYCLE.name
         runCatching { LifeStageMode.valueOf(raw) }.getOrDefault(LifeStageMode.REGULAR_CYCLE)
+    }
+
+    val trustedContacts: Flow<List<TrustedContact>> = dataStore.data.map { prefs ->
+        val rawSet = prefs[Keys.TRUSTED_CONTACTS] ?: emptySet()
+        rawSet.mapNotNull { TrustedContact.decode(it) }
+            .sortedBy { it.name.lowercase() }
+    }
+
+    val customSosMessage: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.CUSTOM_SOS_MESSAGE]
+            ?: "SOS Cycle: Preciso de apoio imediato. Acompanhe minha localização:"
+    }
+
+    val activeTransitSession: Flow<TransitProtectionSession?> = dataStore.data.map { prefs ->
+        TransitProtectionSession.decode(prefs[Keys.ACTIVE_TRANSIT_SESSION])
+    }
+
+    suspend fun setTrustedContacts(contacts: List<TrustedContact>) {
+        dataStore.edit { prefs ->
+            prefs[Keys.TRUSTED_CONTACTS] = contacts.map { it.encode() }.toSet()
+        }
+    }
+
+    suspend fun setCustomSosMessage(message: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.CUSTOM_SOS_MESSAGE] = message.trim()
+        }
+    }
+
+    suspend fun setActiveTransitSession(session: TransitProtectionSession?) {
+        dataStore.edit { prefs ->
+            if (session == null) {
+                prefs.remove(Keys.ACTIVE_TRANSIT_SESSION)
+            } else {
+                prefs[Keys.ACTIVE_TRANSIT_SESSION] = session.encode()
+            }
+        }
     }
 
     suspend fun setActiveLifeStageMode(mode: LifeStageMode) {
@@ -131,5 +170,8 @@ class UserPreferencesDataSource @Inject constructor(
         val LAST_PHASE_DATE = stringPreferencesKey("last_notified_phase_date")
         val LAST_DAILY_REMINDER_DATE = stringPreferencesKey("last_daily_reminder_date")
         val ACTIVE_LIFE_STAGE_MODE = stringPreferencesKey("active_life_stage_mode")
+        val TRUSTED_CONTACTS = stringSetPreferencesKey("safety_trusted_contacts")
+        val CUSTOM_SOS_MESSAGE = stringPreferencesKey("safety_custom_sos_message")
+        val ACTIVE_TRANSIT_SESSION = stringPreferencesKey("safety_active_transit_session")
     }
 }

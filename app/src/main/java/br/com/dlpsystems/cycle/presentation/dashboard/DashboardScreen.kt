@@ -28,10 +28,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.ui.graphics.Color
 import br.com.dlpsystems.cycle.domain.model.LifeStageMode
+import br.com.dlpsystems.cycle.domain.model.TransitProtectionSession
 import br.com.dlpsystems.cycle.presentation.calendar.CycleCalendarBottomSheet
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
 import java.time.LocalDate
@@ -100,6 +102,7 @@ fun DashboardScreen(
     startPeriodOnOpen: Boolean,
     onStartPeriodConsumed: () -> Unit,
     onAccount: () -> Unit,
+    onNavigateSafety: () -> Unit = {},
     onRequireAuth: (pendingAction: () -> Unit) -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
@@ -206,6 +209,7 @@ fun DashboardScreen(
                     photoUrl = state.photoUrl,
                     photoBytes = state.avatarBytes,
                     onPhotoClick = { showPhotoOptions = true },
+                    onSafetyClick = onNavigateSafety,
                     onAccount = onAccount,
                 )
                 Surface(
@@ -222,6 +226,13 @@ fun DashboardScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                if (state.activeTransitSession != null) {
+                    ActiveTransitDashboardBanner(
+                        session = state.activeTransitSession!!,
+                        onClick = onNavigateSafety,
+                    )
+                }
+
                 if (state.activeLifeStageMode != LifeStageMode.REGULAR_CYCLE) {
                     ActiveLifeStageDashboardBanner(
                         mode = state.activeLifeStageMode,
@@ -405,6 +416,7 @@ private fun HomeHeader(
     photoUrl: String?,
     photoBytes: ByteArray?,
     onPhotoClick: () -> Unit,
+    onSafetyClick: () -> Unit,
     onAccount: () -> Unit,
 ) {
     val firstName = name.trim().substringBefore(' ').ifBlank { name.trim() }
@@ -414,7 +426,7 @@ private fun HomeHeader(
             .statusBarsPadding()
             .padding(start = 24.dp, end = 20.dp, top = 8.dp, bottom = 28.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = if (firstName.isBlank()) {
@@ -432,6 +444,32 @@ private fun HomeHeader(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+        Surface(
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .clickable(onClick = onSafetyClick),
+            color = SurfaceCard.copy(alpha = 0.92f),
+            shape = RoundedCornerShape(50),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Shield,
+                    contentDescription = stringResource(R.string.safety_routine_title),
+                    tint = DeepPlum,
+                    modifier = Modifier.size(18.dp),
+                )
+                Text(
+                    text = "Segurança",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = DeepPlum,
+                )
+            }
+        }
         ProfileAvatar(
             name = firstName.ifBlank { name },
             photoUrl = photoUrl,
@@ -591,6 +629,59 @@ private suspend fun requestDriveToken(
 }
 
 @Composable
+private fun ActiveTransitDashboardBanner(
+    session: TransitProtectionSession,
+    onClick: () -> Unit,
+) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFF1ECFF),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Shield,
+                    contentDescription = null,
+                    tint = DeepPlum,
+                    modifier = Modifier.size(20.dp),
+                )
+                Column {
+                    Text(
+                        text = "Proteção em Trânsito Ativa: ${session.destinationLabel}",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = DeepPlum,
+                    )
+                    Text(
+                        text = "Toque para confirmar \"Cheguei Bem\" ou acionar seu Círculo de Confiança",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = DeepPlum.copy(alpha = 0.8f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Icon(
+                imageVector = Icons.Filled.ChevronRight,
+                contentDescription = "Abrir Segurança Pessoal",
+                tint = DeepPlum,
+            )
+        }
+    }
+}
+
+@Composable
 private fun ActiveLifeStageDashboardBanner(
     mode: LifeStageMode,
     onClick: () -> Unit,
@@ -639,4 +730,5 @@ private fun ActiveLifeStageDashboardBanner(
         }
     }
 }
+
 

@@ -2,6 +2,7 @@ package br.com.dlpsystems.cycle.data.local
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import br.com.dlpsystems.cycle.domain.model.TransitProtectionSession
 import br.com.dlpsystems.cycle.domain.model.TrustedContact
@@ -66,6 +67,18 @@ class UserPreferencesDataSource @Inject constructor(
     val activeLifeStageMode: Flow<LifeStageMode> = dataStore.data.map { prefs ->
         val raw = prefs[Keys.ACTIVE_LIFE_STAGE_MODE] ?: LifeStageMode.REGULAR_CYCLE.name
         runCatching { LifeStageMode.valueOf(raw) }.getOrDefault(LifeStageMode.REGULAR_CYCLE)
+    }
+
+    val reviewCompleted: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.REVIEW_COMPLETED] ?: false
+    }
+
+    val reviewCooldownUntil: Flow<Long> = dataStore.data.map { prefs ->
+        prefs[Keys.REVIEW_COOLDOWN_UNTIL] ?: 0L
+    }
+
+    val positiveActionCount: Flow<Int> = dataStore.data.map { prefs ->
+        prefs[Keys.POSITIVE_ACTION_COUNT] ?: 0
     }
 
     val trustedContacts: Flow<List<TrustedContact>> = dataStore.data.map { prefs ->
@@ -153,6 +166,25 @@ class UserPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun incrementPositiveActionCount(): Int {
+        var count = 0
+        dataStore.edit { prefs ->
+            val current = prefs[Keys.POSITIVE_ACTION_COUNT] ?: 0
+            count = current + 1
+            prefs[Keys.POSITIVE_ACTION_COUNT] = count
+        }
+        return count
+    }
+
+    suspend fun setReviewCompleted(completed: Boolean = true) {
+        dataStore.edit { prefs -> prefs[Keys.REVIEW_COMPLETED] = completed }
+    }
+
+    suspend fun setReviewCooldownDays(days: Int = 14) {
+        val cooldownMs = System.currentTimeMillis() + days * 24L * 60L * 60L * 1000L
+        dataStore.edit { prefs -> prefs[Keys.REVIEW_COOLDOWN_UNTIL] = cooldownMs }
+    }
+
     suspend fun clear() {
         dataStore.edit { it.clear() }
     }
@@ -173,5 +205,8 @@ class UserPreferencesDataSource @Inject constructor(
         val TRUSTED_CONTACTS = stringSetPreferencesKey("safety_trusted_contacts")
         val CUSTOM_SOS_MESSAGE = stringPreferencesKey("safety_custom_sos_message")
         val ACTIVE_TRANSIT_SESSION = stringPreferencesKey("safety_active_transit_session")
+        val REVIEW_COMPLETED = booleanPreferencesKey("review_completed")
+        val REVIEW_COOLDOWN_UNTIL = longPreferencesKey("review_cooldown_until")
+        val POSITIVE_ACTION_COUNT = intPreferencesKey("review_positive_action_count")
     }
 }

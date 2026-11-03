@@ -21,8 +21,8 @@ android {
         applicationId = "br.com.dlpsystems.cycle"
         minSdk = 26
         targetSdk = 36
-        versionCode = 22
-        versionName = "1.0.21"
+        versionCode = 23
+        versionName = "1.0.22"
         buildConfigField(
             "boolean",
             "FIREBASE_CONFIGURED",
@@ -172,6 +172,7 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.billing.ktx)
     implementation(libs.play.services.ads)
+    implementation(libs.play.review.ktx)
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
     implementation(libs.hilt.android)

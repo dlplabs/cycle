@@ -65,6 +65,7 @@ data class DashboardUiState(
     val dailyLogs: List<DailyLog> = emptyList(),
     val activeLifeStageMode: LifeStageMode = LifeStageMode.REGULAR_CYCLE,
     val activeTransitSession: TransitProtectionSession? = null,
+    val showReviewPrompt: Boolean = false,
 )
 
 @HiltViewModel
@@ -78,6 +79,7 @@ class DashboardViewModel @Inject constructor(
     private val saveDailyLog: SaveDailyLogUseCase,
     private val analyticsService: AnalyticsService,
     private val billingRepository: BillingRepository,
+    val playReviewHelper: br.com.dlpsystems.cycle.core.review.PlayReviewHelper,
     @param:ApplicationContext private val context: Context,
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardUiState())
@@ -274,6 +276,32 @@ class DashboardViewModel @Inject constructor(
                 ),
             )
             analyticsService.log(AnalyticsEvents.EVENT_CYCLE_LOGGED, screen = "dashboard")
+            runCatching { playReviewHelper.recordPositiveAction() }
+            if (playReviewHelper.shouldPromptReview()) {
+                _state.update { it.copy(showReviewPrompt = true) }
+            }
+        }
+    }
+
+    fun checkReviewPrompt() {
+        viewModelScope.launch {
+            if (playReviewHelper.shouldPromptReview()) {
+                _state.update { it.copy(showReviewPrompt = true) }
+            }
+        }
+    }
+
+    fun dismissReviewPrompt() {
+        _state.update { it.copy(showReviewPrompt = false) }
+        viewModelScope.launch {
+            playReviewHelper.postponeReview(14)
+        }
+    }
+
+    fun onReviewCompleted() {
+        _state.update { it.copy(showReviewPrompt = false) }
+        viewModelScope.launch {
+            playReviewHelper.markReviewCompleted()
         }
     }
 }

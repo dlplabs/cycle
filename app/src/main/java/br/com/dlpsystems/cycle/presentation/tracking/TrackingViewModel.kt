@@ -2,6 +2,7 @@ package br.com.dlpsystems.cycle.presentation.tracking
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.dlpsystems.cycle.core.review.PlayReviewHelper
 import br.com.dlpsystems.cycle.domain.model.DailyLog
 import br.com.dlpsystems.cycle.domain.model.FlowIntensity
 import br.com.dlpsystems.cycle.domain.model.Mood
@@ -41,6 +42,7 @@ class TrackingViewModel @Inject constructor(
     private val cycleRepository: CycleRepository,
     private val calculateCurrentPhase: CalculateCurrentPhaseUseCase,
     private val saveDailyLog: SaveDailyLogUseCase,
+    private val playReviewHelper: PlayReviewHelper,
 ) : ViewModel() {
     private val _state = MutableStateFlow(TrackingUiState())
     val state = _state.asStateFlow()
@@ -90,6 +92,7 @@ class TrackingViewModel @Inject constructor(
                         notes = snapshot.notes.trim(),
                     ),
                 )
+                runCatching { playReviewHelper.recordPositiveAction() }
                 _state.update { it.copy(saving = false, saved = true) }
             } catch (error: Throwable) {
                 _state.update { it.copy(saving = false, errorMessage = error.message) }

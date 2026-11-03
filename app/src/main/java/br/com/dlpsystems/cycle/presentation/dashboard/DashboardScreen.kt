@@ -36,6 +36,7 @@ import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import br.com.dlpsystems.cycle.domain.model.TransitProtectionSession
 import br.com.dlpsystems.cycle.presentation.calendar.CycleCalendarBottomSheet
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
+import br.com.dlpsystems.cycle.presentation.components.ReviewSentimentDialog
 import java.time.LocalDate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -363,7 +364,10 @@ fun DashboardScreen(
         }
         if (showLog) {
             LogSymptomBottomSheet(
-                onDismiss = { showLog = false },
+                onDismiss = {
+                    showLog = false
+                    viewModel.checkReviewPrompt()
+                },
                 initialDate = logSelectedDate,
             )
         }
@@ -404,6 +408,23 @@ fun DashboardScreen(
                     val resumeAction = pendingAction
                     pendingAction = null
                     onRequireAuth { resumeAction?.invoke() }
+                },
+            )
+        }
+        if (state.showReviewPrompt) {
+            ReviewSentimentDialog(
+                onDismiss = { viewModel.dismissReviewPrompt() },
+                onLater = { viewModel.dismissReviewPrompt() },
+                onRatePlayStore = {
+                    viewModel.onReviewCompleted()
+                    activity?.let { viewModel.playReviewHelper.launchInAppReview(it) }
+                        ?: viewModel.playReviewHelper.openPlayStore(context)
+                },
+                onShare = {
+                    viewModel.playReviewHelper.shareApp(context)
+                },
+                onSubmitFeedback = {
+                    viewModel.onReviewCompleted()
                 },
             )
         }

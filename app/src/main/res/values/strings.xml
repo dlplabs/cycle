@@ -276,4 +276,21 @@
     <string name="auth_required_action_not_now">Agora não</string>
     <string name="guest_account_notice">Você está usando o Cycle como visitante. Entre na sua conta para sincronizar e salvar seus dados.</string>
     <string name="guest_name">Visitante</string>
+
+    <!-- Avaliação e Feedback In-App - Sentiment Gate -->
+    <string name="review_prompt_title">Gostando do Cycle?</string>
+    <string name="review_prompt_subtitle">Sua opinião é fundamental para evoluirmos a cada dia.</string>
+    <string name="review_option_positive">Estou adorando!</string>
+    <string name="review_option_negative">Pode melhorar</string>
+    <string name="review_option_later">Mais tarde</string>
+    <string name="review_positive_title">Que notícia maravilhosa!</string>
+    <string name="review_positive_subtitle">Que tal deixar 5 estrelas na Google Play para apoiar o app?</string>
+    <string name="review_positive_action">Avaliar na Google Play</string>
+    <string name="review_share_action">Indicar para amigas</string>
+    <string name="review_feedback_title">Queremos ouvir você</string>
+    <string name="review_feedback_subtitle">Conte o que podemos melhorar no Cycle. Lemos cada mensagem com carinho.</string>
+    <string name="review_feedback_hint">Digite sua sugestão ou relato aqui...</string>
+    <string name="review_feedback_send">Enviar sugestão</string>
+    <string name="review_feedback_thanks">Muito obrigado pelo seu retorno!</string>
+    <string name="settings_rate_app">Avaliar o Cycle na Google Play</string>
 </resources>

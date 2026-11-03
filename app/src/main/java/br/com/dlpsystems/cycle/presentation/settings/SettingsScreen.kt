@@ -95,6 +95,7 @@ class SettingsViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val preferences: UserPreferencesDataSource,
     private val reminderScheduler: ReminderScheduler,
+    val playReviewHelper: br.com.dlpsystems.cycle.core.review.PlayReviewHelper,
 ) : ViewModel() {
     val isPremium: StateFlow<Boolean> = billingRepository.isPremiumUser
     val authUser = userRepository.observeAuth()
@@ -424,6 +425,20 @@ fun SettingsScreen(
                 }
             }
 
+            OutlinedButton(
+                onClick = {
+                    val activity = context as? android.app.Activity
+                    if (activity != null) {
+                        viewModel.playReviewHelper.launchInAppReview(activity)
+                    } else {
+                        viewModel.playReviewHelper.openPlayStore(context)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.settings_rate_app))
+            }
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             // Rodapé
@@ -433,7 +448,7 @@ fun SettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = "Cycle v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                    text = "Cycle v${BuildConfig.VERSION_NAME} — build ${BuildConfig.VERSION_CODE}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

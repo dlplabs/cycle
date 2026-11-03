@@ -39,7 +39,7 @@ sealed class SosDispatchResult {
 
 @Singleton
 class EmergencySosManager @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(context)

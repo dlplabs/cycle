@@ -9,27 +9,25 @@ import jwt
 PACKAGE_NAME = "br.com.dlpsystems.cycle"
 SA_KEY_PATH = "/home/daniel-pinheiro/.config/gcloud/play-console-sa.json"
 AAB_PATH = "app/build/outputs/bundle/release/app-release.aab"
-VERSION_CODE = 18
-VERSION_NAME = "1.0.17"
+VERSION_CODE = 22
+VERSION_NAME = "1.0.21"
 
 RELEASE_NOTES_PT = (
-    "Novidades da versão 1.0.17:\n"
-    "• Ciclos da Mulher: Tentante, Gravidez, Pós-Parto (EPDS), Amamentação (MELA) e Climatério (MRS).\n"
-    "• Triagem de depressão pós-parto validada com suporte direto ao CVV 188.\n"
-    "• Calculadora de eficácia MELA e conservação de leite materno (Fiocruz).\n"
-    "• SOS Alívio com abas para cólicas, fogachos e acolhimento emocional imediato.\n"
-    "• Previsor de fases para planejamento de treinos e rotinas.\n"
-    "• Melhorias contínuas de estabilidade e privacidade."
+    "Novidades da versão 1.0.21:\n"
+    "• Módulo de Segurança Pessoal: Círculo de Confiança com envio rápido de localização e alerta sonoro dissuasivo.\n"
+    "• Proteção em Trânsito (Cheguei Bem): monitoramento de rota com contagem regressiva e compartilhamento de status.\n"
+    "• Modo Discreto instantâneo e gravação de áudio de proteção em cofre seguro local.\n"
+    "• Paridade completa de ciclos biológicos e saúde feminina com o portal Cycle.\n"
+    "• Melhorias contínuas de estabilidade, performance e segurança dos seus dados."
 )
 
 RELEASE_NOTES_EN = (
-    "What's new in version 1.0.17:\n"
-    "• Woman Life Stages: TTC, Pregnancy, Postpartum (EPDS), Breastfeeding (LAM), and Menopause (MRS).\n"
-    "• Postpartum depression screening with direct crisis support (CVV 188).\n"
-    "• LAM effectiveness calculator & Fiocruz milk storage guidelines.\n"
-    "• SOS Relief with dedicated tabs for cramps, hot flashes, and emotional care.\n"
-    "• Cycle phase planner for workouts and daily routines.\n"
-    "• Ongoing stability, privacy, and performance improvements."
+    "What's new in version 1.0.21:\n"
+    "• Personal Safety Module: Circle of Trust with fast location sharing and deterrent alarm.\n"
+    "• Transit Protection (Arrived Safely): route journey countdown timer and real-time status sharing.\n"
+    "• Instant Disguise Mode and forensic protective audio recording in a local secure vault.\n"
+    "• Full feature parity for female health cycles with the Cycle web platform.\n"
+    "• Continuous stability, performance, and data security enhancements."
 )
 
 def get_access_token():

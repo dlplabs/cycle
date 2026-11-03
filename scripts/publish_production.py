@@ -9,25 +9,23 @@ import jwt
 PACKAGE_NAME = "br.com.dlpsystems.cycle"
 SA_KEY_PATH = "/home/daniel-pinheiro/.config/gcloud/play-console-sa.json"
 AAB_PATH = "app/build/outputs/bundle/release/app-release.aab"
-VERSION_CODE = 22
-VERSION_NAME = "1.0.21"
+VERSION_CODE = 23
+VERSION_NAME = "1.0.22"
 
 RELEASE_NOTES_PT = (
-    "Novidades da versão 1.0.21:\n"
-    "• Módulo de Segurança Pessoal: Círculo de Confiança com envio rápido de localização e alerta sonoro dissuasivo.\n"
-    "• Proteção em Trânsito (Cheguei Bem): monitoramento de rota com contagem regressiva e compartilhamento de status.\n"
-    "• Modo Discreto instantâneo e gravação de áudio de proteção em cofre seguro local.\n"
-    "• Paridade completa de ciclos biológicos e saúde feminina com o portal Cycle.\n"
-    "• Melhorias contínuas de estabilidade, performance e segurança dos seus dados."
+    "Novidades da versão 1.0.22:\n"
+    "• Avaliação e Feedback In-App: canal direto para ouvir sua opinião e aprimorar sua experiência.\n"
+    "• Integração com Google Play Review para apoiar o crescimento da comunidade Cycle.\n"
+    "• Acesso permanente para avaliação e sugestões nas configurações da conta.\n"
+    "• Aprimoramentos de estabilidade, sincronização e fluidez no acompanhamento do ciclo."
 )
 
 RELEASE_NOTES_EN = (
-    "What's new in version 1.0.21:\n"
-    "• Personal Safety Module: Circle of Trust with fast location sharing and deterrent alarm.\n"
-    "• Transit Protection (Arrived Safely): route journey countdown timer and real-time status sharing.\n"
-    "• Instant Disguise Mode and forensic protective audio recording in a local secure vault.\n"
-    "• Full feature parity for female health cycles with the Cycle web platform.\n"
-    "• Continuous stability, performance, and data security enhancements."
+    "What's new in version 1.0.22:\n"
+    "• In-App Review and Feedback: direct channel to hear your thoughts and enhance your experience.\n"
+    "• Google Play In-App Review integration to support the growth of the Cycle community.\n"
+    "• Permanent access to rating and feedback directly from account settings.\n"
+    "• Stability, sync, and responsiveness improvements across cycle tracking."
 )
 
 def get_access_token():

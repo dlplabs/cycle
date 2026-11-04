@@ -10,6 +10,8 @@ interface CycleRepository {
     fun observeDailyLogs(): Flow<List<DailyLog>>
     suspend fun getCycles(): List<MenstrualCycle>
     suspend fun startPeriod(date: LocalDate): MenstrualCycle
+    suspend fun setFlowEndDate(cycleId: String, flowEndDate: LocalDate?): MenstrualCycle
+    suspend fun togglePeriodDay(date: LocalDate): MenstrualCycle
     suspend fun saveDailyLog(log: DailyLog)
     suspend fun getDailyLogs(): List<DailyLog>
 }

@@ -60,8 +60,43 @@ class CalculateCurrentPhaseUseCaseTest {
         val result = useCase(
             PhaseCalculationInput(start.plusDays(9), profile.copy(averageCycleDays = 40), cycles),
         )
-        val expected = listOf(30, 32, 24, 28, 30, 22).average().roundToInt()
+        // Média Móvel Ponderada dos 6 mais recentes: [30, 32, 24, 28, 30, 22] com pesos [1, 2, 3, 4, 5, 6]
+        // (30*1 + 32*2 + 24*3 + 28*4 + 30*5 + 22*6) / 21 = 560 / 21 = 26.666 -> 27
+        val recentLengths = listOf(30, 32, 24, 28, 30, 22)
+        val weights = listOf(1, 2, 3, 4, 5, 6)
+        val expected = (recentLengths.zip(weights).sumOf { (l, w) -> l * w }.toDouble() / weights.sum()).roundToInt()
         assertEquals(expected, result.cycleLength)
+    }
+
+    @Test
+    fun ignoresClinicalOutliersFromWeightedAverage() {
+        val cycles = listOf(
+            closed("outlier_short", LocalDate.of(2025, 7, 1), 16), // Ignorado (< 21)
+            closed("valid_1", LocalDate.of(2025, 8, 1), 28),
+            closed("valid_2", LocalDate.of(2025, 9, 1), 30),
+            closed("outlier_long", LocalDate.of(2025, 10, 1), 58), // Ignorado (> 45)
+            closed("valid_3", LocalDate.of(2025, 11, 1), 32),
+            MenstrualCycle("open", start, null, null, 5),
+        )
+        val result = useCase(
+            PhaseCalculationInput(start.plusDays(5), profile.copy(averageCycleDays = 28), cycles),
+        )
+        // Válidos: [28, 30, 32] com pesos [1, 2, 3] -> (28*1 + 30*2 + 32*3) / 6 = (28 + 60 + 96) / 6 = 184/6 = 30.66 -> 31
+        assertEquals(31, result.cycleLength)
+    }
+
+    @Test
+    fun severeDelaySuppressesRepetitiveAlertAndFlagsState() {
+        val longAgoStart = LocalDate.now().minusDays(65)
+        val result = useCase(
+            PhaseCalculationInput(
+                date = LocalDate.now(),
+                profile = profile,
+                cycles = listOf(MenstrualCycle("open_long", longAgoStart, null, null, 5)),
+            ),
+        )
+        org.junit.jupiter.api.Assertions.assertTrue(result.isSevereDelay)
+        assertNull(result.message) // Alerta repetitivo suprimido para evitar ansiedade
     }
 
     @Test

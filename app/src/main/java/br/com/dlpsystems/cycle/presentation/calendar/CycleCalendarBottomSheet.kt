@@ -84,6 +84,13 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.RemoveCircleOutline
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+
 data class CalendarDayState(
     val date: LocalDate,
     val phase: CyclePhase?,
@@ -115,10 +122,24 @@ fun CycleCalendarBottomSheet(
     averagePeriodDays: Int,
     onLogSymptomOnDate: (LocalDate) -> Unit,
     onStartPeriodOnDate: (LocalDate) -> Unit,
+    onTogglePeriodOnDate: (LocalDate) -> Unit = onStartPeriodOnDate,
+    onSetFlowEndDate: (String, LocalDate?) -> Unit = { _, _ -> },
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val today = remember { LocalDate.now() }
-    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    val baseMonth = remember { YearMonth.now() }
+    val pageCount = 2400
+    val initialPage = 1200
+    val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { pageCount })
+    val coroutineScope = rememberCoroutineScope()
+
+    // Inversão estrita solicitada pela regra de UX:
+    // Swipe esquerda -> avança página -> offset negativo -> meses anteriores (passado)
+    // Swipe direita -> volta página -> offset positivo -> meses posteriores (futuro)
+    val currentMonth = remember(pagerState.currentPage) {
+        baseMonth.plusMonths((initialPage - pagerState.currentPage).toLong())
+    }
+
     var selectedDate by remember { mutableStateOf(today) }
     var showConfirmStartPeriod by remember { mutableStateOf<LocalDate?>(null) }
     val haptic = LocalHapticFeedback.current
@@ -184,7 +205,9 @@ fun CycleCalendarBottomSheet(
                     IconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            currentMonth = currentMonth.minusMonths(1)
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
                         },
                     ) {
                         Icon(
@@ -208,7 +231,9 @@ fun CycleCalendarBottomSheet(
                     IconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            currentMonth = currentMonth.plusMonths(1)
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                            }
                         },
                     ) {
                         Icon(
@@ -231,7 +256,10 @@ fun CycleCalendarBottomSheet(
                     localePt = localePt,
                     onNavigateToExpectedDate = {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        currentMonth = YearMonth.from(nextPeriodInfo.expectedDate)
+                        val diffMonths = ChronoUnit.MONTHS.between(baseMonth, YearMonth.from(nextPeriodInfo.expectedDate)).toInt()
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(initialPage - diffMonths)
+                        }
                         selectedDate = nextPeriodInfo.expectedDate
                     },
                 )
@@ -243,20 +271,29 @@ fun CycleCalendarBottomSheet(
             // Days of Week Header
             DaysOfWeekHeader(localePt)
 
-            // Monthly Calendar Grid
-            CalendarMonthGrid(
-                yearMonth = currentMonth,
-                selectedDate = selectedDate,
-                today = today,
-                cycles = cycles,
-                dailyLogs = dailyLogs,
-                averageCycleDays = averageCycleDays,
-                averagePeriodDays = averagePeriodDays,
-                onDateSelected = { date ->
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    selectedDate = date
-                },
-            )
+            // Monthly Calendar Grid with HorizontalPager
+            HorizontalPager(
+                state = pagerState,
+                beyondViewportPageCount = 1,
+                modifier = Modifier.fillMaxWidth(),
+            ) { page ->
+                val monthForPage = remember(page) {
+                    baseMonth.plusMonths((initialPage - page).toLong())
+                }
+                CalendarMonthGrid(
+                    yearMonth = monthForPage,
+                    selectedDate = selectedDate,
+                    today = today,
+                    cycles = cycles,
+                    dailyLogs = dailyLogs,
+                    averageCycleDays = averageCycleDays,
+                    averagePeriodDays = averagePeriodDays,
+                    onDateSelected = { date ->
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        selectedDate = date
+                    },
+                )
+            }
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 4.dp),
@@ -278,12 +315,17 @@ fun CycleCalendarBottomSheet(
             SelectedDayCard(
                 state = selectedDayState,
                 nextPeriodInfo = nextPeriodInfo,
+                cycles = cycles,
+                today = today,
+                averagePeriodDays = averagePeriodDays,
                 localePt = localePt,
                 onLogSymptom = {
                     onLogSymptomOnDate(selectedDate)
                     onDismiss()
                 },
                 onStartPeriod = { showConfirmStartPeriod = selectedDate },
+                onTogglePeriod = { onTogglePeriodOnDate(selectedDate) },
+                onSetFlowEndDate = { cycleId, end -> onSetFlowEndDate(cycleId, end) },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -349,59 +391,55 @@ private fun NextPeriodPredictionCard(
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MenstrualTerracotta.copy(alpha = 0.12f),
-        border = BorderStroke(1.dp, MenstrualTerracotta.copy(alpha = 0.4f)),
+        border = BorderStroke(1.dp, MenstrualTerracotta.copy(alpha = 0.35f)),
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onNavigateToExpectedDate),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(MenstrualTerracotta.copy(alpha = 0.22f)),
-                contentAlignment = Alignment.Center,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f),
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.WaterDrop,
-                    contentDescription = null,
-                    tint = MenstrualTerracotta,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.calendar_next_period_title).uppercase(),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MenstrualTerracotta,
-                        letterSpacing = 0.5.sp,
-                    ),
-                )
-                Text(
-                    text = formattedDate,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = DeepPlum,
-                    ),
-                )
-                Text(
-                    text = "$countdownText • Ciclo estimado de ${info.cycleLength} dias",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 11.sp,
-                        color = if (info.isDelayed) MenstrualTerracotta else TextSecondary,
-                        fontWeight = if (info.isDelayed) FontWeight.Bold else FontWeight.Normal,
-                    ),
-                )
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .background(MenstrualTerracotta.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.WaterDrop,
+                        contentDescription = null,
+                        tint = MenstrualTerracotta,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                Column {
+                    Text(
+                        text = stringResource(R.string.calendar_next_period_title),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MenstrualTerracotta,
+                        ),
+                    )
+                    Text(
+                        text = formattedDate,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = DeepPlum,
+                        ),
+                    )
+                    Text(
+                        text = "$countdownText • Ciclo estimado de ${info.cycleLength} dias",
+                        style = MaterialTheme.typography.bodySmall.copy(color = TextSecondary),
+                    )
+                }
             }
 
             Surface(
@@ -631,12 +669,30 @@ private fun DayCell(
 private fun SelectedDayCard(
     state: CalendarDayState,
     nextPeriodInfo: NextPeriodInfo?,
+    cycles: List<MenstrualCycle>,
+    today: LocalDate,
+    averagePeriodDays: Int,
     localePt: Locale,
     onLogSymptom: () -> Unit,
     onStartPeriod: () -> Unit,
+    onTogglePeriod: () -> Unit,
+    onSetFlowEndDate: (String, LocalDate?) -> Unit,
 ) {
     val dateFormatter = remember { DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", localePt) }
     val formattedDate = state.date.format(dateFormatter).replaceFirstChar { it.uppercase() }
+
+    val activeOpenCycle = remember(cycles) { cycles.lastOrNull { it.endDate == null } }
+    val activeFlowEnd = remember(activeOpenCycle, averagePeriodDays) {
+        activeOpenCycle?.let {
+            it.flowEndDate ?: it.startDate.plusDays((it.actualFlowDays ?: averagePeriodDays).toLong() - 1L)
+        }
+    }
+
+    val isOpenPeriodExtended = remember(activeOpenCycle, today, averagePeriodDays) {
+        activeOpenCycle != null &&
+            activeOpenCycle.flowEndDate == null &&
+            ChronoUnit.DAYS.between(activeOpenCycle.startDate, today) > (averagePeriodDays + 3)
+    }
 
     Surface(
         shape = RoundedCornerShape(18.dp),
@@ -685,7 +741,6 @@ private fun SelectedDayCard(
                         ),
                     )
 
-                    // Informação de apoio sobre próxima menstruação se o dia não for menstrual
                     if (!state.isMenstrual && nextPeriodInfo != null) {
                         val nextDateFormatted = nextPeriodInfo.expectedDate.format(DateTimeFormatter.ofPattern("d 'de' MMMM", localePt))
                         val countdown = when {
@@ -715,6 +770,22 @@ private fun SelectedDayCard(
                             ),
                         )
                     }
+                }
+            }
+
+            // Alerta sutil de fluxo em aberto além da média esperada
+            if (isOpenPeriodExtended && state.isMenstrual && !state.isPredicted) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MenstrualTerracotta.copy(alpha = 0.12f),
+                    border = BorderStroke(1.dp, MenstrualTerracotta.copy(alpha = 0.35f)),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = "💡 Seu fluxo continua ativo? Defina o dia de término tocando em 'Encerrar fluxo nesta data' quando parar.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = DeepPlum, fontSize = 11.sp),
+                        modifier = Modifier.padding(10.dp),
+                    )
                 }
             }
 
@@ -767,50 +838,142 @@ private fun SelectedDayCard(
                 )
             }
 
-            // Actions for Today or Past dates
+            // Ações: Para hoje ou datas passadas
             if (state.isPastOrToday) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    PrimaryButton(
-                        text = stringResource(R.string.calendar_log_day),
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Rounded.EditNote,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        },
-                        onClick = onLogSymptom,
-                        modifier = Modifier.weight(1f),
-                    )
-
-                    val isCycleStart = state.cycleDay == 1
-                    OutlinedButton(
-                        onClick = onStartPeriod,
-                        shape = RoundedCornerShape(24.dp),
-                        border = BorderStroke(1.dp, MenstrualTerracotta),
-                        modifier = Modifier.accessibleTouchTarget(),
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.WaterDrop,
-                            contentDescription = null,
-                            tint = MenstrualTerracotta,
-                            modifier = Modifier.size(16.dp),
+                        PrimaryButton(
+                            text = stringResource(R.string.calendar_log_day),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.EditNote,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                            onClick = onLogSymptom,
+                            modifier = Modifier.weight(1f),
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = if (isCycleStart) "Início registrado" else "Início do ciclo",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MenstrualTerracotta,
-                            ),
-                            maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                        )
+
+                        // Ações de fluxo menstrual direto (sem modais complexos)
+                        if (state.isMenstrual && !state.isPredicted && activeOpenCycle != null) {
+                            val isLastFlowDay = state.date == activeFlowEnd && state.date.isAfter(activeOpenCycle.startDate)
+                            if (isLastFlowDay) {
+                                OutlinedButton(
+                                    onClick = onTogglePeriod,
+                                    shape = RoundedCornerShape(24.dp),
+                                    border = BorderStroke(1.dp, MenstrualTerracotta),
+                                    modifier = Modifier.accessibleTouchTarget(),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.RemoveCircleOutline,
+                                        contentDescription = null,
+                                        tint = MenstrualTerracotta,
+                                        modifier = Modifier.size(16.dp),
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Desmarcar dia",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = MenstrualTerracotta,
+                                        ),
+                                    )
+                                }
+                            } else {
+                                OutlinedButton(
+                                    onClick = { onSetFlowEndDate(activeOpenCycle.id, state.date) },
+                                    shape = RoundedCornerShape(24.dp),
+                                    border = BorderStroke(1.dp, MenstrualTerracotta),
+                                    modifier = Modifier.accessibleTouchTarget(),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CheckCircle,
+                                        contentDescription = null,
+                                        tint = MenstrualTerracotta,
+                                        modifier = Modifier.size(16.dp),
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Encerrar fluxo aqui",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = MenstrualTerracotta,
+                                        ),
+                                    )
+                                }
+                            }
+                        } else if (!state.isMenstrual && activeOpenCycle != null && activeFlowEnd != null &&
+                            state.date.isAfter(activeFlowEnd) && ChronoUnit.DAYS.between(activeFlowEnd, state.date) in 1..5
+                        ) {
+                            // Extensão inteligente dentro da janela de tolerância de 5 dias
+                            OutlinedButton(
+                                onClick = onTogglePeriod,
+                                shape = RoundedCornerShape(24.dp),
+                                border = BorderStroke(1.dp, MenstrualTerracotta),
+                                modifier = Modifier.accessibleTouchTarget(),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.WaterDrop,
+                                    contentDescription = null,
+                                    tint = MenstrualTerracotta,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Estender fluxo até cá",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MenstrualTerracotta,
+                                    ),
+                                )
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = onStartPeriod,
+                                shape = RoundedCornerShape(24.dp),
+                                border = BorderStroke(1.dp, MenstrualTerracotta),
+                                modifier = Modifier.accessibleTouchTarget(),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.WaterDrop,
+                                    contentDescription = null,
+                                    tint = MenstrualTerracotta,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (state.cycleDay == 1) "Início registrado" else "Início do ciclo",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MenstrualTerracotta,
+                                    ),
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
                     }
+                }
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = HeaderSage.copy(alpha = 0.2f),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = "📅 Projeção estimada para datas futuras. O registro de menstruação real é restrito até o dia de hoje.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = TextSecondary,
+                            fontSize = 11.sp,
+                        ),
+                        modifier = Modifier.padding(10.dp),
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
         }
@@ -840,7 +1003,11 @@ private fun computeDayState(
         val day = ChronoUnit.DAYS.between(closedCycle.startDate, date).toInt() + 1
         val ovulationDay = cycleLength - CycleConstants.LUTEAL_PHASE_DAYS
         val isOvulationPeak = day == ovulationDay
-        val isMenstrual = day <= periodLength
+        val isMenstrual = if (closedCycle.flowEndDate != null) {
+            !date.isBefore(closedCycle.startDate) && !date.isAfter(closedCycle.flowEndDate)
+        } else {
+            day <= (closedCycle.actualFlowDays ?: periodLength)
+        }
         val phase = if (day > cycleLength) CyclePhase.LUTEAL else classifyDay(day, cycleLength, periodLength)
 
         return CalendarDayState(
@@ -867,7 +1034,11 @@ private fun computeDayState(
 
         if (daysFromStart < cycleLength) {
             val cycleDay = daysFromStart + 1
-            val isMenstrual = cycleDay <= periodLength
+            val isMenstrual = if (latestCycle.flowEndDate != null) {
+                !date.isBefore(latestCycle.startDate) && !date.isAfter(latestCycle.flowEndDate)
+            } else {
+                cycleDay <= (latestCycle.actualFlowDays ?: periodLength)
+            }
             val isOvulationPeak = cycleDay == ovulationDay
             val phase = classifyDay(cycleDay, cycleLength, periodLength)
 

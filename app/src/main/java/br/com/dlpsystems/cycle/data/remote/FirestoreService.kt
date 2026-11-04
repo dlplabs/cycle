@@ -86,24 +86,32 @@ class FirestoreService @Inject constructor(
         }.sortedBy { it.startDate }
     }.getOrDefault(emptyList())
 
-    suspend fun startPeriod(uid: String, date: LocalDate, periodLength: Int): MenstrualCycle {
+    suspend fun startPeriod(uid: String, date: LocalDate, periodLength: Int): MenstrualCycle =
+        togglePeriodDay(uid, date, periodLength, forceStart = true)
+
+    suspend fun togglePeriodDay(
+        uid: String,
+        date: LocalDate,
+        periodLength: Int,
+        forceStart: Boolean = false,
+    ): MenstrualCycle {
+        if (date.isAfter(LocalDate.now())) {
+            throw IllegalArgumentException("Não é permitido registrar menstruação real em datas futuras.")
+        }
         val existing = getCycles(uid).sortedBy { it.startDate }
         val open = existing.lastOrNull { it.endDate == null }
         val batch = services.firestore.batch()
-
-        val exactMatch = existing.firstOrNull { it.startDate == date }
-        if (exactMatch != null) {
-            return exactMatch
-        }
 
         if (existing.isEmpty()) {
             val document = cycles(uid).document()
             val created = MenstrualCycle(
                 id = document.id,
                 startDate = date,
+                flowEndDate = date,
                 endDate = null,
                 cycleLength = null,
                 periodLength = periodLength,
+                actualFlowDays = 1,
             )
             batch.set(document, created.toEntity())
             batch.commit().await()
@@ -111,17 +119,80 @@ class FirestoreService @Inject constructor(
         }
 
         if (open != null) {
+            val currentFlowEnd = open.flowEndDate ?: open.startDate.plusDays((open.actualFlowDays ?: open.periodLength).toLong() - 1L)
+
+            // 1. Toque no último dia ativo de sangramento -> desmarcar último dia (recuo dinâmico)
+            if (!forceStart && date == currentFlowEnd && date.isAfter(open.startDate)) {
+                val newFlowEnd = date.minusDays(1)
+                val newActualDays = ChronoUnit.DAYS.between(open.startDate, newFlowEnd).toInt() + 1
+                val updated = open.copy(
+                    flowEndDate = newFlowEnd,
+                    actualFlowDays = newActualDays,
+                )
+                batch.set(cycles(uid).document(open.id), updated.toEntity())
+                batch.commit().await()
+                return updated
+            }
+
+            // 2. Toque após o último dia ativo de sangramento
+            if (date.isAfter(currentFlowEnd)) {
+                val daysDiff = ChronoUnit.DAYS.between(currentFlowEnd, date).toInt()
+                // Janela de tolerância de até 5 dias para extensão/fusão automática
+                if (daysDiff in 1..5 && !forceStart) {
+                    val newActualDays = ChronoUnit.DAYS.between(open.startDate, date).toInt() + 1
+                    val updated = open.copy(
+                        flowEndDate = date,
+                        actualFlowDays = newActualDays,
+                    )
+                    batch.set(cycles(uid).document(open.id), updated.toEntity())
+                    batch.commit().await()
+                    return updated
+                } else {
+                    // Mais de 5 dias após o fluxo ativo -> fecha o ciclo anterior e inicia novo ciclo
+                    val daysSinceOpenStart = ChronoUnit.DAYS.between(open.startDate, date).toInt()
+                    val closed = open.copy(
+                        endDate = date.minusDays(1),
+                        cycleLength = daysSinceOpenStart,
+                        flowEndDate = open.flowEndDate ?: currentFlowEnd,
+                    )
+                    batch.set(cycles(uid).document(open.id), closed.toEntity())
+
+                    val document = cycles(uid).document()
+                    val created = MenstrualCycle(
+                        id = document.id,
+                        startDate = date,
+                        flowEndDate = date,
+                        endDate = null,
+                        cycleLength = null,
+                        periodLength = periodLength,
+                        actualFlowDays = 1,
+                    )
+                    batch.set(document, created.toEntity())
+                    batch.commit().await()
+                    return created
+                }
+            }
+
+            // 3. Toque antes do início do ciclo aberto
             if (!date.isAfter(open.startDate)) {
+                val daysBefore = ChronoUnit.DAYS.between(date, open.startDate).toInt()
+                if (daysBefore in 1..5) {
+                    // Estende o início para antes sem duplicar ciclo
+                    val currentEnd = open.flowEndDate ?: currentFlowEnd
+                    val newActualDays = ChronoUnit.DAYS.between(date, currentEnd).toInt() + 1
+                    val updated = open.copy(
+                        startDate = date,
+                        actualFlowDays = newActualDays,
+                    )
+                    batch.set(cycles(uid).document(open.id), updated.toEntity())
+                    batch.commit().await()
+                    return updated
+                }
+
+                // Ajusta ciclo anterior se houver
                 val previous = existing.filter { it.id != open.id && it.startDate.isBefore(open.startDate) }
                     .maxByOrNull { it.startDate }
-
-                if (previous != null && !date.isAfter(previous.startDate)) {
-                    val adjustedPrev = previous.copy(
-                        endDate = if (date.isAfter(previous.startDate)) date.minusDays(1) else previous.endDate,
-                        cycleLength = if (date.isAfter(previous.startDate)) ChronoUnit.DAYS.between(previous.startDate, date).toInt() else previous.cycleLength,
-                    )
-                    batch.set(cycles(uid).document(previous.id), adjustedPrev.toEntity())
-                } else if (previous != null) {
+                if (previous != null && date.isAfter(previous.startDate)) {
                     val adjustedPrev = previous.copy(
                         endDate = date.minusDays(1),
                         cycleLength = ChronoUnit.DAYS.between(previous.startDate, date).toInt(),
@@ -129,36 +200,26 @@ class FirestoreService @Inject constructor(
                     batch.set(cycles(uid).document(previous.id), adjustedPrev.toEntity())
                 }
 
-                val adjustedOpen = open.copy(startDate = date)
+                val adjustedOpen = open.copy(
+                    startDate = date,
+                    flowEndDate = open.flowEndDate ?: date,
+                    actualFlowDays = open.actualFlowDays ?: 1,
+                )
                 batch.set(cycles(uid).document(open.id), adjustedOpen.toEntity())
                 batch.commit().await()
                 return adjustedOpen
             }
 
-            val daysSinceOpenStart = ChronoUnit.DAYS.between(open.startDate, date).toInt()
-            if (daysSinceOpenStart in 1..7) {
-                val adjustedOpen = open.copy(startDate = date)
-                batch.set(cycles(uid).document(open.id), adjustedOpen.toEntity())
-                batch.commit().await()
-                return adjustedOpen
-            } else {
-                val closed = open.copy(
-                    endDate = date.minusDays(1),
-                    cycleLength = daysSinceOpenStart,
+            // 4. Toque entre startDate e currentFlowEnd (definir novo fim de fluxo recuado)
+            if (date.isAfter(open.startDate) && date.isBefore(currentFlowEnd)) {
+                val newActualDays = ChronoUnit.DAYS.between(open.startDate, date).toInt() + 1
+                val updated = open.copy(
+                    flowEndDate = date,
+                    actualFlowDays = newActualDays,
                 )
-                batch.set(cycles(uid).document(open.id), closed.toEntity())
-
-                val document = cycles(uid).document()
-                val created = MenstrualCycle(
-                    id = document.id,
-                    startDate = date,
-                    endDate = null,
-                    cycleLength = null,
-                    periodLength = periodLength,
-                )
-                batch.set(document, created.toEntity())
+                batch.set(cycles(uid).document(open.id), updated.toEntity())
                 batch.commit().await()
-                return created
+                return updated
             }
         }
 
@@ -168,9 +229,11 @@ class FirestoreService @Inject constructor(
             val created = MenstrualCycle(
                 id = document.id,
                 startDate = date,
+                flowEndDate = date,
                 endDate = null,
                 cycleLength = null,
                 periodLength = periodLength,
+                actualFlowDays = 1,
             )
             batch.set(document, created.toEntity())
             batch.commit().await()
@@ -196,6 +259,28 @@ class FirestoreService @Inject constructor(
             batch.commit().await()
             return adjustedTarget
         }
+    }
+
+    suspend fun setFlowEndDate(uid: String, cycleId: String, flowEndDate: LocalDate?): MenstrualCycle {
+        if (flowEndDate != null && flowEndDate.isAfter(LocalDate.now())) {
+            throw IllegalArgumentException("Data de fim do fluxo não pode ser futura.")
+        }
+        val doc = cycles(uid).document(cycleId)
+        val snapshot = doc.get().await()
+        val cycle = snapshot.toObject(CycleEntity::class.java)?.toDomain(cycleId)
+            ?: throw IllegalStateException("Ciclo não encontrado.")
+
+        if (flowEndDate != null && flowEndDate.isBefore(cycle.startDate)) {
+            throw IllegalArgumentException("Data de término do fluxo não pode ser anterior ao início.")
+        }
+
+        val actualDays = flowEndDate?.let { ChronoUnit.DAYS.between(cycle.startDate, it).toInt() + 1 }
+        val updated = cycle.copy(
+            flowEndDate = flowEndDate,
+            actualFlowDays = actualDays,
+        )
+        doc.set(updated.toEntity()).await()
+        return updated
     }
 
     fun observeDailyLogs(uid: String): Flow<List<DailyLog>> = callbackFlow {

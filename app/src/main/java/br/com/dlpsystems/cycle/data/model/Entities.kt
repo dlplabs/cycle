@@ -17,9 +17,12 @@ data class UserProfileEntity(
 @Keep
 data class CycleEntity(
     val startDate: Timestamp? = null,
+    val flowEndDate: Timestamp? = null,
     val endDate: Timestamp? = null,
     val cycleLength: Int? = null,
     val periodLength: Int = 5,
+    val actualFlowDays: Int? = null,
+    val isOutlier: Boolean = false,
 )
 
 @Keep

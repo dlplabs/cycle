@@ -16,9 +16,12 @@ data class UserProfile(
 data class MenstrualCycle(
     val id: String,
     val startDate: LocalDate,
-    val endDate: LocalDate?,
-    val cycleLength: Int?,
-    val periodLength: Int,
+    val endDate: LocalDate? = null,
+    val cycleLength: Int? = null,
+    val periodLength: Int = 5,
+    val flowEndDate: LocalDate? = null,
+    val actualFlowDays: Int? = null,
+    val isOutlier: Boolean = false,
 )
 
 data class DailyLog(

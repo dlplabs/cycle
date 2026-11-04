@@ -27,6 +27,7 @@ class UserRepositoryImpl @Inject constructor(
     private val authService: FirebaseAuthService,
     private val firestore: FirestoreService,
     private val driveAvatars: DriveAvatarStore,
+    private val preferences: br.com.dlpsystems.cycle.data.local.UserPreferencesDataSource? = null,
 ) : UserRepository {
     override val isBackendAvailable: Boolean
         get() = services.available
@@ -62,12 +63,14 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun signOut() {
+        preferences?.clearAll()
         authService.signOut()
     }
 
     override suspend fun deleteAccount() = guard {
         val uid = currentUid()
         runCatching { firestore.deleteUserData(uid) }
+        preferences?.clearAll()
         authService.deleteAccount()
     }
 

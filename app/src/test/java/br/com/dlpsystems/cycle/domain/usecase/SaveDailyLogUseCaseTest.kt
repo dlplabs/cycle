@@ -30,6 +30,8 @@ private class RecordingCycleRepository : CycleRepository {
     override fun observeDailyLogs(): Flow<List<DailyLog>> = flowOf(saved)
     override suspend fun getCycles(): List<MenstrualCycle> = emptyList()
     override suspend fun startPeriod(date: LocalDate): MenstrualCycle = error("unused")
+    override suspend fun setFlowEndDate(cycleId: String, flowEndDate: LocalDate?): MenstrualCycle = error("unused")
+    override suspend fun togglePeriodDay(date: LocalDate): MenstrualCycle = error("unused")
     override suspend fun saveDailyLog(log: DailyLog) {
         saved += log
     }

@@ -17,7 +17,8 @@ import java.time.format.DateTimeFormatter
 private val zone: ZoneId = ZoneId.systemDefault()
 
 fun LocalDate.toFirestoreTimestamp(): Timestamp {
-    val instant = atStartOfDay(zone).toInstant()
+    // Ancorar a data ao meio-dia local evita recuos de data para o dia anterior (-1 dia) em fusos negativos (ex.: Brasil UTC-3)
+    val instant = atTime(12, 0).atZone(zone).toInstant()
     return Timestamp(instant.epochSecond, instant.nano)
 }
 
@@ -61,17 +62,23 @@ fun CycleEntity.toDomain(id: String): MenstrualCycle? {
     return MenstrualCycle(
         id = id,
         startDate = start,
+        flowEndDate = flowEndDate?.toLocalDate(),
         endDate = endDate?.toLocalDate(),
         cycleLength = cycleLength,
         periodLength = periodLength,
+        actualFlowDays = actualFlowDays,
+        isOutlier = isOutlier,
     )
 }
 
 fun MenstrualCycle.toEntity(): CycleEntity = CycleEntity(
     startDate = startDate.toFirestoreTimestamp(),
+    flowEndDate = flowEndDate?.toFirestoreTimestamp(),
     endDate = endDate?.toFirestoreTimestamp(),
     cycleLength = cycleLength,
     periodLength = periodLength,
+    actualFlowDays = actualFlowDays,
+    isOutlier = isOutlier,
 )
 
 fun DailyLog.toEntity(): DailyLogEntity = DailyLogEntity(

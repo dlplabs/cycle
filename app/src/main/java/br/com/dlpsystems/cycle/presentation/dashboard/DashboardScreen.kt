@@ -31,20 +31,28 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.WaterDrop
-import androidx.compose.ui.graphics.Color
 import br.com.dlpsystems.cycle.domain.model.LifeStageMode
 import br.com.dlpsystems.cycle.domain.model.TransitProtectionSession
 import br.com.dlpsystems.cycle.presentation.calendar.CycleCalendarBottomSheet
 import br.com.dlpsystems.cycle.core.designsystem.DeepPlum
 import br.com.dlpsystems.cycle.presentation.components.ReviewSentimentDialog
 import java.time.LocalDate
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import br.com.dlpsystems.cycle.core.designsystem.HeaderSage
+import br.com.dlpsystems.cycle.core.designsystem.MenstrualTerracotta
+import br.com.dlpsystems.cycle.core.designsystem.TextSecondary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,13 +66,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.content.FileProvider
 import java.io.File
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.dlpsystems.cycle.R
@@ -263,18 +268,89 @@ fun DashboardScreen(
                         )
                     }
                 }
-                Text(
-                    text = when (result?.status) {
-                        PhaseStatus.EXTENDED -> result.message.orEmpty()
-                        PhaseStatus.NO_CYCLE, null -> stringResource(R.string.no_cycle_hint)
-                        PhaseStatus.IN_PHASE -> stringResource(
-                            R.string.days_until_period,
-                            result.daysUntilNextPeriod,
-                        )
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                )
+                if (result?.isSevereDelay == true) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MenstrualTerracotta.copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, MenstrualTerracotta.copy(alpha = 0.35f)),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                text = "Ciclo em andamento há mais de 60 dias",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = DeepPlum),
+                                textAlign = TextAlign.Center,
+                            )
+                            Text(
+                                text = "Ciclos mais longos podem ocorrer devido a estresse, anticoncepcional contínuo, climatério ou gestação.",
+                                style = MaterialTheme.typography.bodySmall.copy(color = TextSecondary),
+                                textAlign = TextAlign.Center,
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                OutlinedButton(
+                                    onClick = { showCalendar = true },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                ) {
+                                    Text("Registrar ciclo", fontSize = 11.sp, maxLines = 1)
+                                }
+                                OutlinedButton(
+                                    onClick = onAccount,
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                ) {
+                                    Text("Pausar previsões", fontSize = 11.sp, maxLines = 1)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Text(
+                        text = when (result?.status) {
+                            PhaseStatus.EXTENDED -> result.message.orEmpty()
+                            PhaseStatus.NO_CYCLE, null -> stringResource(R.string.no_cycle_hint)
+                            PhaseStatus.IN_PHASE -> stringResource(
+                                R.string.days_until_period,
+                                result.daysUntilNextPeriod,
+                            )
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
+                if (result?.needsFlowEndConfirmation == true) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = HeaderSage.copy(alpha = 0.3f),
+                        border = BorderStroke(1.dp, HeaderSage),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showCalendar = true },
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = "🩸 Confirmar término do fluxo menstrual",
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = DeepPlum),
+                            )
+                            Text(
+                                text = "Ajustar →",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = DeepPlum),
+                            )
+                        }
+                    }
+                }
                 state.insight?.physiology?.takeIf { it.isNotBlank() && !needsFirstPeriod }?.let { line ->
                     Text(
                         text = line,
@@ -358,6 +434,16 @@ fun DashboardScreen(
                 onStartPeriodOnDate = { date ->
                     executeOrRequireAuth {
                         viewModel.startPeriodOnDate(date)
+                    }
+                },
+                onTogglePeriodOnDate = { date ->
+                    executeOrRequireAuth {
+                        viewModel.togglePeriodOnDate(date)
+                    }
+                },
+                onSetFlowEndDate = { cycleId, end ->
+                    executeOrRequireAuth {
+                        viewModel.setFlowEndDate(cycleId, end)
                     }
                 },
             )

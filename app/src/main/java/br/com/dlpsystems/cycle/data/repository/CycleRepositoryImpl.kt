@@ -44,6 +44,16 @@ class CycleRepositoryImpl @Inject constructor(
         return firestore.startPeriod(uid(), date, periodLength)
     }
 
+    override suspend fun setFlowEndDate(cycleId: String, flowEndDate: LocalDate?): MenstrualCycle {
+        return firestore.setFlowEndDate(uid(), cycleId, flowEndDate)
+    }
+
+    override suspend fun togglePeriodDay(date: LocalDate): MenstrualCycle {
+        val profile = firestore.getProfile(uid())
+        val periodLength = profile?.averagePeriodDays ?: CycleConstants.DEFAULT_PERIOD_DAYS
+        return firestore.togglePeriodDay(uid(), date, periodLength)
+    }
+
     override suspend fun saveDailyLog(log: DailyLog) {
         firestore.saveDailyLog(uid(), log)
     }

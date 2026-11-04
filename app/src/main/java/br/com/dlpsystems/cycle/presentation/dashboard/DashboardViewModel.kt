@@ -236,18 +236,50 @@ class DashboardViewModel @Inject constructor(
                         )
                     }
                 }
-                .onFailure { error ->
-                    val userFriendly = when {
-                        error.message?.contains("offline", ignoreCase = true) == true ->
-                            context.getString(R.string.error_firestore_offline)
-                        error.message?.contains("permission", ignoreCase = true) == true ||
-                        error.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true ->
-                            context.getString(R.string.error_firestore_permission)
-                        else -> error.localizedMessage ?: context.getString(R.string.error_generic)
-                    }
-                    _state.update { it.copy(errorMessage = userFriendly) }
-                }
+                .onFailure { reportCycleError(it) }
         }
+    }
+
+    fun togglePeriodOnDate(date: LocalDate) {
+        viewModelScope.launch {
+            runCatching { cycleRepository.togglePeriodDay(date) }
+                .onSuccess {
+                    _state.update {
+                        it.copy(
+                            errorMessage = null,
+                            userMessage = context.getString(R.string.calendar_period_marked_success),
+                        )
+                    }
+                }
+                .onFailure { reportCycleError(it) }
+        }
+    }
+
+    fun setFlowEndDate(cycleId: String, flowEndDate: LocalDate?) {
+        viewModelScope.launch {
+            runCatching { cycleRepository.setFlowEndDate(cycleId, flowEndDate) }
+                .onSuccess {
+                    _state.update {
+                        it.copy(
+                            errorMessage = null,
+                            userMessage = context.getString(R.string.calendar_period_marked_success),
+                        )
+                    }
+                }
+                .onFailure { reportCycleError(it) }
+        }
+    }
+
+    private fun reportCycleError(error: Throwable) {
+        val userFriendly = when {
+            error.message?.contains("offline", ignoreCase = true) == true ->
+                context.getString(R.string.error_firestore_offline)
+            error.message?.contains("permission", ignoreCase = true) == true ||
+            error.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true ->
+                context.getString(R.string.error_firestore_permission)
+            else -> error.localizedMessage ?: context.getString(R.string.error_generic)
+        }
+        _state.update { it.copy(errorMessage = userFriendly) }
     }
 
     fun clearUserMessage() {

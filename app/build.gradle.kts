@@ -72,7 +72,8 @@ android {
             resValue(
                 "string",
                 "admob_banner_id",
-                providers.environmentVariable("ADMOB_BANNER_ID").orNull?.takeIf { it.isNotBlank() } ?: "",
+                providers.environmentVariable("ADMOB_BANNER_ID").orNull?.takeIf { it.isNotBlank() }
+                    ?: "ca-app-pub-6678306811480199/3623607621",
             )
             isMinifyEnabled = true
             isShrinkResources = true

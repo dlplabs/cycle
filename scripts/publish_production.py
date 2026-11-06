@@ -9,23 +9,25 @@ import jwt
 PACKAGE_NAME = "br.com.dlpsystems.cycle"
 SA_KEY_PATH = "/home/daniel-pinheiro/.config/gcloud/play-console-sa.json"
 AAB_PATH = "app/build/outputs/bundle/release/app-release.aab"
-VERSION_CODE = 23
-VERSION_NAME = "1.0.22"
+VERSION_CODE = 25
+VERSION_NAME = "1.0.24"
 
 RELEASE_NOTES_PT = (
-    "Novidades da versão 1.0.22:\n"
-    "• Avaliação e Feedback In-App: canal direto para ouvir sua opinião e aprimorar sua experiência.\n"
-    "• Integração com Google Play Review para apoiar o crescimento da comunidade Cycle.\n"
-    "• Acesso permanente para avaliação e sugestões nas configurações da conta.\n"
-    "• Aprimoramentos de estabilidade, sincronização e fluidez no acompanhamento do ciclo."
+    "Novidades da versão 1.0.24:\n"
+    "• Acessibilidade: melhor contraste em botões e elementos da interface.\n"
+    "• Protocolo de Segurança IAVP: navegação e layout responsivos no apoio ao usuário.\n"
+    "• Cards Clínicos: visual refinado e melhor leitura nos cartões de bem-estar.\n"
+    "• Cadastro: validação mais ágil e intuitiva na criação de conta.\n"
+    "• Otimizações contínuas de estabilidade e sincronização do ciclo."
 )
 
 RELEASE_NOTES_EN = (
-    "What's new in version 1.0.22:\n"
-    "• In-App Review and Feedback: direct channel to hear your thoughts and enhance your experience.\n"
-    "• Google Play In-App Review integration to support the growth of the Cycle community.\n"
-    "• Permanent access to rating and feedback directly from account settings.\n"
-    "• Stability, sync, and responsiveness improvements across cycle tracking."
+    "What's new in version 1.0.24:\n"
+    "• Accessibility: enhanced contrast across buttons and interactive elements.\n"
+    "• IAVP Safety Protocol: responsive layout and smoother guidance navigation.\n"
+    "• Clinical Cards: refined visual design and typography for wellness insights.\n"
+    "• Registration: faster, more intuitive input validation during sign-up.\n"
+    "• Continuous stability and sync optimizations across cycle tracking."
 )
 
 def get_access_token():

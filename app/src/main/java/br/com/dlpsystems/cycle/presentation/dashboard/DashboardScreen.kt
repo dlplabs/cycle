@@ -544,7 +544,7 @@ private fun HomeHeader(
             style = MaterialTheme.typography.headlineLarge.copy(
                 fontFamily = PlayfairDisplay,
                 fontWeight = FontWeight.Normal,
-                fontSize = 32.sp,
+                fontSize = 20.sp,
                 color = TextPrimary,
             ),
             modifier = Modifier.weight(1f),

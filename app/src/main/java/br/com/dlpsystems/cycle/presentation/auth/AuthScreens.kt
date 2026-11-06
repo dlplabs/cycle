@@ -379,7 +379,7 @@ fun RegisterContent(
                         isError = state.error is AuthFailure.WeakPassword,
                         onDone = {
                             focusManager.clearFocus()
-                            if (!state.loading && state.name.isNotBlank() && state.backendAvailable) {
+                            if (!state.loading && state.name.isNotBlank() && state.email.isNotBlank() && state.password.length >= 6 && state.backendAvailable) {
                                 onRegister()
                             }
                         },
@@ -393,7 +393,7 @@ fun RegisterContent(
                             focusManager.clearFocus()
                             onRegister()
                         },
-                        enabled = !state.loading && state.name.isNotBlank() && state.backendAvailable,
+                        enabled = !state.loading && state.name.isNotBlank() && state.email.isNotBlank() && state.password.length >= 6 && state.backendAvailable,
                     )
                     OrDivider()
                     GoogleAuthButton(

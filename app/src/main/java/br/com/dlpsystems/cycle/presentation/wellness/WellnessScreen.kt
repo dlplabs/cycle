@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -474,8 +475,8 @@ private fun WellnessFeatureGridCard(feature: WellnessFeatureCardData) {
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
-                .height(138.dp),
+                .padding(14.dp)
+                .heightIn(min = 152.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
@@ -485,7 +486,7 @@ private fun WellnessFeatureGridCard(feature: WellnessFeatureCardData) {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(38.dp)
                         .clip(CircleShape)
                         .background(feature.iconBgColor),
                     contentAlignment = Alignment.Center,
@@ -494,24 +495,24 @@ private fun WellnessFeatureGridCard(feature: WellnessFeatureCardData) {
                         imageVector = feature.icon,
                         contentDescription = null,
                         tint = DeepPlum,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(20.dp),
                     )
                 }
             }
 
-            Column {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = feature.title,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 13.sp, lineHeight = 17.sp),
                     fontWeight = FontWeight.Bold,
                     color = DeepPlum,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = feature.description,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, lineHeight = 15.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -519,7 +520,7 @@ private fun WellnessFeatureGridCard(feature: WellnessFeatureCardData) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = feature.cohortBadge,
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, lineHeight = 12.sp),
                     color = DeepPlum.copy(alpha = 0.7f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -572,8 +573,11 @@ private fun TtcInfoDialog(
             }
         },
         confirmButton = {
-            Button(onClick = onActivateTtc) {
-                Text("Ativar Modo Tentante")
+            Button(
+                onClick = onActivateTtc,
+                colors = ButtonDefaults.buttonColors(containerColor = DeepPlum, contentColor = Color.White),
+            ) {
+                Text("Ativar Modo Tentante", color = Color.White)
             }
         },
         dismissButton = {
@@ -659,8 +663,11 @@ private fun EpdsAssessmentDialog(
             }
         },
         confirmButton = {
-            Button(onClick = onActivatePostpartum) {
-                Text("Ativar Modo Pós-Parto")
+            Button(
+                onClick = onActivatePostpartum,
+                colors = ButtonDefaults.buttonColors(containerColor = DeepPlum, contentColor = Color.White),
+            ) {
+                Text("Ativar Modo Pós-Parto", color = Color.White)
             }
         },
         dismissButton = {
@@ -759,8 +766,11 @@ private fun LactationLamDialog(
             }
         },
         confirmButton = {
-            Button(onClick = onActivateLactation) {
-                Text("Ativar Modo Amamentação")
+            Button(
+                onClick = onActivateLactation,
+                colors = ButtonDefaults.buttonColors(containerColor = DeepPlum, contentColor = Color.White),
+            ) {
+                Text("Ativar Modo Amamentação", color = Color.White)
             }
         },
         dismissButton = {
@@ -818,8 +828,11 @@ private fun ClimactericMrsDialog(
             }
         },
         confirmButton = {
-            Button(onClick = onActivateClimacteric) {
-                Text("Ativar Modo Climatério")
+            Button(
+                onClick = onActivateClimacteric,
+                colors = ButtonDefaults.buttonColors(containerColor = DeepPlum, contentColor = Color.White),
+            ) {
+                Text("Ativar Modo Climatério", color = Color.White)
             }
         },
         dismissButton = {

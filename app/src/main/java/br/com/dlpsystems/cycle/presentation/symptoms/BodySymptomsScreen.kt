@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -257,14 +258,19 @@ private fun AddSymptomDialog(
                 )
 
                 Text("Intensidade: ${intensityLabel(intensity)}", style = MaterialTheme.typography.labelMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
                     listOf(1 to "Leve", 2 to "Moderada", 3 to "Intensa").forEach { (level, lbl) ->
                         val sel = intensity == level
                         Button(
                             onClick = { intensity = level },
                             colors = ButtonDefaults.buttonColors(containerColor = if (sel) DeepPlum else HeaderSage.copy(alpha = 0.4f)),
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                         ) {
-                            Text(lbl, color = if (sel) Color.White else DeepPlum)
+                            Text(lbl, color = if (sel) Color.White else DeepPlum, maxLines = 1)
                         }
                     }
                 }

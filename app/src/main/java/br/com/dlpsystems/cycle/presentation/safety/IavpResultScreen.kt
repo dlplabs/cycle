@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -260,10 +261,20 @@ private fun QuickActionCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            PrimaryButton(
-                text = if (action.phoneNumber != null) "Ligar" else "Abrir",
+            Button(
                 onClick = onClick,
-            )
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = DeepPlum,
+                    contentColor = Color.White,
+                ),
+                shape = RoundedCornerShape(20.dp),
+            ) {
+                Text(
+                    text = if (action.phoneNumber != null) "Ligar" else "Abrir",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                )
+            }
         }
     }
 }

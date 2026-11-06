@@ -1,6 +1,7 @@
 package br.com.dlpsystems.cycle.core.designsystem
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -109,20 +110,20 @@ val CycleTypography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        color = DeepPlum,
+        color = Color.Unspecified,
     ),
     labelMedium = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        color = TextSecondary,
+        color = Color.Unspecified,
     ),
     labelSmall = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.Medium,
         fontSize = 10.sp,
         lineHeight = 14.sp,
-        color = TextSecondary,
+        color = Color.Unspecified,
     ),
 )

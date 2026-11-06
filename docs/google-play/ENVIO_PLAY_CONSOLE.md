@@ -118,6 +118,7 @@ Atenção: Cadastre exatamente a URL acima para aprovação imediata pelo rastre
 - Dados declarados:
   - Informações pessoais: Nome, e-mail e IDs de usuário — funcionalidade e gestão de conta
   - Saúde e bem-estar: Dados do ciclo, sintomas e humor — funcionalidade do app
+  - Localização: Localização aproximada coletada e compartilhada com o Google AdMob para publicidade contextualizada e relevante (opcional ao usuário)
   - Fotos e vídeos: Fotos de perfil ou pele opcionais — funcionalidade do app
   - Atividade e telemetria: Métricas agregadas anônimas — análise
   - Dispositivo: ID de publicidade compartilhado com Google AdMob para anúncios gratuitos
